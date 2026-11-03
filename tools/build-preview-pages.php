@@ -1,0 +1,1651 @@
+<?php
+/**
+ * Сборка статического демо-сайта из демо-данных.
+ *
+ * Зачем: в репозитории нет ядра Битрикса, поэтому /services/, /news/, /events/
+ * локально не открываются (нужен bitrix/header.php). Скрипт собирает
+ * самодостаточный статический сайт в каталоге preview/ с теми же адресами,
+ * что и в Битриксе:
+ *
+ *   /                     → preview/index.html
+ *   /services/            → preview/services/index.html
+ *   /services/<код>/      → preview/services/<код>/index.html
+ *   /news/, /events/, /printing/, /books/, /collections/ — так же
+ *   /contacts/, /feedback/, /subscribe/, /auth/, /rules/, /privacy/,
+ *   /terms/, /sitemap/ — служебные и текстовые страницы
+ *
+ * Запуск (из корня репозитория):
+ *   php tools/build-preview-pages.php
+ *
+ * Просмотр:
+ *   php -S 127.0.0.1:8791 -t preview
+ *   → http://127.0.0.1:8791/services/
+ *
+ * Вёрстка и данные не дублируются вручную: страницы собираются из
+ * db/config/data/*.php и db/config/iblocks.php, каркас (шапка, подвал,
+ * модальные окна) берётся из preview/index.html. Это демо для просмотра:
+ * рабочая версия — PHP-страницы в корне репозитория и шаблоны в local/.
+ */
+
+declare(strict_types=1);
+
+$root = dirname(__DIR__);
+$previewDir = $root . '/preview';
+$tplDir = $root . '/local/templates/nlb_bootstrap';
+
+/* ---------------------------------------------------------------------- */
+/* Хелперы                                                                */
+/* ---------------------------------------------------------------------- */
+
+function e($value): string
+{
+    return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+function load_data(string $root, string $name): array
+{
+    $file = $root . '/db/config/data/' . $name . '.php';
+    if (!is_file($file)) {
+        fwrite(STDERR, "Нет файла данных: {$file}\n");
+        exit(1);
+    }
+    $data = require $file;
+
+    return is_array($data) ? $data : [];
+}
+
+function load_config(string $root): array
+{
+    $file = $root . '/db/config/iblocks.php';
+    if (!is_file($file)) {
+        fwrite(STDERR, "Нет файла конфигурации: {$file}\n");
+        exit(1);
+    }
+    $config = require $file;
+
+    return is_array($config) ? $config : [];
+}
+
+function base(int $depth): string
+{
+    return $depth > 0 ? str_repeat('../', $depth) : '';
+}
+
+/** Ссылка на раздел сайта с учётом глубины страницы. */
+function link_to(int $depth, string $path): string
+{
+    return base($depth) . ltrim($path, '/');
+}
+
+/** Картинка из ассетов (в данных путь вида assets/images/hero-1.jpg). */
+function image_url(int $depth, string $relative): string
+{
+    return base($depth) . ltrim($relative, '/');
+}
+
+function ru_month(int $month, bool $short = false): string
+{
+    $shortNames = [
+        1 => 'янв', 2 => 'фев', 3 => 'мар', 4 => 'апр', 5 => 'мая', 6 => 'июн',
+        7 => 'июл', 8 => 'авг', 9 => 'сен', 10 => 'окт', 11 => 'ноя', 12 => 'дек',
+    ];
+    $fullNames = [
+        1 => 'января', 2 => 'февраля', 3 => 'марта', 4 => 'апреля', 5 => 'мая',
+        6 => 'июня', 7 => 'июля', 8 => 'августа', 9 => 'сентября', 10 => 'октября',
+        11 => 'ноября', 12 => 'декабря',
+    ];
+
+    return ($short ? $shortNames : $fullNames)[$month] ?? '';
+}
+
+function ru_date(string $iso, bool $withTime = false): string
+{
+    $timestamp = $iso !== '' ? strtotime($iso) : false;
+    if (!$timestamp) {
+        return '';
+    }
+    $text = (int)date('j', $timestamp) . ' ' . ru_month((int)date('n', $timestamp))
+        . ' ' . date('Y', $timestamp);
+    if ($withTime) {
+        $text .= ', ' . date('H:i', $timestamp);
+    }
+
+    return $text;
+}
+
+function dmy(string $iso): string
+{
+    $timestamp = $iso !== '' ? strtotime($iso) : false;
+
+    return $timestamp ? date('d.m.Y', $timestamp) : '';
+}
+
+function price($value): string
+{
+    $number = (int)$value;
+
+    return $number > 0 ? 'от ' . number_format($number, 0, '', ' ') . ' ₽' : '';
+}
+
+/* ---------------------------------------------------------------------- */
+/* Каркас: шапка и подвал из preview/index.html                           */
+/* ---------------------------------------------------------------------- */
+
+function strip_fonts(string $html): string
+{
+    $html = (string)preg_replace('~\s*<link rel="preconnect" href="https://fonts[^>]*>~', '', $html);
+    $html = (string)preg_replace('~\s*<link href="https://fonts\.googleapis\.com[^>]*>~', '', $html);
+
+    return $html;
+}
+
+function nav_items(): array
+{
+    return [
+        ['Главная', '', 'home'],
+        ['Новости', 'news/', 'news'],
+        ['События', 'events/', 'events'],
+        ['Услуги', 'services/', 'services'],
+        ['Печать', 'printing/', 'printing'],
+        ['Книги', 'books/', 'books'],
+        ['Контакты', 'contacts/', 'contacts'],
+    ];
+}
+
+function nav_html(int $depth, string $active): string
+{
+    $prefix = base($depth);
+    $html = '<ul class="navbar-nav mx-auto">' . "\n";
+    foreach (nav_items() as [$label, $path, $key]) {
+        $href = $path === '' ? ($prefix === '' ? './' : $prefix) : $prefix . $path;
+        $isActive = $key === $active;
+        $html .= '                    <li class="nav-item"><a class="nav-link'
+            . ($isActive ? ' active' : '') . '" href="' . e($href) . '"'
+            . ($isActive ? ' aria-current="page"' : '') . '>' . e($label) . '</a></li>' . "\n";
+    }
+
+    return $html . '                </ul>';
+}
+
+function replace_nav(string $html, int $depth, string $active): string
+{
+    $start = strpos($html, '<ul class="navbar-nav mx-auto">');
+    if ($start === false) {
+        return $html;
+    }
+    $end = strpos($html, '</ul>', $start);
+    if ($end === false) {
+        return $html;
+    }
+
+    return substr($html, 0, $start) . nav_html($depth, $active) . substr($html, $end + 5);
+}
+
+/** Ссылки главной: якоря → реальные разделы. */
+function rewrite_home_links(string $html): string
+{
+    $pairs = [
+        'href="#contacts" aria-label="Уведомления"' => 'href="auth/" aria-label="Уведомления"',
+        'href="#contacts" aria-label="Личный кабинет"' => 'href="auth/" aria-label="Личный кабинет"',
+        'href="#contacts">Войти<' => 'href="auth/">Войти<',
+        'href="#contacts">Правила<' => 'href="rules/">Правила<',
+        'href="#contacts">Политика конфиденциальности<' => 'href="privacy/">Политика конфиденциальности<',
+        'href="#contacts">Условия использования<' => 'href="terms/">Условия использования<',
+        'href="#contacts">Карта сайта<' => 'href="sitemap/">Карта сайта<',
+        'action="#contacts"' => 'action="feedback/"',
+        'href="#top"' => 'href="./"',
+        'href="#news"' => 'href="news/"',
+        'href="#events"' => 'href="events/"',
+        'href="#services"' => 'href="services/"',
+        'href="#print"' => 'href="printing/"',
+        'href="#collections"' => 'href="collections/"',
+        'href="#contacts"' => 'href="contacts/"',
+    ];
+
+    return strtr($html, $pairs);
+}
+
+/**
+ * Готовит главную: убирает внешние шрифты, переводит ссылки на разделы
+ * и пути к ассетам. Идемпотентно: повторный запуск ничего не ломает.
+ */
+function prepare_home(string $previewDir): void
+{
+    $file = $previewDir . '/index.html';
+    $html = (string)file_get_contents($file);
+    $html = strip_fonts($html);
+    $html = rewrite_home_links($html);
+    $html = replace_nav($html, 0, 'home');
+    $html = str_replace('../local/templates/nlb_bootstrap/', '', $html);
+    file_put_contents($file, $html);
+}
+
+function home_template(string $previewDir): string
+{
+    static $html = null;
+    if ($html === null) {
+        $html = strip_fonts((string)file_get_contents($previewDir . '/index.html'));
+    }
+
+    return $html;
+}
+
+/** Добавляет ../ к относительным ссылкам и путям ассетов. */
+function rebase(string $html, int $depth): string
+{
+    if ($depth <= 0) {
+        return $html;
+    }
+    $prefix = base($depth);
+
+    return (string)preg_replace_callback(
+        '~\b(href|src|action)="(?!https?:|mailto:|tel:|#|/|\.\./|data:)([^"]*)"~',
+        static function (array $m) use ($prefix): string {
+            return $m[1] . '="' . $prefix . $m[2] . '"';
+        },
+        $html
+    );
+}
+
+function layout(string $previewDir, string $title, string $description, string $content, int $depth, string $active): string
+{
+    $home = home_template($previewDir);
+    $mainPos = strpos($home, '<main class="site-main" id="main">');
+    $footerPos = strpos($home, '<footer class="site-footer" id="contacts">');
+    if ($mainPos === false || $footerPos === false) {
+        fwrite(STDERR, "Не найдены границы main/footer в preview/index.html\n");
+        exit(1);
+    }
+
+    $head = rebase(substr($home, 0, $mainPos), $depth);
+    $tail = rebase(substr($home, $footerPos), $depth);
+
+    $head = (string)preg_replace('~<title>.*?</title>~s', '<title>' . e($title) . '</title>', $head, 1);
+    $head = (string)preg_replace(
+        '~<meta name="description" content="[^"]*">~',
+        '<meta name="description" content="' . e($description) . '">',
+        $head,
+        1
+    );
+    $head = replace_nav($head, $depth, $active);
+
+    return $head . '<main class="site-main" id="main">' . $content . "</main>\n\n" . $tail;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Общие блоки                                                            */
+/* ---------------------------------------------------------------------- */
+
+function filter_script(): string
+{
+    return <<<'HTML'
+
+<script>
+(function () {
+    document.querySelectorAll('[data-nlb-filter]').forEach(function (list) {
+        list.addEventListener('click', function (event) {
+            var button = event.target.closest('[data-filter]');
+            if (!button) {
+                return;
+            }
+            var value = button.getAttribute('data-filter');
+            list.querySelectorAll('[data-filter]').forEach(function (one) {
+                one.classList.toggle('is-active', one === button);
+            });
+            document.querySelectorAll('[data-nlb-item]').forEach(function (card) {
+                card.hidden = value !== 'all' && card.getAttribute('data-nlb-item') !== value;
+            });
+        });
+    });
+})();
+</script>
+HTML;
+}
+
+function chips(array $items, string $allLabel): string
+{
+    $html = '<li><button class="section-chip is-active" type="button" data-filter="all">'
+        . e($allLabel) . '</button></li>';
+    foreach ($items as $value => $label) {
+        $html .= '<li><button class="section-chip" type="button" data-filter="' . e($value) . '">'
+            . e($label) . '</button></li>';
+    }
+
+    return $html;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Карточки                                                               */
+/* ---------------------------------------------------------------------- */
+
+function news_cards(array $items, int $depth): string
+{
+    $cards = '';
+    foreach ($items as $item) {
+        $href = link_to($depth, 'news/' . $item['code'] . '/');
+        $cards .= '<div class="col-sm-6 col-lg-4" data-nlb-item="' . e($item['section'] ?? '') . '">'
+            . '<article class="nlb-card h-100"><a class="d-block h-100" href="' . e($href) . '">'
+            . '<div class="nlb-card__media"><img src="'
+            . e(image_url($depth, (string)($item['image'] ?? 'assets/images/news-1.jpg')))
+            . '" alt="' . e($item['name']) . '" loading="lazy" decoding="async"></div>'
+            . '<div class="nlb-card__body">'
+            . '<p class="news-date">' . e(dmy((string)($item['active_from'] ?? ''))) . '</p>'
+            . '<h3 class="news-title">' . e($item['name']) . '</h3>'
+            . '<p class="news-text clamp-2">' . e($item['preview_text'] ?? '') . '</p>'
+            . '</div></a></article></div>';
+    }
+
+    return $cards;
+}
+
+function event_cards(array $items, int $depth, array $config): string
+{
+    $values = $config['iblocks']['events']['properties']['CATEGORY']['values'] ?? [];
+    $names = [];
+    foreach ($values as $value) {
+        $names[$value['xml_id']] = $value['value'];
+    }
+    $classes = [
+        'literature' => 'bg-grad-sky', 'children' => 'bg-grad-pink',
+        'tech' => 'bg-grad-green', 'lecture' => 'bg-grad-orange',
+    ];
+
+    $cards = '';
+    foreach ($items as $item) {
+        $props = $item['properties'] ?? [];
+        $timestamp = !empty($props['DATE']) ? strtotime((string)$props['DATE']) : false;
+        $category = (string)($props['CATEGORY'] ?? '');
+        $href = link_to($depth, 'events/' . $item['code'] . '/');
+        $seats = (int)($props['SEATS'] ?? 0);
+
+        $cards .= '<div class="col-sm-6 col-lg-4" data-nlb-item="' . e($category) . '">'
+            . '<article class="nlb-card h-100"><div class="nlb-card__media">'
+            . '<img src="' . e(image_url($depth, (string)($item['image'] ?? 'assets/images/event.jpg')))
+            . '" alt="' . e($item['name']) . '" loading="lazy" decoding="async">'
+            . '<span class="event-cat ' . e($classes[$category] ?? 'bg-grad-sky') . '">'
+            . e($names[$category] ?? 'Событие') . '</span>';
+        if ($timestamp) {
+            $cards .= '<span class="event-date"><b>' . date('d', $timestamp) . '</b>'
+                . '<span>' . e(ru_month((int)date('n', $timestamp), true)) . '</span></span>';
+        }
+        $cards .= '</div><div class="nlb-card__body">'
+            . '<h3 class="event-title"><a class="text-reset" href="' . e($href) . '">'
+            . e($item['name']) . '</a></h3>'
+            . '<p class="event-text clamp-2">' . e($item['preview_text'] ?? '') . '</p>'
+            . '<div class="event-meta">';
+        if ($timestamp) {
+            $cards .= '<span><svg class="i i-20" aria-hidden="true"><use href="#i-clock"/></svg>'
+                . date('H:i', $timestamp) . '</span>';
+        }
+        $cards .= '<span><svg class="i i-20" aria-hidden="true"><use href="#i-pin"/></svg>'
+            . e($props['PLACE'] ?? 'Библиотека') . '</span>';
+        if ($seats > 0) {
+            $cards .= '<span><svg class="i i-20" aria-hidden="true"><use href="#i-users"/></svg>'
+                . $seats . ' мест</span>';
+        }
+        $cards .= '</div><a class="event-btn" href="'
+            . e(link_to($depth, 'feedback/')) . '">Зарегистрироваться</a>'
+            . '</div></article></div>';
+    }
+
+    return $cards;
+}
+
+function service_features(array $items, int $depth): string
+{
+    $blocks = '';
+    foreach ($items as $index => $item) {
+        $props = $item['properties'] ?? [];
+        $color = (string)($props['COLOR'] ?? 'primary');
+        $name = e($item['name']);
+        $href = link_to($depth, 'services/' . $item['code'] . '/');
+        $features = '';
+        foreach ((array)($props['FEATURES'] ?? []) as $feature) {
+            $features .= '<li><span class="service-feature-check bg-grad-' . e($color) . '">'
+                . '<svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>'
+                . e($feature) . '</li>';
+        }
+        $priceText = price($props['PRICE_FROM'] ?? 0);
+        if ($priceText === '') {
+            $priceText = 'Бесплатно для читателей';
+        }
+        $duration = (string)($props['DURATION'] ?? '');
+
+        $blocks .= '<article class="service-feature' . ($index % 2 === 1 ? ' service-feature--reverse' : '') . '">'
+            . '<div class="service-feature-media">'
+            . '<img src="' . e(image_url($depth, (string)($item['image'] ?? 'assets/images/news-1.jpg')))
+            . '" alt="' . $name . '" loading="lazy" decoding="async">'
+            . '<span class="service-feature-icon bg-grad-' . e($color) . '">'
+            . '<svg class="i" aria-hidden="true"><use href="#i-' . e($props['ICON'] ?? 'book') . '"/></svg>'
+            . '</span></div><div class="service-feature-body">'
+            . ($duration !== ''
+                ? '<span class="service-feature-badge"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>'
+                    . e($duration) . '</span>'
+                : '')
+            . '<h2 class="service-feature-title">' . $name . '</h2>'
+            . '<p class="service-feature-lead">' . e($item['preview_text'] ?? '') . '</p>'
+            . '<span class="service-feature-price bg-grad-' . e($color) . '">' . e($priceText) . '</span>'
+            . '<ul class="service-feature-points">' . $features . '</ul>'
+            . '<div class="service-feature-actions">'
+            . '<a class="btn btn-nlb btn-lg-nlb" href="' . e(link_to($depth, 'feedback/')) . '">Забронировать'
+            . '<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>'
+            . '<a class="btn btn-nlb-outline btn-lg-nlb" href="' . e($href) . '">Узнать подробнее</a>'
+            . '</div></div></article>';
+    }
+
+    return $blocks;
+}
+
+function printing_cards(array $items, int $depth, int $limit = 0): string
+{
+    if ($limit > 0) {
+        $items = array_slice($items, 0, $limit);
+    }
+    $cards = '';
+    foreach ($items as $item) {
+        $props = $item['properties'] ?? [];
+        $color = (string)($props['COLOR'] ?? 'primary');
+        $name = e($item['name']);
+        $href = link_to($depth, 'printing/' . $item['code'] . '/');
+        $priceText = price($props['PRICE_FROM'] ?? 0);
+        $unit = (string)($props['UNIT'] ?? '');
+
+        $cards .= '<div class="col-sm-6 col-xl-3"><article class="print-card h-100">'
+            . '<div class="print-media"><img src="'
+            . e(image_url($depth, (string)($item['image'] ?? 'assets/images/print-docs.jpg')))
+            . '" alt="' . $name . '" loading="lazy" decoding="async">'
+            . '<span class="print-badge bg-grad-' . e($color) . '">'
+            . '<svg class="i" aria-hidden="true"><use href="#i-' . e($props['ICON'] ?? 'printer') . '"/></svg>'
+            . '</span></div><div class="print-body">'
+            . '<h3 class="print-title">' . $name . '</h3>'
+            . '<p class="print-text">' . e($item['preview_text'] ?? '') . '</p>';
+        if ($priceText !== '') {
+            $cards .= '<div class="fw-bold text-dark mb-2">' . e($priceText)
+                . ($unit !== '' ? ' <span class="small fw-normal text-muted">· ' . e($unit) . '</span>' : '')
+                . '</div>';
+        }
+        $cards .= '<a class="print-link" href="' . e($href) . '">Подробнее'
+            . '<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>'
+            . '</div></article></div>';
+    }
+
+    return $cards;
+}
+
+function book_cards(array $items, int $depth): string
+{
+    $palette = ['primary', 'green', 'sky', 'pink', 'orange'];
+    $statuses = [
+        'available' => ['В наличии', 'is-available'],
+        'reserved' => ['Забронирована', 'is-reserved'],
+    ];
+
+    $cards = '';
+    foreach ($items as $item) {
+        $props = $item['properties'] ?? [];
+        $name = (string)$item['name'];
+        $cover = $palette[abs(crc32($name)) % count($palette)];
+        $available = (string)($props['AVAILABLE'] ?? 'available');
+        [$statusText, $statusClass] = $statuses[$available] ?? ['Выдана', 'is-unavailable'];
+        $author = (string)($props['AUTHOR'] ?? '');
+        $year = (string)($props['YEAR'] ?? '');
+        $href = link_to($depth, 'books/' . $item['code'] . '/');
+
+        $cards .= '<div class="col-sm-6 col-lg-4 col-xl-3" data-nlb-item="' . e($item['section'] ?? '') . '">'
+            . '<article class="book-card h-100">'
+            . '<a class="book-cover book-cover--' . $cover . '" href="' . e($href)
+            . '" aria-hidden="true" tabindex="-1">'
+            . '<svg class="i" aria-hidden="true"><use href="#i-book"/></svg>'
+            . '<span>' . e(mb_substr($name, 0, 28)) . '</span></a>'
+            . '<div class="book-body"><span class="book-status ' . $statusClass . '">' . $statusText . '</span>'
+            . '<h3 class="book-title"><a class="text-reset" href="' . e($href) . '">' . e($name) . '</a></h3>'
+            . '<p class="book-author">' . e($author . ($year !== '' ? ', ' . $year : '')) . '</p>'
+            . '<p class="book-text clamp-2">' . e($item['preview_text'] ?? '') . '</p>'
+            . '</div></article></div>';
+    }
+
+    return $cards;
+}
+
+function collection_cards(array $items, int $depth): string
+{
+    $colors = ['primary' => 'blue', 'green' => 'green', 'sky' => 'sky', 'pink' => 'violet', 'orange' => 'orange'];
+    $cards = '';
+    foreach ($items as $item) {
+        $props = $item['properties'] ?? [];
+        $color = (string)($props['COLOR'] ?? 'primary');
+        $class = $colors[$color] ?? 'blue';
+        $count = (int)($props['COUNT'] ?? 0);
+        $href = link_to($depth, 'collections/' . $item['code'] . '/');
+
+        $cards .= '<div class="col-md-6 col-lg-4"><div class="collection-card collection-card--' . $class . ' h-100">'
+            . '<span class="icon-tile icon-tile--' . $class . '">'
+            . '<svg class="i" aria-hidden="true"><use href="#i-' . e($props['ICON'] ?? 'book') . '"/></svg></span>'
+            . '<h3>' . e($item['name']) . '</h3>'
+            . ($count > 0 ? '<div class="collection-count">' . $count . ' книг</div>' : '')
+            . '<p class="collection-text">' . e($item['preview_text'] ?? '') . '</p>'
+            . '<a class="collection-more" href="' . e($href) . '">Узнать больше'
+            . '<svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>'
+            . '</div></div>';
+    }
+
+    return $cards;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Детальная страница                                                     */
+/* ---------------------------------------------------------------------- */
+
+function detail_page(string $previewDir, array $o): string
+{
+    $depth = 2;
+    $name = e($o['name']);
+    $lead = e($o['preview'] ?? '');
+    $html = (string)($o['html'] ?? '');
+    $rows = (string)($o['rows'] ?? '');
+    $back = link_to($depth, $o['back'] . '/');
+
+    $cover = '';
+    if (!empty($o['image'])) {
+        $cover = '<figure class="article-cover"><img src="' . e(image_url($depth, (string)$o['image']))
+            . '" alt="' . $name . '" loading="lazy" decoding="async"></figure>';
+    }
+    $cta = '';
+    if (!empty($o['cta'])) {
+        $cta = '<a class="btn ' . e($o['cta']['class'] ?? 'btn-nlb') . ' w-100 mt-3" href="'
+            . e(link_to($depth, (string)$o['cta']['href'])) . '">' . e($o['cta']['label']) . '</a>';
+    }
+
+    $content = '<section class="section"><div class="container"><article class="article">'
+        . '<header class="article-head">'
+        . (!empty($o['date']) ? '<p class="article-meta">'
+            . '<svg class="i i-20" aria-hidden="true"><use href="#i-calendar"/></svg>'
+            . e($o['date']) . '</p>' : '')
+        . '<h1 class="page-title">' . $name . '</h1>'
+        . '<p class="section-lead">' . $lead . '</p>'
+        . (!empty($o['tags']) ? '<ul class="tag-list" aria-label="Теги">' . $o['tags'] . '</ul>' : '')
+        . '</header>'
+        . $cover
+        . '<div class="article-body"><div class="bitrix-content">' . $html . '</div>'
+        . '<aside class="article-aside"><h2 class="h5 mb-3">Коротко</h2>'
+        . '<dl class="article-props">' . $rows . '</dl>' . $cta . '</aside></div>'
+        . '<footer class="article-footer"><a class="btn btn-nlb-outline btn-icon" href="' . e($back) . '">'
+        . '<svg class="i" aria-hidden="true"><use href="#i-chevron-left"/></svg>'
+        . e($o['backText']) . '</a></footer>'
+        . '</article></div></section>';
+
+    return layout($previewDir, $o['name'] . ' — Библиотека 2026', (string)($o['preview'] ?? ''), $content, $depth, $o['active']);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Страницы разделов                                                      */
+/* ---------------------------------------------------------------------- */
+
+function build_news(string $root, string $previewDir, array $config): string
+{
+    $data = load_data($root, 'news');
+    $sections = [];
+    foreach (($config['iblocks']['news']['sections_data'] ?? []) as $section) {
+        $sections[$section['code']] = $section['name'];
+    }
+    $chips = chips($sections, 'Все новости');
+
+    $content = <<<HTML
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow eyebrow--green">Блог</span>
+        <h1 class="page-title">Новости</h1>
+        <p class="page-lead">
+            Что происходит в библиотеке: новые поступления, цифровые проекты,
+            партнёрства и анонсы мероприятий.
+        </p>
+
+        <ul class="section-chips" aria-label="Рубрики новостей" data-nlb-filter>
+            {$chips}
+        </ul>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="row g-4">
+
+HTML
+        . news_cards($data['items'] ?? [], 1)
+        . <<<'HTML'
+
+        </div>
+    </div>
+</section>
+HTML
+        . filter_script();
+
+    return layout(
+        $previewDir,
+        'Новости — Библиотека 2026',
+        'Новости библиотеки: новые поступления, проекты, партнёрства и анонсы мероприятий.',
+        $content,
+        1,
+        'news'
+    );
+}
+
+function build_events(string $root, string $previewDir, array $config): string
+{
+    $data = load_data($root, 'events');
+    $categories = [];
+    foreach (($config['iblocks']['events']['properties']['CATEGORY']['values'] ?? []) as $value) {
+        $categories[$value['xml_id']] = $value['value'];
+    }
+    $chips = chips($categories, 'Все рубрики');
+
+    $content = <<<HTML
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow eyebrow--red">Афиша</span>
+        <h1 class="page-title">События</h1>
+        <p class="page-lead">
+            Лекции, мастер-классы и встречи с авторами. Вход свободный или по записи —
+            смотрите условия в карточке события.
+        </p>
+
+        <ul class="section-chips" aria-label="Рубрики событий" data-nlb-filter>
+            {$chips}
+        </ul>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="row g-4">
+
+HTML
+        . event_cards($data['items'] ?? [], 1, $config)
+        . <<<'HTML'
+
+        </div>
+    </div>
+</section>
+
+<section class="section section--soft">
+    <div class="container">
+        <div class="cta-banner" data-reveal>
+            <h2>Хотите провести своё событие?</h2>
+            <p class="text-white-75 mb-4">
+                Расскажите о формате и дате — подберём зал и поможем с организацией.
+            </p>
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                <a class="btn btn-nlb-white btn-lg-nlb" href="../feedback/">Написать нам</a>
+                <a class="btn btn-nlb-outline btn-lg-nlb" href="../services/">Услуги и залы</a>
+            </div>
+        </div>
+    </div>
+</section>
+HTML
+        . filter_script();
+
+    return layout(
+        $previewDir,
+        'События — Библиотека 2026',
+        'Афиша библиотеки: лекции, мастер-классы, встречи с авторами и детские занятия.',
+        $content,
+        1,
+        'events'
+    );
+}
+
+function build_services(string $root, string $previewDir): string
+{
+    $services = load_data($root, 'services');
+    $printing = load_data($root, 'printing');
+
+    $content = <<<HTML
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow eyebrow--violet">
+            <svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg>
+            Сервисы библиотеки
+        </span>
+        <h1 class="page-title">Наши услуги</h1>
+        <p class="page-lead">
+            Библиотека — это не только книги. Читальные залы, коворкинг, лектории,
+            детская комната и цифровые ресурсы — всё в одном месте.
+        </p>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="service-feature-list">
+
+HTML
+        . service_features($services['items'] ?? [], 1)
+        . <<<'HTML'
+
+        </div>
+    </div>
+</section>
+
+<section class="section section--soft">
+    <div class="container">
+        <div class="section-head" data-reveal>
+            <span class="eyebrow eyebrow--green">Полиграфия</span>
+            <h2 class="section-title">Каталог печатных услуг</h2>
+            <p class="section-lead">
+                Печать документов, сканирование, переплёт, визитки, сувениры
+                и фотопечать — рядом с читальными залами.
+            </p>
+        </div>
+
+        <div class="row g-4">
+
+HTML
+        . printing_cards($printing['items'] ?? [], 1, 8)
+        . <<<'HTML'
+
+        </div>
+
+        <div class="text-center mt-5" data-reveal>
+            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="../printing/">
+                Весь каталог печатных услуг
+                <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="cta-banner" data-reveal>
+            <h2>Готовы начать?</h2>
+            <p class="text-white-75 mb-4">
+                Запишитесь онлайн или задайте вопрос — ответим в течение дня.
+            </p>
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                <a class="btn btn-nlb-white btn-lg-nlb" href="../feedback/">Записаться в библиотеку</a>
+                <a class="btn btn-nlb-outline btn-lg-nlb" href="../feedback/">Задать вопрос</a>
+            </div>
+        </div>
+    </div>
+</section>
+HTML;
+
+    return layout(
+        $previewDir,
+        'Услуги — Библиотека 2026',
+        'Услуги библиотеки: читальные залы, коворкинг, компьютеры, экскурсии и обучение.',
+        $content,
+        1,
+        'services'
+    );
+}
+
+function build_printing(string $root, string $previewDir): string
+{
+    $data = load_data($root, 'printing');
+
+    $content = <<<HTML
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow eyebrow--violet">Полиграфия</span>
+        <h1 class="page-title">Каталог печатных услуг</h1>
+        <p class="page-lead">
+            Чёрно-белая и цветная печать, сканирование, переплёт и сувениры —
+            от одного экземпляра до крупного тиража.
+        </p>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="row g-4">
+
+HTML
+        . printing_cards($data['items'] ?? [], 1)
+        . <<<'HTML'
+
+        </div>
+
+        <p class="form-hint mt-4 mb-0">
+            Цены указаны «от» и зависят от объёма, бумаги и срочности.
+            Точную стоимость подтвердит сотрудник после расчёта заказа.
+        </p>
+    </div>
+</section>
+
+<section class="section section--soft">
+    <div class="container">
+        <div class="section-head" data-reveal>
+            <span class="eyebrow eyebrow--red">Как заказать</span>
+            <h2 class="section-title">От файла до готового тиража</h2>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4" data-reveal>
+                <div class="info-card">
+                    <span class="icon-tile icon-tile--blue mb-3">
+                        <svg class="i" aria-hidden="true"><use href="#i-file"/></svg>
+                    </span>
+                    <h3>1. Пришлите файл</h3>
+                    <p class="text-muted mb-0">
+                        PDF, DOCX или изображение. Проверим макет и подскажем,
+                        если нужно поправить поля или шрифты.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4" data-reveal>
+                <div class="info-card">
+                    <span class="icon-tile icon-tile--green mb-3">
+                        <svg class="i" aria-hidden="true"><use href="#i-package"/></svg>
+                    </span>
+                    <h3>2. Выберите параметры</h3>
+                    <p class="text-muted mb-0">
+                        Бумага, цветность, двусторонняя печать, переплёт.
+                        Сотрудник посчитает итоговую стоимость.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4" data-reveal>
+                <div class="info-card">
+                    <span class="icon-tile icon-tile--orange mb-3">
+                        <svg class="i" aria-hidden="true"><use href="#i-printer"/></svg>
+                    </span>
+                    <h3>3. Заберите заказ</h3>
+                    <p class="text-muted mb-0">
+                        Небольшие заказы печатаем в день обращения. О готовности
+                        сообщим по телефону или e-mail.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="cta-banner" data-reveal>
+            <h2>Нужен расчёт тиража?</h2>
+            <p class="text-white-75 mb-4">
+                Опишите задачу: количество страниц, экземпляров и сроки —
+                ответим с ценой и вариантами материалов.
+            </p>
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                <a class="btn btn-nlb-white btn-lg-nlb" href="../feedback/">Запросить расчёт</a>
+                <a class="btn btn-nlb-outline btn-lg-nlb" href="../services/">Другие услуги</a>
+            </div>
+        </div>
+    </div>
+</section>
+HTML;
+
+    return layout(
+        $previewDir,
+        'Печатные услуги — Библиотека 2026',
+        'Печать документов, сканирование, переплёт, визитки и сувениры в библиотеке.',
+        $content,
+        1,
+        'printing'
+    );
+}
+
+function build_books(string $root, string $previewDir, array $config): string
+{
+    $data = load_data($root, 'books');
+    $sections = [];
+    foreach (($config['iblocks']['books']['sections_data'] ?? []) as $section) {
+        $sections[$section['code']] = $section['name'];
+    }
+    $chips = chips($sections, 'Все книги');
+
+    $content = <<<HTML
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow eyebrow--violet">Фонды</span>
+        <h1 class="page-title">Каталог книг</h1>
+        <p class="page-lead">
+            Что есть на полках: художественная литература, история, наука,
+            детские книги и бизнес-литература. Наличие обновляется вручную.
+        </p>
+
+        <ul class="section-chips" aria-label="Жанры" data-nlb-filter>
+            {$chips}
+        </ul>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="d-flex flex-wrap align-items-center gap-3 mb-4" aria-label="Обозначения наличия">
+            <span class="book-status is-available">В наличии</span>
+            <span class="book-status is-reserved">Забронирована</span>
+            <span class="book-status is-unavailable">Выдана</span>
+            <span class="small text-muted">Статус указан на карточке каждой книги.</span>
+        </div>
+
+        <div class="row g-4">
+
+HTML
+        . book_cards($data['items'] ?? [], 1)
+        . <<<'HTML'
+
+        </div>
+    </div>
+</section>
+
+<section class="section section--soft">
+    <div class="container">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-7" data-reveal>
+                <span class="eyebrow eyebrow--green">Подборки</span>
+                <h2 class="section-title">Не знаете, с чего начать?</h2>
+                <p class="section-lead mb-0">
+                    Собрали тематические подборки: классика, книги о путешествиях,
+                    научпоп, детская полка и другие.
+                </p>
+            </div>
+            <div class="col-lg-5 text-lg-end" data-reveal>
+                <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="../collections/">
+                    Смотреть коллекции
+                    <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+HTML
+        . filter_script();
+
+    return layout(
+        $previewDir,
+        'Каталог книг — Библиотека 2026',
+        'Каталог книг библиотеки: художественная литература, история, наука, детские книги.',
+        $content,
+        1,
+        'books'
+    );
+}
+
+function build_collections(string $root, string $previewDir): string
+{
+    $data = load_data($root, 'collections');
+
+    $content = <<<HTML
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow eyebrow--violet">Подборки</span>
+        <h1 class="page-title">Коллекции</h1>
+        <p class="page-lead">
+            Готовые маршруты по фонду: от классики до научпопа и детской полки.
+            Выбирайте тему — внутри короткое описание и состав подборки.
+        </p>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="row g-4">
+
+HTML
+        . collection_cards($data['items'] ?? [], 1)
+        . <<<'HTML'
+
+        </div>
+    </div>
+</section>
+
+<section class="section section--soft">
+    <div class="container">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-7" data-reveal>
+                <span class="eyebrow eyebrow--green">Каталог</span>
+                <h2 class="section-title">Ищите конкретную книгу?</h2>
+                <p class="section-lead mb-0">
+                    В каталоге — автор, год издания, ISBN, шифр и статус наличия.
+                    Поиск по названию и автору — в каталоге.
+                </p>
+            </div>
+            <div class="col-lg-5 text-lg-end" data-reveal>
+                <a class="btn btn-nlb btn-lg-nlb" href="../books/">Перейти в каталог</a>
+            </div>
+        </div>
+    </div>
+</section>
+HTML;
+
+    return layout(
+        $previewDir,
+        'Коллекции — Библиотека 2026',
+        'Тематические подборки книг: классика, путешествия, научпоп, детская полка.',
+        $content,
+        1,
+        'collections'
+    );
+}
+
+/* ---------------------------------------------------------------------- */
+/* Текстовые страницы из PHP-исходников                                   */
+/* ---------------------------------------------------------------------- */
+
+function static_content(string $root, string $relative, int $depth): string
+{
+    $source = (string)file_get_contents($root . '/' . $relative);
+    $source = (string)preg_replace('~^<\?php.*?\?>\s*~s', '', $source, 1);
+    $source = (string)preg_replace('~<\?php\s*require\s+\$_SERVER\[.DOCUMENT_ROOT.\].*?\?>\s*$~s', '', $source);
+    $source = str_replace('<?= SITE_DIR ?>', base($depth), $source);
+    $source = (string)preg_replace('~<\?(?:php|=).*?\?>~s', '', $source);
+
+    return trim($source);
+}
+
+function build_contacts(string $root, string $previewDir): string
+{
+    return layout(
+        $previewDir,
+        'Контакты — Библиотека 2026',
+        'Контакты библиотеки: адрес, часы работы, телефон и обратная связь.',
+        static_content($root, 'contacts/index.php', 1),
+        1,
+        'contacts'
+    );
+}
+
+function build_feedback(string $previewDir): string
+{
+    $content = <<<'HTML'
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow eyebrow--green">Написать</span>
+        <h1 class="page-title">Обратная связь</h1>
+        <p class="page-lead">
+            Задайте вопрос, предложите книгу или расскажите о проблеме.
+            Отвечаем в течение рабочего дня.
+        </p>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="row g-4 g-lg-5">
+            <div class="col-lg-7" data-reveal>
+                <div class="info-card">
+                    <h2 class="h4 mb-3">Форма сообщения</h2>
+                    <form class="needs-validation" action="./" method="post" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label" for="nlbFbName">Имя</label>
+                            <input class="form-control" id="nlbFbName" type="text" name="NAME" required>
+                            <div class="invalid-feedback">Укажите имя.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="nlbFbEmail">E-mail</label>
+                            <input class="form-control" id="nlbFbEmail" type="email" name="EMAIL" required>
+                            <div class="invalid-feedback">Укажите корректный e-mail.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="nlbFbMessage">Сообщение</label>
+                            <textarea class="form-control" id="nlbFbMessage" name="MESSAGE" rows="5" required></textarea>
+                            <div class="invalid-feedback">Напишите сообщение.</div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" id="nlbFbConsent" type="checkbox" name="CONSENT" value="Y" required>
+                            <label class="form-check-label" for="nlbFbConsent">Согласен с
+                                <a href="../privacy/">политикой конфиденциальности</a></label>
+                            <div class="invalid-feedback">Нужно согласие.</div>
+                        </div>
+                        <button class="btn btn-nlb" type="submit">Отправить</button>
+                        <p class="form-hint mt-3 mb-0">
+                            Демо-форма: в Битриксе подключается компонент
+                            <code>bitrix:main.feedback</code> с CAPTCHA и письмом администратору.
+                        </p>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-5" data-reveal>
+                <div class="info-card mb-4">
+                    <h2 class="h5">Быстрее по телефону</h2>
+                    <div class="contact-line">
+                        <svg class="i" aria-hidden="true"><use href="#i-phone"/></svg>
+                        <span><a href="tel:+375173000000">+375 (17) 300-00-00</a></span>
+                    </div>
+                    <div class="contact-line">
+                        <svg class="i" aria-hidden="true"><use href="#i-mail"/></svg>
+                        <span><a href="mailto:info@example.by">info@example.by</a></span>
+                    </div>
+                    <div class="contact-line">
+                        <svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>
+                        <span>Ежедневно 10:00–22:00</span>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h2 class="h5">Частые вопросы</h2>
+                    <ul class="mb-0">
+                        <li>Как записаться в библиотеку — <a href="../services/">услуги</a>.</li>
+                        <li>Где посмотреть книги — <a href="../books/">каталог</a>.</li>
+                        <li>Как заказать печать — <a href="../printing/">каталог печати</a>.</li>
+                        <li>Куда прийти — <a href="../contacts/">контакты</a>.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+HTML;
+
+    return layout(
+        $previewDir,
+        'Обратная связь — Библиотека 2026',
+        'Напишите в библиотеку: вопрос о фондах, услугах, событиях или сотрудничестве.',
+        $content,
+        1,
+        ''
+    );
+}
+
+function build_subscribe(string $previewDir): string
+{
+    $content = <<<'HTML'
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow eyebrow--violet">Рассылка</span>
+        <h1 class="page-title">Подписка на рассылку</h1>
+        <p class="page-lead">
+            Анонсы событий, новые поступления и важные объявления — одно письмо
+            в неделю. Без спама, отписка в один клик.
+        </p>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="row g-4 g-lg-5">
+            <div class="col-lg-7" data-reveal>
+                <div class="info-card">
+                    <h2 class="h4 mb-3">Оформить подписку</h2>
+                    <form class="needs-validation" action="./" method="post" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label" for="nlbSubEmail">E-mail</label>
+                            <input class="form-control" id="nlbSubEmail" type="email" name="EMAIL"
+                                   placeholder="you@example.com" autocomplete="email" required>
+                            <div class="invalid-feedback">Укажите корректный e-mail.</div>
+                        </div>
+                        <button class="btn btn-nlb" type="submit">Подписаться</button>
+                    </form>
+                    <p class="form-hint mt-3 mb-0">
+                        Демо-форма: в Битриксе подключается модуль «Рассылки»
+                        (<code>bitrix:subscribe.form</code>) с двойным подтверждением.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-5" data-reveal>
+                <div class="info-card mb-4">
+                    <h2 class="h5">Что в рассылке</h2>
+                    <ul class="mb-0 ps-3">
+                        <li>афиша событий на две недели;</li>
+                        <li>новые книги и подборки;</li>
+                        <li>изменения в работе залов и услуг;</li>
+                        <li>сезонные проекты и конкурсы.</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h2 class="h5">Изменить или отменить</h2>
+                    <p class="text-muted mb-0">
+                        Управление подпиской — по e-mail, на который оформлена рассылка.
+                        В Битриксе для этого служит компонент <code>bitrix:subscribe.edit</code>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+HTML;
+
+    return layout(
+        $previewDir,
+        'Подписка на рассылку — Библиотека 2026',
+        'Подпишитесь на анонсы событий и новости библиотеки. Отписка — в один клик.',
+        $content,
+        1,
+        ''
+    );
+}
+
+function build_auth(string $previewDir): string
+{
+    $content = <<<'HTML'
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow eyebrow--red">Личный кабинет</span>
+        <h1 class="page-title">Вход в личный кабинет</h1>
+        <p class="page-lead">
+            В кабинете можно изменить данные профиля, управлять подпиской
+            и посмотреть историю обращений.
+        </p>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="row g-4 g-lg-5">
+            <div class="col-lg-7" data-reveal>
+                <div class="info-card">
+                    <h2 class="h4 mb-3">Вход</h2>
+                    <form class="needs-validation" action="./" method="post" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label" for="nlbAuthLogin">E-mail или логин</label>
+                            <input class="form-control" id="nlbAuthLogin" type="text" name="USER_LOGIN"
+                                   autocomplete="username" required>
+                            <div class="invalid-feedback">Укажите логин.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="nlbAuthPass">Пароль</label>
+                            <input class="form-control" id="nlbAuthPass" type="password" name="USER_PASSWORD"
+                                   autocomplete="current-password" required>
+                            <div class="invalid-feedback">Укажите пароль.</div>
+                        </div>
+                        <button class="btn btn-nlb" type="submit">Войти</button>
+                        <a class="btn btn-nlb-outline ms-2" href="../feedback/">Забыли пароль?</a>
+                    </form>
+                    <p class="form-hint mt-3 mb-0">
+                        Демо-форма: в Битриксе подключается <code>bitrix:system.auth.authorize</code>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-5" data-reveal>
+                <div class="info-card">
+                    <h2 class="h5">Ещё нет билета?</h2>
+                    <p class="text-muted">
+                        Читательский билет оформляется бесплатно при первом посещении:
+                        нужен документ с фотографией.
+                    </p>
+                    <a class="btn btn-nlb-green" href="../services/">Как записаться</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+HTML;
+
+    return layout(
+        $previewDir,
+        'Вход — Библиотека 2026',
+        'Вход в личный кабинет читателя: продление книг, подписка и история обращений.',
+        $content,
+        1,
+        ''
+    );
+}
+
+function build_sitemap(string $previewDir): string
+{
+    $sections = [
+        ['/', 'Главная', 'hero-карусель, услуги, события, новости, коллекции'],
+        ['services/', 'Услуги', '6 услуг и превью каталога печати'],
+        ['news/', 'Новости', '10 новостей с рубриками'],
+        ['events/', 'События', '6 событий с фильтром по рубрикам'],
+        ['printing/', 'Печатные услуги', '8 позиций с ценами'],
+        ['books/', 'Каталог книг', '12 книг с наличием'],
+        ['collections/', 'Коллекции', '6 тематических подборок'],
+        ['contacts/', 'Контакты', 'адрес, часы, телефон'],
+        ['feedback/', 'Обратная связь', 'форма сообщения'],
+        ['subscribe/', 'Подписка', 'форма рассылки'],
+        ['auth/', 'Вход', 'личный кабинет'],
+        ['rules/', 'Правила пользования', 'как записаться и брать книги'],
+        ['privacy/', 'Политика конфиденциальности', 'документ'],
+        ['terms/', 'Условия использования', 'документ'],
+        ['sitemap/', 'Карта сайта', 'эта страница'],
+    ];
+
+    $items = '';
+    foreach ($sections as [$path, $name, $note]) {
+        $href = $path === '' ? './' : '../' . $path;
+        $items .= '<li class="mb-2"><a href="' . e($href) . '">' . e($name) . '</a>'
+            . ' <span class="text-muted small">— ' . e($note) . '</span></li>';
+    }
+
+    $content = <<<HTML
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow eyebrow--green">Навигация</span>
+        <h1 class="page-title">Карта сайта</h1>
+        <p class="page-lead">Все разделы демо-сайта на одной странице.</p>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="info-card">
+                    <ul class="mb-0 ps-3">
+                        {$items}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+HTML;
+
+    return layout(
+        $previewDir,
+        'Карта сайта — Библиотека 2026',
+        'Карта демо-сайта библиотеки: услуги, новости, события, каталог и документы.',
+        $content,
+        1,
+        ''
+    );
+}
+
+/* ---------------------------------------------------------------------- */
+/* Запись и ассеты                                                        */
+/* ---------------------------------------------------------------------- */
+
+function copy_tree(string $from, string $to): int
+{
+    if (!is_dir($from)) {
+        return 0;
+    }
+    if (!is_dir($to) && !mkdir($to, 0775, true) && !is_dir($to)) {
+        fwrite(STDERR, "Не удалось создать каталог: {$to}\n");
+        exit(1);
+    }
+    $count = 0;
+    foreach (scandir($from) ?: [] as $entry) {
+        if ($entry === '.' || $entry === '..') {
+            continue;
+        }
+        $source = $from . '/' . $entry;
+        $target = $to . '/' . $entry;
+        if (is_dir($source)) {
+            $count += copy_tree($source, $target);
+        } else {
+            copy($source, $target);
+            $count++;
+        }
+    }
+
+    return $count;
+}
+
+function write_page(string $file, string $html): void
+{
+    $dir = dirname($file);
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        fwrite(STDERR, "Не удалось создать каталог: {$dir}\n");
+        exit(1);
+    }
+    if (file_put_contents($file, $html) === false) {
+        fwrite(STDERR, "Не удалось записать: {$file}\n");
+        exit(1);
+    }
+    echo '  + ' . str_replace('\\', '/', substr($file, strlen(dirname(__DIR__)) + 1))
+        . ' (' . round(strlen($html) / 1024) . " КБ)\n";
+}
+
+/* ---------------------------------------------------------------------- */
+/* Сборка                                                                 */
+/* ---------------------------------------------------------------------- */
+
+$config = load_config($root);
+
+echo "Ассеты:\n";
+$copied = copy_tree($tplDir . '/assets', $previewDir . '/assets');
+copy($tplDir . '/styles.css', $previewDir . '/styles.css');
+copy($tplDir . '/script.js', $previewDir . '/script.js');
+echo "  + preview/assets/ ({$copied} файлов), styles.css, script.js\n";
+
+echo "Главная:\n";
+prepare_home($previewDir);
+echo "  + preview/index.html\n";
+
+// Старые плоские страницы (services.html и т. п.) заменены каталогами
+// services/, news/, events/ — иначе в демо остаются ссылки на 404.
+foreach (['services', 'news', 'events'] as $legacy) {
+    $legacyFile = $previewDir . '/' . $legacy . '.html';
+    if (is_file($legacyFile)) {
+        unlink($legacyFile);
+        echo "  - preview/{$legacy}.html (устаревшая плоская страница)\n";
+    }
+}
+
+$pages = [
+    'services/index.html' => build_services($root, $previewDir),
+    'news/index.html' => build_news($root, $previewDir, $config),
+    'events/index.html' => build_events($root, $previewDir, $config),
+    'printing/index.html' => build_printing($root, $previewDir),
+    'books/index.html' => build_books($root, $previewDir, $config),
+    'collections/index.html' => build_collections($root, $previewDir),
+    'contacts/index.html' => build_contacts($root, $previewDir),
+    'feedback/index.html' => build_feedback($previewDir),
+    'subscribe/index.html' => build_subscribe($previewDir),
+    'auth/index.html' => build_auth($previewDir),
+    'privacy/index.html' => layout(
+        $previewDir,
+        'Политика конфиденциальности — Библиотека 2026',
+        'Как библиотека обрабатывает персональные данные посетителей сайта.',
+        static_content($root, 'privacy/index.php', 1),
+        1,
+        ''
+    ),
+    'terms/index.html' => layout(
+        $previewDir,
+        'Условия использования — Библиотека 2026',
+        'Правила работы с сайтом и материалами библиотеки.',
+        static_content($root, 'terms/index.php', 1),
+        1,
+        ''
+    ),
+    'rules/index.html' => layout(
+        $previewDir,
+        'Правила пользования — Библиотека 2026',
+        'Как записаться в библиотеку, работать в залах и брать книги домой.',
+        static_content($root, 'rules/index.php', 1),
+        1,
+        ''
+    ),
+    'sitemap/index.html' => build_sitemap($previewDir),
+];
+
+echo "Разделы:\n";
+foreach ($pages as $relative => $html) {
+    write_page($previewDir . '/' . $relative, $html);
+}
+
+echo "Детальные страницы:\n";
+
+$news = load_data($root, 'news');
+$tagLabels = [];
+foreach (($config['iblocks']['news']['properties']['TAGS']['values'] ?? []) as $value) {
+    $tagLabels[$value['xml_id']] = $value['value'];
+}
+foreach (($news['items'] ?? []) as $item) {
+    $props = $item['properties'] ?? [];
+    $tags = '';
+    foreach ((array)($props['TAGS'] ?? []) as $tag) {
+        $tags .= '<li>' . e($tagLabels[$tag] ?? $tag) . '</li>';
+    }
+    $rows = '';
+    if (!empty($props['AUTHOR'])) {
+        $rows .= '<div><dt>Автор</dt><dd>' . e($props['AUTHOR']) . '</dd></div>';
+    }
+    if (!empty($props['READ_TIME'])) {
+        $rows .= '<div><dt>Время чтения</dt><dd>' . e($props['READ_TIME']) . '</dd></div>';
+    }
+    $html = detail_page($previewDir, [
+        'name' => $item['name'],
+        'preview' => $item['preview_text'] ?? '',
+        'html' => $item['detail_text'] ?? '',
+        'image' => $item['image'] ?? '',
+        'date' => ru_date((string)($item['active_from'] ?? '')),
+        'tags' => $tags,
+        'rows' => $rows,
+        'back' => 'news',
+        'backText' => 'Все новости',
+        'active' => 'news',
+    ]);
+    write_page($previewDir . '/news/' . $item['code'] . '/index.html', $html);
+}
+
+$events = load_data($root, 'events');
+$formatLabels = [
+    'offline' => 'Офлайн', 'online' => 'Онлайн', 'hybrid' => 'Гибрид',
+];
+foreach (($events['items'] ?? []) as $item) {
+    $props = $item['properties'] ?? [];
+    $rows = '<div><dt>Когда</dt><dd>' . e(ru_date((string)($props['DATE'] ?? ''), true)) . '</dd></div>';
+    if (!empty($props['PLACE'])) {
+        $rows .= '<div><dt>Место</dt><dd>' . e($props['PLACE']) . '</dd></div>';
+    }
+    if (!empty($props['FORMAT'])) {
+        $rows .= '<div><dt>Формат</dt><dd>' . e($formatLabels[$props['FORMAT']] ?? $props['FORMAT']) . '</dd></div>';
+    }
+    if (!empty($props['SEATS'])) {
+        $rows .= '<div><dt>Мест</dt><dd>' . (int)$props['SEATS'] . '</dd></div>';
+    }
+    if (!empty($props['PRICE'])) {
+        $rows .= '<div><dt>Стоимость</dt><dd>' . e($props['PRICE']) . '</dd></div>';
+    }
+    if (!empty($props['DURATION'])) {
+        $rows .= '<div><dt>Длительность</dt><dd>' . e($props['DURATION']) . '</dd></div>';
+    }
+    $html = detail_page($previewDir, [
+        'name' => $item['name'],
+        'preview' => $item['preview_text'] ?? '',
+        'html' => $item['detail_text'] ?? '',
+        'image' => $item['image'] ?? '',
+        'date' => ru_date((string)($props['DATE'] ?? ''), true),
+        'rows' => $rows,
+        'back' => 'events',
+        'backText' => 'Все события',
+        'active' => 'events',
+        'cta' => ['label' => 'Зарегистрироваться', 'href' => 'feedback/', 'class' => 'btn-nlb-green'],
+    ]);
+    write_page($previewDir . '/events/' . $item['code'] . '/index.html', $html);
+}
+
+$services = load_data($root, 'services');
+foreach (($services['items'] ?? []) as $item) {
+    $props = $item['properties'] ?? [];
+    $priceText = price($props['PRICE_FROM'] ?? 0);
+    if ($priceText === '') {
+        $priceText = 'Бесплатно для читателей';
+    }
+    $rows = '<div><dt>Стоимость</dt><dd>' . e($priceText) . '</dd></div>';
+    if (!empty($props['DURATION'])) {
+        $rows .= '<div><dt>Режим</dt><dd>' . e($props['DURATION']) . '</dd></div>';
+    }
+    if (!empty($props['FEATURES'])) {
+        $rows .= '<div><dt>Что входит</dt><dd>' . e(implode(', ', (array)$props['FEATURES'])) . '</dd></div>';
+    }
+    $html = detail_page($previewDir, [
+        'name' => $item['name'],
+        'preview' => $item['preview_text'] ?? '',
+        'html' => $item['detail_text'] ?? '',
+        'image' => $item['image'] ?? '',
+        'rows' => $rows,
+        'back' => 'services',
+        'backText' => 'Все услуги',
+        'active' => 'services',
+        'cta' => ['label' => 'Забронировать', 'href' => 'feedback/'],
+    ]);
+    write_page($previewDir . '/services/' . $item['code'] . '/index.html', $html);
+}
+
+$printing = load_data($root, 'printing');
+foreach (($printing['items'] ?? []) as $item) {
+    $props = $item['properties'] ?? [];
+    $priceText = price($props['PRICE_FROM'] ?? 0);
+    $rows = '';
+    if ($priceText !== '') {
+        $rows .= '<div><dt>Цена</dt><dd>' . e($priceText) . '</dd></div>';
+    }
+    if (!empty($props['UNIT'])) {
+        $rows .= '<div><dt>Единица</dt><dd>' . e($props['UNIT']) . '</dd></div>';
+    }
+    $html = detail_page($previewDir, [
+        'name' => $item['name'],
+        'preview' => $item['preview_text'] ?? '',
+        'html' => $item['detail_text'] ?? '',
+        'image' => $item['image'] ?? '',
+        'rows' => $rows,
+        'back' => 'printing',
+        'backText' => 'Каталог печати',
+        'active' => 'printing',
+        'cta' => ['label' => 'Заказать', 'href' => 'feedback/', 'class' => 'btn-nlb-green'],
+    ]);
+    write_page($previewDir . '/printing/' . $item['code'] . '/index.html', $html);
+}
+
+$books = load_data($root, 'books');
+$ageLabels = [];
+foreach (($config['iblocks']['books']['properties']['AGE_LIMIT']['values'] ?? []) as $value) {
+    $ageLabels[$value['xml_id']] = $value['value'];
+}
+$availableLabels = [
+    'available' => 'В наличии', 'reserved' => 'Забронирована', 'unavailable' => 'Выдана',
+];
+$bookLabel = [
+    'AUTHOR' => 'Автор', 'YEAR' => 'Год издания', 'PUBLISHER' => 'Издательство',
+    'ISBN' => 'ISBN', 'PAGES' => 'Страниц', 'SHELF' => 'Шифр',
+];
+foreach (($books['items'] ?? []) as $item) {
+    $props = $item['properties'] ?? [];
+    $rows = '';
+    foreach ($bookLabel as $code => $label) {
+        if (!empty($props[$code])) {
+            $rows .= '<div><dt>' . e($label) . '</dt><dd>' . e($props[$code]) . '</dd></div>';
+        }
+    }
+    if (!empty($props['AGE_LIMIT'])) {
+        $rows .= '<div><dt>Возраст</dt><dd>'
+            . e($ageLabels[$props['AGE_LIMIT']] ?? $props['AGE_LIMIT']) . '</dd></div>';
+    }
+    if (!empty($props['AVAILABLE'])) {
+        $rows .= '<div><dt>Наличие</dt><dd>'
+            . e($availableLabels[$props['AVAILABLE']] ?? $props['AVAILABLE']) . '</dd></div>';
+    }
+    $html = detail_page($previewDir, [
+        'name' => $item['name'],
+        'preview' => $item['preview_text'] ?? '',
+        'html' => $item['detail_text'] ?? '',
+        'rows' => $rows,
+        'back' => 'books',
+        'backText' => 'Каталог книг',
+        'active' => 'books',
+        'cta' => ['label' => 'Забронировать', 'href' => 'feedback/'],
+    ]);
+    write_page($previewDir . '/books/' . $item['code'] . '/index.html', $html);
+}
+
+$collections = load_data($root, 'collections');
+foreach (($collections['items'] ?? []) as $item) {
+    $props = $item['properties'] ?? [];
+    $count = (int)($props['COUNT'] ?? 0);
+    $rows = $count > 0 ? '<div><dt>Книг в подборке</dt><dd>' . $count . '</dd></div>' : '';
+    $html = detail_page($previewDir, [
+        'name' => $item['name'],
+        'preview' => $item['preview_text'] ?? '',
+        'html' => $item['detail_text'] ?? '',
+        'rows' => $rows,
+        'back' => 'collections',
+        'backText' => 'Все коллекции',
+        'active' => 'collections',
+        'cta' => ['label' => 'Смотреть каталог', 'href' => 'books/'],
+    ]);
+    write_page($previewDir . '/collections/' . $item['code'] . '/index.html', $html);
+}
+
+echo "Готово. Просмотр: php -S 127.0.0.1:8791 -t preview → /services/, /news/, /events/\n";

@@ -29,7 +29,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                             </span>
                             <h1 class="hero-title">Мир знаний нового поколения</h1>
                             <p class="hero-text">Современная библиотека с более чем 500 000 книг, цифровыми ресурсами и инновационными пространствами.</p>
-                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="#services">
+                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="/services/">
                                 Начать исследование
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -48,7 +48,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                             </span>
                             <h1 class="hero-title">Технологии для вашего роста</h1>
                             <p class="hero-text">Коворкинг-зоны, компьютерные залы и высокоскоростной Wi-Fi для продуктивной работы.</p>
-                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="#services">
+                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="/services/">
                                 Наши услуги
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -67,7 +67,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                             </span>
                             <h1 class="hero-title">События, которые вдохновляют</h1>
                             <p class="hero-text">Лекции, мастер-классы и культурные мероприятия, которые проходят каждую неделю.</p>
-                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="#events">
+                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="/events/">
                                 Календарь событий
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -141,7 +141,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
             </div>
 
             <div class="text-center mt-5" data-reveal>
-                <a class="btn btn-nlb-green btn-lg-nlb" href="#print">Все услуги</a>
+                <a class="btn btn-nlb-green btn-lg-nlb" href="/printing/">Все услуги</a>
             </div>
         </div>
     </section>
@@ -165,7 +165,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                             <h3 class="print-title">Печать и копирование</h3>
                             <p class="print-text">Ч/б и цветная печать, копирование, печать с USB и e-mail.</p>
                             <div class="fw-bold text-dark mb-2">от 5 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="/printing/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -181,7 +181,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                             <h3 class="print-title">Сканирование</h3>
                             <p class="print-text">Документы и фотографии, сохранение на USB и отправка на e-mail.</p>
                             <div class="fw-bold text-dark mb-2">от 10 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="/printing/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -197,7 +197,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                             <h3 class="print-title">Визитки</h3>
                             <p class="print-text">Односторонние и двухсторонние, дизайнерская бумага, срочная печать.</p>
                             <div class="fw-bold text-dark mb-2">от 400 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="/printing/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -213,7 +213,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                             <h3 class="print-title">Брошюры и буклеты</h3>
                             <p class="print-text">Рекламные материалы, каталоги и фирменные буклеты.</p>
                             <div class="fw-bold text-dark mb-2">от 50 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="/printing/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -229,7 +229,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                             <h3 class="print-title">Широкоформатная печать</h3>
                             <p class="print-text">Баннеры, плакаты и постеры любого размера.</p>
                             <div class="fw-bold text-dark mb-2">от 200 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="/printing/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -245,7 +245,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                             <h3 class="print-title">Печать на холсте</h3>
                             <p class="print-text">Фотографии и репродукции на натуральном холсте.</p>
                             <div class="fw-bold text-dark mb-2">от 900 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="/printing/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -261,7 +261,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                             <h3 class="print-title">Печать на кружках</h3>
                             <p class="print-text">Кружки с вашим фото, логотипом или надписью.</p>
                             <div class="fw-bold text-dark mb-2">от 350 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="/printing/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -277,7 +277,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                             <h3 class="print-title">Печать на футболках</h3>
                             <p class="print-text">Футболки и свитшоты с вашим дизайном или логотипом.</p>
                             <div class="fw-bold text-dark mb-2">от 800 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="/printing/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -294,7 +294,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
             </div>
 
             <div class="text-center mt-4" data-reveal>
-                <a class="btn btn-nlb-sky btn-lg-nlb" href="#contacts">Перейти в каталог</a>
+                <a class="btn btn-nlb-sky btn-lg-nlb" href="/printing/">Перейти в каталог</a>
             </div>
         </div>
     </section>
@@ -323,7 +323,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-pin"/></svg>Конференц-зал</span>
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-users"/></svg>45 участников</span>
                             </div>
-                            <a class="event-btn" href="#contacts">Зарегистрироваться</a>
+                            <a class="event-btn" href="/events/">Зарегистрироваться</a>
                         </div>
                     </article>
                 </div>
@@ -343,7 +343,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-pin"/></svg>Детская зона</span>
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-users"/></svg>30 участников</span>
                             </div>
-                            <a class="event-btn" href="#contacts">Зарегистрироваться</a>
+                            <a class="event-btn" href="/events/">Зарегистрироваться</a>
                         </div>
                     </article>
                 </div>
@@ -363,7 +363,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-pin"/></svg>Медиа-зал</span>
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-users"/></svg>60 участников</span>
                             </div>
-                            <a class="event-btn" href="#contacts">Зарегистрироваться</a>
+                            <a class="event-btn" href="/events/">Зарегистрироваться</a>
                         </div>
                     </article>
                 </div>
@@ -373,8 +373,8 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                 <h2>Не пропустите наши события</h2>
                 <p class="text-white-75 mb-4">Подпишитесь на рассылку и получайте уведомления о новых мероприятиях.</p>
                 <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                    <a class="btn btn-nlb-white btn-lg-nlb" href="#contacts">Подписаться на рассылку</a>
-                    <a class="btn btn-nlb-outline btn-lg-nlb" href="#news">Все события</a>
+                    <a class="btn btn-nlb-white btn-lg-nlb" href="/subscribe/">Подписаться на рассылку</a>
+                    <a class="btn btn-nlb-outline btn-lg-nlb" href="/events/">Все события</a>
                 </div>
             </div>
         </div>
@@ -387,13 +387,13 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                     <span class="eyebrow eyebrow--green">Блог</span>
                     <h2 class="section-title mb-0">Новости</h2>
                 </div>
-                <a class="btn btn-nlb-outline" href="#news">Все новости</a>
+                <a class="btn btn-nlb-outline" href="/news/">Все новости</a>
             </div>
 
             <div class="row g-4">
                 <div class="col-sm-6 col-lg-3" data-reveal>
                     <article class="nlb-card">
-                        <a class="d-block h-100" href="#news">
+                        <a class="d-block h-100" href="/news/">
                             <div class="nlb-card__media">
                                 <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/news-1.jpg" alt="ИИ-ассистент в библиотеке" loading="lazy">
                             </div>
@@ -408,7 +408,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
                 <div class="col-sm-6 col-lg-3" data-reveal>
                     <article class="nlb-card">
-                        <a class="d-block h-100" href="#news">
+                        <a class="d-block h-100" href="/news/">
                             <div class="nlb-card__media">
                                 <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/news-2.jpg" alt="Летний читальный зал" loading="lazy">
                             </div>
@@ -423,7 +423,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
                 <div class="col-sm-6 col-lg-3" data-reveal>
                     <article class="nlb-card">
-                        <a class="d-block h-100" href="#news">
+                        <a class="d-block h-100" href="/news/">
                             <div class="nlb-card__media">
                                 <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/news-3.jpg" alt="Новые книги" loading="lazy">
                             </div>
@@ -438,7 +438,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
                 <div class="col-sm-6 col-lg-3" data-reveal>
                     <article class="nlb-card">
-                        <a class="d-block h-100" href="#news">
+                        <a class="d-block h-100" href="/news/">
                             <div class="nlb-card__media">
                                 <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/news-4.jpg" alt="Встреча с писателем" loading="lazy">
                             </div>
@@ -469,7 +469,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                         <h3>Классическая литература</h3>
                         <div class="collection-count">150 000+</div>
                         <p class="collection-text">Шедевры мировой и русской литературы.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
@@ -479,7 +479,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                         <h3>Электронные ресурсы</h3>
                         <div class="collection-count">200 000+</div>
                         <p class="collection-text">Цифровая библиотека и базы данных.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
@@ -489,7 +489,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                         <h3>Аудиокниги</h3>
                         <div class="collection-count">50 000+</div>
                         <p class="collection-text">Коллекция аудиокниг на разных языках.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
@@ -499,7 +499,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                         <h3>Научные издания</h3>
                         <div class="collection-count">75 000+</div>
                         <p class="collection-text">Журналы, диссертации и исследования.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
@@ -509,7 +509,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                         <h3>Иностранные книги</h3>
                         <div class="collection-count">80 000+</div>
                         <p class="collection-text">Литература на 45 языках мира.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
@@ -519,13 +519,13 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                         <h3>Редкие издания</h3>
                         <div class="collection-count">5 000+</div>
                         <p class="collection-text">Уникальные и антикварные книги.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
             </div>
 
             <div class="text-center mt-5" data-reveal>
-                <a class="btn btn-nlb btn-lg-nlb" href="#news">Посмотреть каталог полностью</a>
+                <a class="btn btn-nlb btn-lg-nlb" href="/books/">Посмотреть каталог полностью</a>
             </div>
         </div>
     </section>

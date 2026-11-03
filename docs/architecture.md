@@ -178,13 +178,18 @@ $APPLICATION->IncludeComponent('bitrix:menu', 'top_bootstrap', [
 
 | Файл | Что это | Зачем |
 |---|---|---|
-| `preview/index.html` | статическая копия лендинга | посмотреть дизайн без Битрикса |
-| `demo/index.php` | тот же лендинг через `header.php`/`footer.php` | быстро получить главную на живом сайте |
+| `preview/` | статические страницы с чистыми адресами | посмотреть сайт без Битрикса |
+| `demo/index.php` | главная через `header.php`/`footer.php` | быстро получить главную на живом сайте |
+
+`preview/` собирается командой `php tools/build-preview-pages.php`: каркас
+берётся из `preview/index.html`, разделы и карточки — из `db/config/data/*.php`.
+Запуск: `php -S 127.0.0.1:8791 -t preview`, меню ведёт на `/services/`,
+`/news/`, `/events/` и остальные разделы.
 
 `demo/index.php` собран из `<main>` превью: пути к картинкам заменены на
-`<?= SITE_TEMPLATE_PATH ?>/assets/images/…`, поэтому файл не зависит от
-расположения страницы. Ссылки в демо — якоря (`#events`, `#news`); на живом
-сайте их нужно заменить на адреса разделов (`/events/`, `/news/`).
+`<?= SITE_TEMPLATE_PATH ?>/assets/images/…`, ссылки — на абсолютные адреса
+разделов (`/services/`, `/news/`, `/events/`, `/printing/`, `/books/`,
+`/collections/`, `/contacts/`, `/subscribe/`).
 
 ## 8. Зависимости
 

@@ -119,16 +119,20 @@ if (el) {
 
 ## 8. Локальная проверка
 
-1. Открыть `preview/index.html`.
+1. Запустить `php -S 127.0.0.1:8791 -t preview` и открыть
+   `http://127.0.0.1:8791/`.
 2. DevTools → Console: ошибок нет.
 3. Network: 404 нет.
-4. Responsive: 360 / 768 / 1440.
-5. `Ctrl+K`, модалки, скроллер, FAB, «наверх».
-6. `node tools/check-template.mjs` — exit 0.
+4. Пройти меню: `/services/`, `/news/`, `/events/`, `/printing/`, `/books/`,
+   `/collections/`, `/contacts/`; открыть одну детальную страницу.
+5. Responsive: 360 / 768 / 1440.
+6. `Ctrl+K`, модалки, скроллер, FAB, «наверх», фильтры разделов.
+7. `node tools/check-template.mjs` — exit 0.
 
-Если меняли разметку в `demo/index.php` — синхронизируйте `preview/index.html`
-(они должны выглядеть одинаково). Автоматической синхронизации нет: превью —
-эталон, демо — его Bitrix-версия.
+Страницы `preview/` собираются из `db/config/` командой
+`php tools/build-preview-pages.php`. Если меняли разметку главной в
+`preview/index.html`, синхронизируйте `demo/index.php`: превью — эталон,
+демо — его Bitrix-версия (P1-7 в `Что доделать.txt`).
 
 ## 9. Чего не делать
 

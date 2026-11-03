@@ -6,11 +6,8 @@
     <meta name="theme-color" content="#0b1220">
     <title>Библиотека 2026 — центр знаний</title>
     <meta name="description" content="Демо-превью шаблона NLB Bootstrap для 1С-Битрикс: hero-карусель, услуги, события, новости, коллекции.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../local/templates/nlb_bootstrap/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../local/templates/nlb_bootstrap/styles.css">
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -81,7 +78,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-nlb" aria-label="Основная навигация">
         <div class="container">
-            <a class="brand" href="#top">
+            <a class="brand" href="./">
                 <span class="brand-mark">
                     <svg class="i" aria-hidden="true"><use href="#i-book"/></svg>
                 </span>
@@ -98,12 +95,13 @@
 
             <div class="collapse navbar-collapse" id="nlbNav">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link active" href="#top" aria-current="page">Главная</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#news">Новости</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#events">События</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#services">Услуги</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#print">Каталог книг</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#collections">Коллекции</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="./" aria-current="page">Главная</a></li>
+                    <li class="nav-item"><a class="nav-link" href="news/">Новости</a></li>
+                    <li class="nav-item"><a class="nav-link" href="events/">События</a></li>
+                    <li class="nav-item"><a class="nav-link" href="services/">Услуги</a></li>
+                    <li class="nav-item"><a class="nav-link" href="printing/">Печать</a></li>
+                    <li class="nav-item"><a class="nav-link" href="books/">Книги</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contacts/">Контакты</a></li>
                 </ul>
 
                 <div class="header-actions ms-lg-3">
@@ -111,13 +109,13 @@
                             aria-label="Поиск по сайту">
                         <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
                     </button>
-                    <a class="header-icon" href="#contacts" aria-label="Уведомления">
+                    <a class="header-icon" href="auth/" aria-label="Уведомления">
                         <svg class="i" aria-hidden="true"><use href="#i-bell"/></svg>
                     </a>
-                    <a class="header-icon" href="#contacts" aria-label="Личный кабинет">
+                    <a class="header-icon" href="auth/" aria-label="Личный кабинет">
                         <svg class="i" aria-hidden="true"><use href="#i-user"/></svg>
                     </a>
-                    <a class="btn btn-nlb btn-sm-nlb ms-1" href="#contacts">Войти</a>
+                    <a class="btn btn-nlb btn-sm-nlb ms-1" href="auth/">Войти</a>
                 </div>
             </div>
         </div>
@@ -135,7 +133,7 @@
 
             <div class="carousel-inner">
                 <div class="carousel-item active">
-                    <img class="hero-img" src="../local/templates/nlb_bootstrap/assets/images/hero-1.jpg" alt="Современный интерьер библиотеки">
+                    <img class="hero-img" src="assets/images/hero-1.jpg" alt="Современный интерьер библиотеки">
                     <div class="hero-overlay"></div>
                     <div class="hero-body">
                         <div class="container">
@@ -145,7 +143,7 @@
                             </span>
                             <h1 class="hero-title">Мир знаний нового поколения</h1>
                             <p class="hero-text">Современная библиотека с более чем 500 000 книг, цифровыми ресурсами и инновационными пространствами.</p>
-                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="#services">
+                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="services/">
                                 Начать исследование
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -154,7 +152,7 @@
                 </div>
 
                 <div class="carousel-item">
-                    <img class="hero-img" src="../local/templates/nlb_bootstrap/assets/images/hero-2.jpg" alt="Коворкинг в библиотеке">
+                    <img class="hero-img" src="assets/images/hero-2.jpg" alt="Коворкинг в библиотеке">
                     <div class="hero-overlay"></div>
                     <div class="hero-body">
                         <div class="container">
@@ -164,7 +162,7 @@
                             </span>
                             <h1 class="hero-title">Технологии для вашего роста</h1>
                             <p class="hero-text">Коворкинг-зоны, компьютерные залы и высокоскоростной Wi-Fi для продуктивной работы.</p>
-                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="#services">
+                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="services/">
                                 Наши услуги
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -173,7 +171,7 @@
                 </div>
 
                 <div class="carousel-item">
-                    <img class="hero-img" src="../local/templates/nlb_bootstrap/assets/images/hero-3.jpg" alt="Лекционный зал">
+                    <img class="hero-img" src="assets/images/hero-3.jpg" alt="Лекционный зал">
                     <div class="hero-overlay"></div>
                     <div class="hero-body">
                         <div class="container">
@@ -183,7 +181,7 @@
                             </span>
                             <h1 class="hero-title">События, которые вдохновляют</h1>
                             <p class="hero-text">Лекции, мастер-классы и культурные мероприятия, которые проходят каждую неделю.</p>
-                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="#events">
+                            <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="events/">
                                 Календарь событий
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -257,7 +255,7 @@
             </div>
 
             <div class="text-center mt-5" data-reveal>
-                <a class="btn btn-nlb-green btn-lg-nlb" href="#print">Все услуги</a>
+                <a class="btn btn-nlb-green btn-lg-nlb" href="printing/">Все услуги</a>
             </div>
         </div>
     </section>
@@ -274,14 +272,14 @@
                 <div class="scroller" role="list">
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="../local/templates/nlb_bootstrap/assets/images/print-docs.jpg" alt="Печать документов" loading="lazy" decoding="async">
+                            <img src="assets/images/print-docs.jpg" alt="Печать документов" loading="lazy" decoding="async">
                             <span class="print-badge bg-grad-primary"><svg class="i" aria-hidden="true"><use href="#i-printer"/></svg></span>
                         </div>
                         <div class="print-body">
                             <h3 class="print-title">Печать и копирование</h3>
                             <p class="print-text">Ч/б и цветная печать, копирование, печать с USB и e-mail.</p>
                             <div class="fw-bold text-dark mb-2">от 5 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="contacts/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -290,14 +288,14 @@
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="../local/templates/nlb_bootstrap/assets/images/print-scanning.jpg" alt="Сканирование документов" loading="lazy" decoding="async">
+                            <img src="assets/images/print-scanning.jpg" alt="Сканирование документов" loading="lazy" decoding="async">
                             <span class="print-badge bg-grad-green"><svg class="i" aria-hidden="true"><use href="#i-scan"/></svg></span>
                         </div>
                         <div class="print-body">
                             <h3 class="print-title">Сканирование</h3>
                             <p class="print-text">Документы и фотографии, сохранение на USB и отправка на e-mail.</p>
                             <div class="fw-bold text-dark mb-2">от 10 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="contacts/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -306,14 +304,14 @@
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="../local/templates/nlb_bootstrap/assets/images/print-cards.jpg" alt="Печать визиток" loading="lazy" decoding="async">
+                            <img src="assets/images/print-cards.jpg" alt="Печать визиток" loading="lazy" decoding="async">
                             <span class="print-badge bg-grad-sky"><svg class="i" aria-hidden="true"><use href="#i-card"/></svg></span>
                         </div>
                         <div class="print-body">
                             <h3 class="print-title">Визитки</h3>
                             <p class="print-text">Односторонние и двухсторонние, дизайнерская бумага, срочная печать.</p>
                             <div class="fw-bold text-dark mb-2">от 400 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="contacts/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -322,14 +320,14 @@
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="../local/templates/nlb_bootstrap/assets/images/print-brochures.jpg" alt="Брошюры и буклеты" loading="lazy" decoding="async">
+                            <img src="assets/images/print-brochures.jpg" alt="Брошюры и буклеты" loading="lazy" decoding="async">
                             <span class="print-badge bg-grad-pink"><svg class="i" aria-hidden="true"><use href="#i-file"/></svg></span>
                         </div>
                         <div class="print-body">
                             <h3 class="print-title">Брошюры и буклеты</h3>
                             <p class="print-text">Рекламные материалы, каталоги и фирменные буклеты.</p>
                             <div class="fw-bold text-dark mb-2">от 50 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="contacts/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -338,14 +336,14 @@
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="../local/templates/nlb_bootstrap/assets/images/print-large.jpg" alt="Широкоформатная печать" loading="lazy" decoding="async">
+                            <img src="assets/images/print-large.jpg" alt="Широкоформатная печать" loading="lazy" decoding="async">
                             <span class="print-badge bg-grad-orange"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg></span>
                         </div>
                         <div class="print-body">
                             <h3 class="print-title">Широкоформатная печать</h3>
                             <p class="print-text">Баннеры, плакаты и постеры любого размера.</p>
                             <div class="fw-bold text-dark mb-2">от 200 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="contacts/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -354,14 +352,14 @@
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="../local/templates/nlb_bootstrap/assets/images/print-canvas.jpg" alt="Печать на холсте" loading="lazy" decoding="async">
+                            <img src="assets/images/print-canvas.jpg" alt="Печать на холсте" loading="lazy" decoding="async">
                             <span class="print-badge bg-grad-green"><svg class="i" aria-hidden="true"><use href="#i-image"/></svg></span>
                         </div>
                         <div class="print-body">
                             <h3 class="print-title">Печать на холсте</h3>
                             <p class="print-text">Фотографии и репродукции на натуральном холсте.</p>
                             <div class="fw-bold text-dark mb-2">от 900 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="contacts/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -370,14 +368,14 @@
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="../local/templates/nlb_bootstrap/assets/images/print-mug.jpg" alt="Печать на кружках" loading="lazy" decoding="async">
+                            <img src="assets/images/print-mug.jpg" alt="Печать на кружках" loading="lazy" decoding="async">
                             <span class="print-badge bg-grad-orange"><svg class="i" aria-hidden="true"><use href="#i-cup"/></svg></span>
                         </div>
                         <div class="print-body">
                             <h3 class="print-title">Печать на кружках</h3>
                             <p class="print-text">Кружки с вашим фото, логотипом или надписью.</p>
                             <div class="fw-bold text-dark mb-2">от 350 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="contacts/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -386,14 +384,14 @@
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="../local/templates/nlb_bootstrap/assets/images/print-tshirts.jpg" alt="Печать на футболках" loading="lazy" decoding="async">
+                            <img src="assets/images/print-tshirts.jpg" alt="Печать на футболках" loading="lazy" decoding="async">
                             <span class="print-badge bg-grad-sky"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg></span>
                         </div>
                         <div class="print-body">
                             <h3 class="print-title">Печать на футболках</h3>
                             <p class="print-text">Футболки и свитшоты с вашим дизайном или логотипом.</p>
                             <div class="fw-bold text-dark mb-2">от 800 ₽</div>
-                            <a class="print-link" href="#contacts">
+                            <a class="print-link" href="contacts/">
                                 Подробнее
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
@@ -410,7 +408,7 @@
             </div>
 
             <div class="text-center mt-4" data-reveal>
-                <a class="btn btn-nlb-sky btn-lg-nlb" href="#contacts">Перейти в каталог</a>
+                <a class="btn btn-nlb-sky btn-lg-nlb" href="contacts/">Перейти в каталог</a>
             </div>
         </div>
     </section>
@@ -427,7 +425,7 @@
                 <div class="col-lg-4" data-reveal>
                     <article class="nlb-card">
                         <div class="nlb-card__media">
-                            <img src="../local/templates/nlb_bootstrap/assets/images/event.jpg" alt="Встреча с автором" loading="lazy" decoding="async">
+                            <img src="assets/images/event.jpg" alt="Встреча с автором" loading="lazy" decoding="async">
                             <span class="event-cat bg-grad-sky">Литература</span>
                             <span class="event-date"><b>15</b><span>апр</span></span>
                         </div>
@@ -439,7 +437,7 @@
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-pin"/></svg>Конференц-зал</span>
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-users"/></svg>45 участников</span>
                             </div>
-                            <a class="event-btn" href="#contacts">Зарегистрироваться</a>
+                            <a class="event-btn" href="contacts/">Зарегистрироваться</a>
                         </div>
                     </article>
                 </div>
@@ -447,7 +445,7 @@
                 <div class="col-lg-4" data-reveal>
                     <article class="nlb-card">
                         <div class="nlb-card__media">
-                            <img src="../local/templates/nlb_bootstrap/assets/images/event.jpg" alt="Детский читательский клуб" loading="lazy" decoding="async">
+                            <img src="assets/images/event.jpg" alt="Детский читательский клуб" loading="lazy" decoding="async">
                             <span class="event-cat bg-grad-pink">Для детей</span>
                             <span class="event-date"><b>22</b><span>апр</span></span>
                         </div>
@@ -459,7 +457,7 @@
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-pin"/></svg>Детская зона</span>
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-users"/></svg>30 участников</span>
                             </div>
-                            <a class="event-btn" href="#contacts">Зарегистрироваться</a>
+                            <a class="event-btn" href="contacts/">Зарегистрироваться</a>
                         </div>
                     </article>
                 </div>
@@ -467,7 +465,7 @@
                 <div class="col-lg-4" data-reveal>
                     <article class="nlb-card">
                         <div class="nlb-card__media">
-                            <img src="../local/templates/nlb_bootstrap/assets/images/event.jpg" alt="Цифровые технологии в образовании" loading="lazy" decoding="async">
+                            <img src="assets/images/event.jpg" alt="Цифровые технологии в образовании" loading="lazy" decoding="async">
                             <span class="event-cat bg-grad-green">Технологии</span>
                             <span class="event-date"><b>28</b><span>апр</span></span>
                         </div>
@@ -479,7 +477,7 @@
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-pin"/></svg>Медиа-зал</span>
                                 <span><svg class="i i-20" aria-hidden="true"><use href="#i-users"/></svg>60 участников</span>
                             </div>
-                            <a class="event-btn" href="#contacts">Зарегистрироваться</a>
+                            <a class="event-btn" href="contacts/">Зарегистрироваться</a>
                         </div>
                     </article>
                 </div>
@@ -489,8 +487,8 @@
                 <h2>Не пропустите наши события</h2>
                 <p class="text-white-75 mb-4">Подпишитесь на рассылку и получайте уведомления о новых мероприятиях.</p>
                 <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                    <a class="btn btn-nlb-white btn-lg-nlb" href="#contacts">Подписаться на рассылку</a>
-                    <a class="btn btn-nlb-outline btn-lg-nlb" href="#news">Все события</a>
+                    <a class="btn btn-nlb-white btn-lg-nlb" href="contacts/">Подписаться на рассылку</a>
+                    <a class="btn btn-nlb-outline btn-lg-nlb" href="news/">Все события</a>
                 </div>
             </div>
         </div>
@@ -503,15 +501,15 @@
                     <span class="eyebrow eyebrow--green">Блог</span>
                     <h2 class="section-title mb-0">Новости</h2>
                 </div>
-                <a class="btn btn-nlb-outline" href="#news">Все новости</a>
+                <a class="btn btn-nlb-outline" href="news/">Все новости</a>
             </div>
 
             <div class="row g-4">
                 <div class="col-sm-6 col-lg-3" data-reveal>
                     <article class="nlb-card">
-                        <a class="d-block h-100" href="#news">
+                        <a class="d-block h-100" href="news/">
                             <div class="nlb-card__media">
-                                <img src="../local/templates/nlb_bootstrap/assets/images/news-1.jpg" alt="ИИ-ассистент в библиотеке" loading="lazy" decoding="async">
+                                <img src="assets/images/news-1.jpg" alt="ИИ-ассистент в библиотеке" loading="lazy" decoding="async">
                             </div>
                             <div class="nlb-card__body">
                                 <p class="news-date">18 июня 2024</p>
@@ -524,9 +522,9 @@
 
                 <div class="col-sm-6 col-lg-3" data-reveal>
                     <article class="nlb-card">
-                        <a class="d-block h-100" href="#news">
+                        <a class="d-block h-100" href="news/">
                             <div class="nlb-card__media">
-                                <img src="../local/templates/nlb_bootstrap/assets/images/news-2.jpg" alt="Летний читальный зал" loading="lazy" decoding="async">
+                                <img src="assets/images/news-2.jpg" alt="Летний читальный зал" loading="lazy" decoding="async">
                             </div>
                             <div class="nlb-card__body">
                                 <p class="news-date">15 июня 2024</p>
@@ -539,9 +537,9 @@
 
                 <div class="col-sm-6 col-lg-3" data-reveal>
                     <article class="nlb-card">
-                        <a class="d-block h-100" href="#news">
+                        <a class="d-block h-100" href="news/">
                             <div class="nlb-card__media">
-                                <img src="../local/templates/nlb_bootstrap/assets/images/news-3.jpg" alt="Новые книги" loading="lazy" decoding="async">
+                                <img src="assets/images/news-3.jpg" alt="Новые книги" loading="lazy" decoding="async">
                             </div>
                             <div class="nlb-card__body">
                                 <p class="news-date">12 июня 2024</p>
@@ -554,9 +552,9 @@
 
                 <div class="col-sm-6 col-lg-3" data-reveal>
                     <article class="nlb-card">
-                        <a class="d-block h-100" href="#news">
+                        <a class="d-block h-100" href="news/">
                             <div class="nlb-card__media">
-                                <img src="../local/templates/nlb_bootstrap/assets/images/news-4.jpg" alt="Встреча с писателем" loading="lazy" decoding="async">
+                                <img src="assets/images/news-4.jpg" alt="Встреча с писателем" loading="lazy" decoding="async">
                             </div>
                             <div class="nlb-card__body">
                                 <p class="news-date">10 июня 2024</p>
@@ -585,7 +583,7 @@
                         <h3>Классическая литература</h3>
                         <div class="collection-count">150 000+</div>
                         <p class="collection-text">Шедевры мировой и русской литературы.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="news/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
@@ -595,7 +593,7 @@
                         <h3>Электронные ресурсы</h3>
                         <div class="collection-count">200 000+</div>
                         <p class="collection-text">Цифровая библиотека и базы данных.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="news/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
@@ -605,7 +603,7 @@
                         <h3>Аудиокниги</h3>
                         <div class="collection-count">50 000+</div>
                         <p class="collection-text">Коллекция аудиокниг на разных языках.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="news/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
@@ -615,7 +613,7 @@
                         <h3>Научные издания</h3>
                         <div class="collection-count">75 000+</div>
                         <p class="collection-text">Журналы, диссертации и исследования.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="news/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
@@ -625,7 +623,7 @@
                         <h3>Иностранные книги</h3>
                         <div class="collection-count">80 000+</div>
                         <p class="collection-text">Литература на 45 языках мира.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="news/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
@@ -635,13 +633,13 @@
                         <h3>Редкие издания</h3>
                         <div class="collection-count">5 000+</div>
                         <p class="collection-text">Уникальные и антикварные книги.</p>
-                        <a class="collection-more" href="#news">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <a class="collection-more" href="news/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
             </div>
 
             <div class="text-center mt-5" data-reveal>
-                <a class="btn btn-nlb btn-lg-nlb" href="#news">Посмотреть каталог полностью</a>
+                <a class="btn btn-nlb btn-lg-nlb" href="news/">Посмотреть каталог полностью</a>
             </div>
         </div>
     </section>
@@ -667,7 +665,7 @@
     <div class="container">
         <div class="row g-4 g-lg-5">
             <div class="col-lg-4">
-                <a class="brand" href="#top">
+                <a class="brand" href="./">
                     <span class="brand-mark"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg></span>
                     <span>
                         <span class="brand-name text-white">Библиотека 2026</span>
@@ -686,22 +684,22 @@
             <div class="col-6 col-lg-2">
                 <h4>Читателям</h4>
                 <ul class="footer-links">
-                    <li><a href="#collections">Коллекции</a></li>
-                    <li><a href="#events">События</a></li>
-                    <li><a href="#services">Услуги</a></li>
-                    <li><a href="#print">Каталог книг</a></li>
-                    <li><a href="#contacts">Правила</a></li>
+                    <li><a href="collections/">Коллекции</a></li>
+                    <li><a href="events/">События</a></li>
+                    <li><a href="services/">Услуги</a></li>
+                    <li><a href="printing/">Каталог книг</a></li>
+                    <li><a href="rules/">Правила</a></li>
                 </ul>
             </div>
 
             <div class="col-6 col-lg-2">
                 <h4>Услуги</h4>
                 <ul class="footer-links footer-links--green">
-                    <li><a href="#services">Читальные залы</a></li>
-                    <li><a href="#services">Электронная библиотека</a></li>
-                    <li><a href="#print">Печать и копирование</a></li>
-                    <li><a href="#events">Экскурсии</a></li>
-                    <li><a href="#events">Обучение</a></li>
+                    <li><a href="services/">Читальные залы</a></li>
+                    <li><a href="services/">Электронная библиотека</a></li>
+                    <li><a href="printing/">Печать и копирование</a></li>
+                    <li><a href="events/">Экскурсии</a></li>
+                    <li><a href="events/">Обучение</a></li>
                 </ul>
             </div>
 
@@ -724,7 +722,7 @@
                     <a href="mailto:info@example.by">info@example.by</a>
                 </div>
 
-                <form class="newsletter mt-4 needs-validation" action="#contacts" method="post" novalidate>
+                <form class="newsletter mt-4 needs-validation" action="feedback/" method="post" novalidate>
                     <label class="visually-hidden" for="nlbSubscribeEmail">E-mail для подписки</label>
                     <div class="d-flex flex-column flex-sm-row gap-2">
                         <input class="form-control" id="nlbSubscribeEmail" type="email" name="EMAIL" placeholder="Ваш e-mail" autocomplete="email" required>
@@ -739,9 +737,9 @@
         <div class="footer-bottom">
             <p class="mb-0">© 2026 Библиотека 2026. Все права защищены.</p>
             <div class="d-flex flex-wrap gap-3">
-                <a href="#contacts">Политика конфиденциальности</a>
-                <a href="#contacts">Условия использования</a>
-                <a href="#contacts">Карта сайта</a>
+                <a href="privacy/">Политика конфиденциальности</a>
+                <a href="terms/">Условия использования</a>
+                <a href="sitemap/">Карта сайта</a>
             </div>
         </div>
     </div>
@@ -788,17 +786,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-                <form action="#contacts" method="get" role="search">
+                <form action="feedback/" method="get" role="search">
                     <label class="visually-hidden" for="nlbSearchInput">Поисковый запрос</label>
                     <div class="search-field mb-3">
                         <svg class="i i-24" aria-hidden="true"><use href="#i-search"/></svg>
                         <input class="form-control" id="nlbSearchInput" type="search" name="q" placeholder="Книги, авторы, события, услуги…" autocomplete="off">
                     </div>
                     <div class="d-flex flex-wrap gap-2 mb-3" aria-label="Популярные запросы">
-                        <a class="search-chip" href="#collections">Каталог книг</a>
-                        <a class="search-chip" href="#events">Афиша</a>
-                        <a class="search-chip" href="#print">Печать</a>
-                        <a class="search-chip" href="#services">Коворкинг</a>
+                        <a class="search-chip" href="collections/">Каталог книг</a>
+                        <a class="search-chip" href="events/">Афиша</a>
+                        <a class="search-chip" href="printing/">Печать</a>
+                        <a class="search-chip" href="services/">Коворкинг</a>
                     </div>
                     <button class="btn btn-nlb w-100 btn-icon" type="submit">
                         Найти
@@ -819,7 +817,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-                <form class="needs-validation" action="#contacts" method="post" novalidate>
+                <form class="needs-validation" action="feedback/" method="post" novalidate>
                     <div class="mb-3">
                         <label class="form-label" for="nlbFeedbackName">Ваше имя</label>
                         <input class="form-control" id="nlbFeedbackName" type="text" name="NAME" required>
@@ -848,7 +846,7 @@
     </div>
 </div>
 
-<script src="../local/templates/nlb_bootstrap/assets/js/bootstrap.bundle.min.js"></script>
-<script src="../local/templates/nlb_bootstrap/script.js"></script>
+<script src="assets/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
