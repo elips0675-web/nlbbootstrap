@@ -7,7 +7,8 @@
 SEO-разметка и заголовки безопасности.
 
 Демо-сайт библиотеки: главная с hero-каруселью, новости, афиша событий, услуги,
-каталог печатных услуг, каталог книг, коллекции, контакты, поиск, личный кабинет.
+каталог печатных услуг, каталог сувениров и мерча, подарочные наборы, контакты,
+поиск, личный кабинет.
 
 > **Статус:** всё собирается и проходит офлайн-проверки (`php -l`, `db/lint.php`,
 > `db/tests/run.php`, `tools/check-template.mjs`). Живой установки в Битрикс не
@@ -31,7 +32,7 @@ bitrix/                        ← этот репозиторий = DOCUMENT_RO
 ├── local/templates/nlb_bootstrap/   шаблон сайта
 ├── local/php_interface/       init.php + хелперы (данные, SEO, безопасность)
 ├── db/                        миграции инфоблоков и демо-контент
-├── docs/                      документация (13 документов)
+├── docs/                      документация (14 документов)
 ├── tools/                     гейты и служебные скрипты
 ├── preview/                   статическое демо сайта (php -S -t preview)
 └── demo/index.php             демо-лендинг через шаблон
@@ -50,10 +51,10 @@ bitrix/                        ← этот репозиторий = DOCUMENT_RO
 | Услуга | `/services/<код>/` | `services/detail.php` | — |
 | Печать | `/printing/` | `printing/index.php` | каталог печатных услуг |
 | Печатная услуга | `/printing/<код>/` | `printing/detail.php` | — |
-| Каталог продукции | `/books/` | `books/index.php` | жанры из разделов |
-| Книга | `/books/<код>/` | `books/detail.php` | — |
-| Коллекции | `/collections/` | `collections/index.php` | — |
-| Коллекция | `/collections/<код>/` | `collections/detail.php` | — |
+| Каталог продукции | `/books/` | `books/index.php` | сувениры: категории из разделов |
+| Сувенир | `/books/<код>/` | `books/detail.php` | — |
+| Подарочные наборы | `/collections/` | `collections/index.php` | — |
+| Подарочный набор | `/collections/<код>/` | `collections/detail.php` | — |
 | О библиотеке | `/about/` | `about/index.php` | цифры из `nlb_counts()` |
 | Контакты | `/contacts/` | `contacts/index.php` | — |
 | Обратная связь | `/feedback/` | `feedback/index.php` | `bitrix:main.feedback` |
@@ -79,9 +80,9 @@ bitrix/                        ← этот репозиторий = DOCUMENT_RO
 |---|---|
 | Типов инфоблоков | 3 (`nlb_content`, `nlb_catalog`, `nlb_services`) |
 | Инфоблоков | 6 (news, events, collections, books, services, printing) |
-| Свойств | 31 |
+| Свойств | 33 |
 | Разделов | 12 |
-| Элементов демо-контента | 48 |
+| Элементов демо-контента | 89 |
 
 ```bash
 php db/lint.php            # проверка конфигов без ядра

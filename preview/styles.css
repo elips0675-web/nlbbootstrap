@@ -2016,6 +2016,13 @@ img {
     color: var(--nlb-muted);
 }
 
+.book-price {
+    margin: 0.35rem 0 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--nlb-ink);
+}
+
 .book-text {
     margin: 0.25rem 0 0;
     font-size: 0.875rem;

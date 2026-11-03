@@ -3,7 +3,7 @@
  * NLB Bootstrap — автотест миграций на заглушках ядра.
  *
  * Что проверяется:
- *  - первый запуск создаёт 103 объекта (типы, инфоблоки, свойства, разделы,
+ *  - первый запуск создаёт 145 объектов (типы, инфоблоки, свойства, разделы,
  *    элементы, меню);
  *  - повторный запуск ничего не дублирует;
  *  - проверка db/check.php проходит;
@@ -163,8 +163,8 @@ nlb_test_assert($code === 0, 'lint.php: exit 0');
 nlb_test_assert($code === 0, 'первый запуск: exit 0');
 nlb_test_assert(str_contains($output, 'Готово'), 'первый запуск: есть итоговая строка');
 nlb_test_assert(
-    str_contains($output, 'создано объектов 103'),
-    'первый запуск: создано 103 объекта (в выводе: '
+    str_contains($output, 'создано объектов 145'),
+    'первый запуск: создано 145 объектов (в выводе: '
     . (preg_match('/создано объектов (\d+)/', $output, $m) ? $m[1] : '?') . ')'
 );
 if ($code !== 0) {
@@ -212,7 +212,7 @@ if ($code !== 0) {
 
 [$output, $code] = nlb_test_run($temp . '/db/rollback.php', ['--yes', '--menus'], $temp);
 nlb_test_assert($code === 0, 'откат: exit 0');
-nlb_test_assert(str_contains($output, 'элементы 48'), 'откат: удалено 48 элементов');
+nlb_test_assert(str_contains($output, 'элементы 89'), 'откат: удалено 89 элементов');
 nlb_test_assert(!is_file($temp . '/menu/top.menu.php'), 'откат: меню удалено');
 
 [$output, $code] = nlb_test_run($temp . '/db/check.php', [], $temp);

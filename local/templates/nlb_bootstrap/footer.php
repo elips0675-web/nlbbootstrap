@@ -51,10 +51,10 @@ $nlbTpl = SITE_TEMPLATE_PATH;
             <div class="col-6 col-lg-2">
                 <h4>Читателям</h4>
                 <ul class="footer-links">
-                    <li><a href="<?= $nlbSiteDir ?>collections/">Коллекции</a></li>
+                    <li><a href="<?= $nlbSiteDir ?>collections/">Подарочные наборы</a></li>
                     <li><a href="<?= $nlbSiteDir ?>events/">События</a></li>
                     <li><a href="<?= $nlbSiteDir ?>services/">Услуги</a></li>
-                    <li><a href="<?= $nlbSiteDir ?>books/">Каталог книг</a></li>
+                    <li><a href="<?= $nlbSiteDir ?>books/">Сувениры</a></li>
                     <li><a href="<?= $nlbSiteDir ?>rules/">Правила</a></li>
                 </ul>
             </div>

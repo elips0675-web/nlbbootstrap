@@ -24,7 +24,7 @@ $APPLICATION->SetPageProperty(
         <span class="eyebrow eyebrow--green">Написать</span>
         <h1 class="page-title">Обратная связь</h1>
         <p class="page-lead">
-            Задайте вопрос, предложите книгу или расскажите о проблеме.
+            Задайте вопрос, предложите сувенир или расскажите о проблеме.
             Отвечаем в течение рабочего дня.
         </p>
     </div>
@@ -85,7 +85,7 @@ $APPLICATION->SetPageProperty(
                     <h2 class="h5">Частые вопросы</h2>
                     <ul class="mb-0 ps-3">
                         <li>Как записаться в библиотеку — <a href="<?= SITE_DIR ?>services/">услуги</a>.</li>
-                        <li>Где посмотреть книги — <a href="<?= SITE_DIR ?>books/">каталог</a>.</li>
+                        <li>Где посмотреть сувениры — <a href="<?= SITE_DIR ?>books/">каталог продукции</a>.</li>
                         <li>Как заказать печать — <a href="<?= SITE_DIR ?>printing/">каталог печати</a>.</li>
                         <li>Куда прийти — <a href="<?= SITE_DIR ?>contacts/">контакты</a>.</li>
                     </ul>

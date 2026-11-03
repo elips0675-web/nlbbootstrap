@@ -193,6 +193,8 @@ function rewrite_home_links(string $html): string
         'href="#contacts">Условия использования<' => 'href="terms/">Условия использования<',
         'href="#contacts">Карта сайта<' => 'href="sitemap/">Карта сайта<',
         'class="print-link" href="#contacts"' => 'class="print-link" href="printing/"',
+        'href="#print">Все услуги<' => 'href="services/">Все услуги<',
+        'href="printing/">Все услуги<' => 'href="services/">Все услуги<',
         'href="#contacts">Перейти в каталог<' => 'href="printing/">Перейти в каталог<',
         'class="event-btn" href="#contacts"' => 'class="event-btn" href="events/"',
         'href="#contacts">Подписаться на рассылку<' => 'href="subscribe/">Подписаться на рассылку<',
@@ -483,7 +485,8 @@ function book_cards(array $items, int $depth): string
     $palette = ['primary', 'green', 'sky', 'pink', 'orange'];
     $statuses = [
         'available' => ['В наличии', 'is-available'],
-        'reserved' => ['Забронирована', 'is-reserved'],
+        'reserved' => ['Под заказ', 'is-reserved'],
+        'unavailable' => ['Нет в наличии', 'is-unavailable'],
     ];
 
     $cards = '';
@@ -492,20 +495,22 @@ function book_cards(array $items, int $depth): string
         $name = (string)$item['name'];
         $cover = $palette[abs(crc32($name)) % count($palette)];
         $available = (string)($props['AVAILABLE'] ?? 'available');
-        [$statusText, $statusClass] = $statuses[$available] ?? ['Выдана', 'is-unavailable'];
-        $author = (string)($props['AUTHOR'] ?? '');
-        $year = (string)($props['YEAR'] ?? '');
+        [$statusText, $statusClass] = $statuses[$available] ?? ['Нет в наличии', 'is-unavailable'];
+        $material = (string)($props['AUTHOR'] ?? '');
+        $size = (string)($props['YEAR'] ?? '');
+        $price = (int)($props['PRICE'] ?? 0);
         $href = link_to($depth, 'books/' . $item['code'] . '/');
 
         $cards .= '<div class="col-sm-6 col-lg-4 col-xl-3" data-nlb-item="' . e($item['section'] ?? '') . '">'
             . '<article class="book-card h-100">'
             . '<a class="book-cover book-cover--' . $cover . '" href="' . e($href)
             . '" aria-hidden="true" tabindex="-1">'
-            . '<svg class="i" aria-hidden="true"><use href="#i-book"/></svg>'
+            . '<svg class="i" aria-hidden="true"><use href="#i-package"/></svg>'
             . '<span>' . e(mb_substr($name, 0, 28)) . '</span></a>'
             . '<div class="book-body"><span class="book-status ' . $statusClass . '">' . $statusText . '</span>'
             . '<h3 class="book-title"><a class="text-reset" href="' . e($href) . '">' . e($name) . '</a></h3>'
-            . '<p class="book-author">' . e($author . ($year !== '' ? ', ' . $year : '')) . '</p>'
+            . '<p class="book-author">' . e($material . ($size !== '' ? ', ' . $size : '')) . '</p>'
+            . ($price > 0 ? '<p class="book-price">' . number_format($price, 0, '', ' ') . ' ₽</p>' : '')
             . '<p class="book-text clamp-2">' . e($item['preview_text'] ?? '') . '</p>'
             . '</div></article></div>';
     }
@@ -528,7 +533,7 @@ function collection_cards(array $items, int $depth): string
             . '<span class="icon-tile icon-tile--' . $class . '">'
             . '<svg class="i" aria-hidden="true"><use href="#i-' . e($props['ICON'] ?? 'book') . '"/></svg></span>'
             . '<h3>' . e($item['name']) . '</h3>'
-            . ($count > 0 ? '<div class="collection-count">' . $count . ' книг</div>' : '')
+            . ($count > 0 ? '<div class="collection-count">Предметов: ' . $count . '</div>' : '')
             . '<p class="collection-text">' . e($item['preview_text'] ?? '') . '</p>'
             . '<a class="collection-more" href="' . e($href) . '">Узнать больше'
             . '<svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>'
@@ -800,8 +805,8 @@ function build_printing(string $root, string $previewDir): string
         <span class="eyebrow eyebrow--violet">Полиграфия</span>
         <h1 class="page-title">Каталог печатных услуг</h1>
         <p class="page-lead">
-            Чёрно-белая и цветная печать, сканирование, переплёт и сувениры —
-            от одного экземпляра до крупного тиража.
+            От визиток до широкоформатных баннеров — всё, что нужно для бизнеса
+            и творчества. Печать документов, сувениры, фото и фирменный стиль.
         </p>
     </div>
 </section>
@@ -905,20 +910,20 @@ function build_books(string $root, string $previewDir, array $config): string
     foreach (($config['iblocks']['books']['sections_data'] ?? []) as $section) {
         $sections[$section['code']] = $section['name'];
     }
-    $chips = chips($sections, 'Все книги');
+    $chips = chips($sections, 'Все сувениры');
 
     $content = <<<HTML
 
 <section class="page-hero">
     <div class="container">
-        <span class="eyebrow eyebrow--violet">Фонды</span>
-        <h1 class="page-title">Каталог книг</h1>
+        <span class="eyebrow eyebrow--violet">Сувениры</span>
+        <h1 class="page-title">Сувениры и подарки</h1>
         <p class="page-lead">
-            Что есть на полках: художественная литература, история, наука,
-            детские книги и бизнес-литература. Наличие обновляется вручную.
+            Брелоки, фарфор, кружки, одежда, канцелярия, магниты и аксессуары
+            для дома и автомобиля. Наличие и цену уточняйте на карточке товара.
         </p>
 
-        <ul class="section-chips" aria-label="Жанры" data-nlb-filter>
+        <ul class="section-chips" aria-label="Категории" data-nlb-filter>
             {$chips}
         </ul>
     </div>
@@ -928,9 +933,9 @@ function build_books(string $root, string $previewDir, array $config): string
     <div class="container">
         <div class="d-flex flex-wrap align-items-center gap-3 mb-4" aria-label="Обозначения наличия">
             <span class="book-status is-available">В наличии</span>
-            <span class="book-status is-reserved">Забронирована</span>
-            <span class="book-status is-unavailable">Выдана</span>
-            <span class="small text-muted">Статус указан на карточке каждой книги.</span>
+            <span class="book-status is-reserved">Под заказ</span>
+            <span class="book-status is-unavailable">Нет в наличии</span>
+            <span class="small text-muted">Статус указан на карточке каждого товара.</span>
         </div>
 
         <div class="row g-4">
@@ -948,15 +953,15 @@ HTML
         <div class="row g-4 align-items-center">
             <div class="col-lg-7" data-reveal>
                 <span class="eyebrow eyebrow--green">Подборки</span>
-                <h2 class="section-title">Не знаете, с чего начать?</h2>
+                <h2 class="section-title">Не знаете, что выбрать?</h2>
                 <p class="section-lead mb-0">
-                    Собрали тематические подборки: классика, книги о путешествиях,
-                    научпоп, детская полка и другие.
+                    Собрали готовые наборы: для коллег, детей, в дорогу и на память
+                    о Минске.
                 </p>
             </div>
             <div class="col-lg-5 text-lg-end" data-reveal>
                 <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="../collections/">
-                    Смотреть коллекции
+                    Смотреть подборки
                     <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                 </a>
             </div>
@@ -968,8 +973,8 @@ HTML
 
     return layout(
         $previewDir,
-        'Каталог книг — Библиотека 2026',
-        'Каталог книг библиотеки: художественная литература, история, наука, детские книги.',
+        'Сувениры и подарки — Библиотека 2026',
+        'Брелоки, фарфор, кружки, одежда, канцелярия, магниты и аксессуары для дома и автомобиля.',
         $content,
         1,
         'books'
@@ -984,11 +989,11 @@ function build_collections(string $root, string $previewDir): string
 
 <section class="page-hero">
     <div class="container">
-        <span class="eyebrow eyebrow--violet">Подборки</span>
-        <h1 class="page-title">Коллекции</h1>
+        <span class="eyebrow eyebrow--violet">Наборы</span>
+        <h1 class="page-title">Подарочные наборы</h1>
         <p class="page-lead">
-            Готовые маршруты по фонду: от классики до научпопа и детской полки.
-            Выбирайте тему — внутри короткое описание и состав подборки.
+            Собрали сувениры в готовые комплекты: для коллег, дома, детей,
+            путешествий и на память о Минске. Внутри — состав и упаковка.
         </p>
     </div>
 </section>
@@ -1010,10 +1015,10 @@ HTML
         <div class="row g-4 align-items-center">
             <div class="col-lg-7" data-reveal>
                 <span class="eyebrow eyebrow--green">Каталог</span>
-                <h2 class="section-title">Ищите конкретную книгу?</h2>
+                <h2 class="section-title">Хотите собрать свой набор?</h2>
                 <p class="section-lead mb-0">
-                    В каталоге — автор, год издания, ISBN, шифр и статус наличия.
-                    Поиск по названию и автору — в каталоге.
+                    В каталоге — материал, размер, артикул, цена и наличие.
+                    Любые предметы можно сложить в один подарок.
                 </p>
             </div>
             <div class="col-lg-5 text-lg-end" data-reveal>
@@ -1026,8 +1031,8 @@ HTML;
 
     return layout(
         $previewDir,
-        'Коллекции — Библиотека 2026',
-        'Тематические подборки книг: классика, путешествия, научпоп, детская полка.',
+        'Подарочные наборы — Библиотека 2026',
+        'Готовые подарочные наборы сувениров библиотеки: для коллег, дома, детей, путешествий и на память о Минске.',
         $content,
         1,
         'collections'
@@ -1070,7 +1075,7 @@ function build_feedback(string $previewDir): string
         <span class="eyebrow eyebrow--green">Написать</span>
         <h1 class="page-title">Обратная связь</h1>
         <p class="page-lead">
-            Задайте вопрос, предложите книгу или расскажите о проблеме.
+            Задайте вопрос, предложите сувенир или расскажите о проблеме.
             Отвечаем в течение рабочего дня.
         </p>
     </div>
@@ -1133,7 +1138,7 @@ function build_feedback(string $previewDir): string
                     <h2 class="h5">Частые вопросы</h2>
                     <ul class="mb-0">
                         <li>Как записаться в библиотеку — <a href="../services/">услуги</a>.</li>
-                        <li>Где посмотреть книги — <a href="../books/">каталог</a>.</li>
+                        <li>Где посмотреть сувениры — <a href="../books/">каталог продукции</a>.</li>
                         <li>Как заказать печать — <a href="../printing/">каталог печати</a>.</li>
                         <li>Куда прийти — <a href="../contacts/">контакты</a>.</li>
                     </ul>
@@ -1196,7 +1201,7 @@ function build_subscribe(string $previewDir): string
                     <h2 class="h5">Что в рассылке</h2>
                     <ul class="mb-0 ps-3">
                         <li>афиша событий на две недели;</li>
-                        <li>новые книги и подборки;</li>
+                        <li>новые сувениры и подарочные наборы;</li>
                         <li>изменения в работе залов и услуг;</li>
                         <li>сезонные проекты и конкурсы.</li>
                     </ul>
@@ -1300,9 +1305,9 @@ function build_sitemap(string $previewDir): string
         ['services/', 'Услуги', '6 услуг и превью каталога печати'],
         ['news/', 'Новости', '10 новостей с рубриками'],
         ['events/', 'События', '6 событий с фильтром по рубрикам'],
-        ['printing/', 'Печатные услуги', '8 позиций с ценами'],
-        ['books/', 'Каталог книг', '12 книг с наличием'],
-        ['collections/', 'Коллекции', '6 тематических подборок'],
+        ['printing/', 'Печатные услуги', '37 позиций с ценами'],
+        ['books/', 'Сувениры и подарки', '24 сувенира с ценами'],
+        ['collections/', 'Подарочные наборы', '6 готовых комплектов сувениров'],
         ['contacts/', 'Контакты', 'адрес, часы, телефон'],
         ['feedback/', 'Обратная связь', 'форма сообщения'],
         ['subscribe/', 'Подписка', 'форма рассылки'],
@@ -1601,11 +1606,11 @@ foreach (($config['iblocks']['books']['properties']['AGE_LIMIT']['values'] ?? []
     $ageLabels[$value['xml_id']] = $value['value'];
 }
 $availableLabels = [
-    'available' => 'В наличии', 'reserved' => 'Забронирована', 'unavailable' => 'Выдана',
+    'available' => 'В наличии', 'reserved' => 'Под заказ', 'unavailable' => 'Нет в наличии',
 ];
 $bookLabel = [
-    'AUTHOR' => 'Автор', 'YEAR' => 'Год издания', 'PUBLISHER' => 'Издательство',
-    'ISBN' => 'ISBN', 'PAGES' => 'Страниц', 'SHELF' => 'Шифр',
+    'AUTHOR' => 'Материал', 'YEAR' => 'Размер', 'PUBLISHER' => 'Упаковка',
+    'ISBN' => 'Артикул', 'PAGES' => 'Вес, г', 'SHELF' => 'Состав',
 ];
 foreach (($books['items'] ?? []) as $item) {
     $props = $item['properties'] ?? [];
@@ -1615,8 +1620,12 @@ foreach (($books['items'] ?? []) as $item) {
             $rows .= '<div><dt>' . e($label) . '</dt><dd>' . e($props[$code]) . '</dd></div>';
         }
     }
+    if (!empty($props['PRICE'])) {
+        $rows .= '<div><dt>Цена</dt><dd>'
+            . number_format((int)$props['PRICE'], 0, '', ' ') . ' ₽</dd></div>';
+    }
     if (!empty($props['AGE_LIMIT'])) {
-        $rows .= '<div><dt>Возраст</dt><dd>'
+        $rows .= '<div><dt>Кому подойдёт</dt><dd>'
             . e($ageLabels[$props['AGE_LIMIT']] ?? $props['AGE_LIMIT']) . '</dd></div>';
     }
     if (!empty($props['AVAILABLE'])) {
@@ -1629,9 +1638,9 @@ foreach (($books['items'] ?? []) as $item) {
         'html' => $item['detail_text'] ?? '',
         'rows' => $rows,
         'back' => 'books',
-        'backText' => 'Каталог книг',
+        'backText' => 'Сувениры и подарки',
         'active' => 'books',
-        'cta' => ['label' => 'Забронировать', 'href' => 'feedback/'],
+        'cta' => ['label' => 'Заказать', 'href' => 'feedback/'],
     ]);
     write_page($previewDir . '/books/' . $item['code'] . '/index.html', $html);
 }
@@ -1640,7 +1649,7 @@ $collections = load_data($root, 'collections');
 foreach (($collections['items'] ?? []) as $item) {
     $props = $item['properties'] ?? [];
     $count = (int)($props['COUNT'] ?? 0);
-    $rows = $count > 0 ? '<div><dt>Книг в подборке</dt><dd>' . $count . '</dd></div>' : '';
+    $rows = $count > 0 ? '<div><dt>Предметов в наборе</dt><dd>' . $count . '</dd></div>' : '';
     $html = detail_page($previewDir, [
         'name' => $item['name'],
         'preview' => $item['preview_text'] ?? '',

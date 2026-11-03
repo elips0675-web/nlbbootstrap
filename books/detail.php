@@ -1,6 +1,6 @@
 <?php
 /**
- * Книга — детальная страница.
+ * Сувенир — детальная страница.
  */
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/header.php';
@@ -14,10 +14,10 @@ if (!$found && class_exists('CHTTP')) {
     CHTTP::SetStatus('404 Not Found');
 }
 
-$APPLICATION->SetTitle($found ? $name : 'Книга не найдена');
+$APPLICATION->SetTitle($found ? $name : 'Сувенир не найден');
 $APPLICATION->SetPageProperty(
     'description',
-    $found ? 'Книга в каталоге библиотеки: ' . $name : 'Запрошенная книга не найдена.'
+    $found ? 'Сувенир библиотеки: ' . $name : 'Запрошенный сувенир не найден.'
 );
 
 ?>
@@ -45,6 +45,7 @@ $APPLICATION->SetPageProperty(
                     'AGE_LIMIT',
                     'AVAILABLE',
                     'SHELF',
+                    'PRICE',
                 ],
                 'SET_TITLE' => 'N',
                 'ADD_ELEMENT_CHAIN' => 'Y',
@@ -53,13 +54,13 @@ $APPLICATION->SetPageProperty(
                 'CACHE_TYPE' => 'A',
                 'CACHE_TIME' => '3600',
                 'NLB_BACK_URL' => SITE_DIR . 'books/',
-                'NLB_BACK_TEXT' => 'Каталог книг',
+                'NLB_BACK_TEXT' => 'Сувениры и подарки',
             ], false, ['HIDE_ICONS' => 'Y']); ?>
         <?php else: ?>
             <div class="empty-state">
-                Книга не найдена. Возможно, она списана или адрес изменился.
+                Сувенир не найден. Возможно, он снят с продажи или адрес изменился.
                 <div class="mt-3">
-                    <a class="btn btn-nlb" href="<?= SITE_DIR ?>books/">Каталог книг</a>
+                    <a class="btn btn-nlb" href="<?= SITE_DIR ?>books/">Сувениры и подарки</a>
                 </div>
             </div>
         <?php endif; ?>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Коллекция — детальная страница.
+ * Подарочный набор — детальная страница.
  */
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/header.php';
@@ -14,10 +14,10 @@ if (!$found && class_exists('CHTTP')) {
     CHTTP::SetStatus('404 Not Found');
 }
 
-$APPLICATION->SetTitle($found ? $name : 'Коллекция не найдена');
+$APPLICATION->SetTitle($found ? $name : 'Набор не найден');
 $APPLICATION->SetPageProperty(
     'description',
-    $found ? 'Тематическая подборка книг: ' . $name : 'Запрошенная коллекция не найдена.'
+    $found ? 'Подарочный набор сувениров: ' . $name : 'Запрошенный набор не найден.'
 );
 
 ?>
@@ -38,13 +38,13 @@ $APPLICATION->SetPageProperty(
                 'CACHE_TYPE' => 'A',
                 'CACHE_TIME' => '3600',
                 'NLB_BACK_URL' => SITE_DIR . 'collections/',
-                'NLB_BACK_TEXT' => 'Все коллекции',
+                'NLB_BACK_TEXT' => 'Все наборы',
             ], false, ['HIDE_ICONS' => 'Y']); ?>
         <?php else: ?>
             <div class="empty-state">
-                Коллекция не найдена. Посмотрите другие подборки.
+                Набор не найден. Посмотрите другие готовые комплекты.
                 <div class="mt-3">
-                    <a class="btn btn-nlb" href="<?= SITE_DIR ?>collections/">Все коллекции</a>
+                    <a class="btn btn-nlb" href="<?= SITE_DIR ?>collections/">Все наборы</a>
                 </div>
             </div>
         <?php endif; ?>

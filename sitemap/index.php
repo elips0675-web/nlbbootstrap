@@ -16,11 +16,11 @@ $sections = [
         ['О библиотеке', SITE_DIR . 'about/'],
         ['Новости', SITE_DIR . 'news/'],
         ['События', SITE_DIR . 'events/'],
-        ['Коллекции', SITE_DIR . 'collections/'],
+        ['Подарочные наборы', SITE_DIR . 'collections/'],
         ['Контакты', SITE_DIR . 'contacts/'],
     ],
     'Каталоги и услуги' => [
-        ['Каталог книг', SITE_DIR . 'books/'],
+        ['Каталог продукции', SITE_DIR . 'books/'],
         ['Услуги', SITE_DIR . 'services/'],
         ['Каталог печатных услуг', SITE_DIR . 'printing/'],
         ['Поиск по сайту', SITE_DIR . 'search/'],

@@ -1,25 +1,25 @@
 <?php
 /**
- * Коллекции — список тематических подборок.
+ * Подарочные наборы — список готовых комплектов сувениров.
  */
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/header.php';
 
-$APPLICATION->SetTitle('Коллекции');
+$APPLICATION->SetTitle('Подарочные наборы');
 $APPLICATION->SetPageProperty(
     'description',
-    'Тематические подборки книг: классика, путешествия, научпоп, детская полка, бизнес-книги.'
+    'Готовые подарочные наборы сувениров библиотеки: для коллег, дома, детей, путешествий и на память о Минске.'
 );
 
 ?>
 
 <section class="page-hero">
     <div class="container">
-        <span class="eyebrow eyebrow--violet">Подборки</span>
-        <h1 class="page-title">Коллекции</h1>
+        <span class="eyebrow eyebrow--violet">Наборы</span>
+        <h1 class="page-title">Подарочные наборы</h1>
         <p class="page-lead">
-            Готовые маршруты по фонду: от классики до научпопа и детской полки.
-            Выбирайте тему — внутри короткое описание и состав подборки.
+            Собрали сувениры в готовые комплекты: для коллег, дома, детей,
+            путешествий и на память о Минске. Внутри — состав и упаковка.
         </p>
     </div>
 </section>
@@ -50,10 +50,10 @@ $APPLICATION->SetPageProperty(
         <div class="row g-4 align-items-center">
             <div class="col-lg-7" data-reveal>
                 <span class="eyebrow eyebrow--green">Каталог</span>
-                <h2 class="section-title">Ищите конкретную книгу?</h2>
+                <h2 class="section-title">Хотите собрать свой набор?</h2>
                 <p class="section-lead mb-0">
-                    В каталоге — автор, год издания, ISBN, шифр и статус наличия.
-                    Поиск по названию и автору — в шапке сайта.
+                    В каталоге — материал, размер, артикул, цена и наличие.
+                    Любые предметы можно сложить в один подарок.
                 </p>
             </div>
             <div class="col-lg-5 text-lg-end" data-reveal>
@@ -63,4 +63,4 @@ $APPLICATION->SetPageProperty(
     </div>
 </section>
 
-<?php require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/footer.php'; ?>
+<?php require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/footer.php';

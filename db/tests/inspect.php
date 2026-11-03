@@ -59,17 +59,21 @@ if ($bookId <= 0) {
     $errors[] = 'не найден элемент nlb-book-001';
 } else {
     $values = NlbStubStore::$elements[$bookId]['PROPERTY_VALUES'] ?? [];
-    if (($values['YEAR'] ?? 0) !== 1940) {
-        $errors[] = 'YEAR книги должен быть числом 1940';
+    if (($values['YEAR'] ?? '') !== '4 × 2,5 см') {
+        $errors[] = 'YEAR сувенира: ' . var_export($values['YEAR'] ?? null, true)
+            . ' вместо 4 × 2,5 см';
+    }
+    if (($values['PRICE'] ?? 0) !== 350) {
+        $errors[] = 'PRICE сувенира должен быть числом 350';
     }
     if (($values['AVAILABLE'] ?? 0) <= 0) {
-        $errors[] = 'AVAILABLE книги не преобразован в ID значения списка';
+        $errors[] = 'AVAILABLE сувенира не преобразован в ID значения списка';
     }
 }
 
 $elements = count(NlbStubStore::$elements);
-if ($elements !== 48) {
-    $errors[] = 'элементов в песочнице ' . $elements . ' вместо 48';
+if ($elements !== 89) {
+    $errors[] = 'элементов в песочнице ' . $elements . ' вместо 89';
 }
 
 $sections = count(NlbStubStore::$sections);
@@ -81,12 +85,12 @@ if ($sections !== 12) {
 if (nlb_iblock_count('news') !== 10) {
     $errors[] = 'nlb_iblock_count(news) = ' . nlb_iblock_count('news') . ' вместо 10';
 }
-if (nlb_iblock_count('printing') !== 8) {
-    $errors[] = 'nlb_iblock_count(printing) = ' . nlb_iblock_count('printing') . ' вместо 8';
+if (nlb_iblock_count('printing') !== 37) {
+    $errors[] = 'nlb_iblock_count(printing) = ' . nlb_iblock_count('printing') . ' вместо 37';
 }
 $counts = nlb_counts();
-if (array_sum($counts) !== 48) {
-    $errors[] = 'сумма nlb_counts() = ' . array_sum($counts) . ' вместо 48';
+if (array_sum($counts) !== 89) {
+    $errors[] = 'сумма nlb_counts() = ' . array_sum($counts) . ' вместо 89';
 }
 
 if ($errors) {

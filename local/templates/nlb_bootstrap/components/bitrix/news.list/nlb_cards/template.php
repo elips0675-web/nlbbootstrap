@@ -263,8 +263,9 @@ if (!$items) {
 
             <?php elseif ($card === 'book'): ?>
                 <?php
-                $author = nlb_value($arItem, 'AUTHOR', 'Автор не указан');
-                $year = nlb_value($arItem, 'YEAR');
+                $material = nlb_value($arItem, 'AUTHOR', 'Материал не указан');
+                $size = nlb_value($arItem, 'YEAR');
+                $price = (int)nlb_value($arItem, 'PRICE');
                 $available = nlb_value($arItem, 'AVAILABLE', 'В наличии');
                 $availableXml = nlb_xml_id($arItem, 'AVAILABLE');
                 $availableClass = $availableXml === 'available' ? 'is-available'
@@ -274,7 +275,7 @@ if (!$items) {
                 ?>
                 <article class="book-card h-100">
                     <a class="book-cover book-cover--<?= $coverClass ?>" href="<?= htmlspecialcharsbx($link) ?>" aria-hidden="true" tabindex="-1">
-                        <svg class="i" aria-hidden="true"><use href="#i-book"/></svg>
+                        <svg class="i" aria-hidden="true"><use href="#i-package"/></svg>
                         <span><?= htmlspecialcharsbx(mb_substr($name, 0, 28)) ?></span>
                     </a>
                     <div class="book-body">
@@ -282,7 +283,10 @@ if (!$items) {
                         <h3 class="book-title">
                             <a class="text-reset" href="<?= htmlspecialcharsbx($link) ?>"><?= htmlspecialcharsbx($name) ?></a>
                         </h3>
-                        <p class="book-author"><?= htmlspecialcharsbx($author) ?><?= $year !== '' ? ', ' . htmlspecialcharsbx($year) : '' ?></p>
+                        <p class="book-author"><?= htmlspecialcharsbx($material) ?><?= $size !== '' ? ', ' . htmlspecialcharsbx($size) : '' ?></p>
+                        <?php if ($price > 0): ?>
+                            <p class="book-price"><?= number_format($price, 0, '', ' ') ?> ₽</p>
+                        <?php endif; ?>
                         <?php if ($preview !== ''): ?>
                             <p class="book-text clamp-2"><?= htmlspecialcharsbx($preview) ?></p>
                         <?php endif; ?>
@@ -302,7 +306,7 @@ if (!$items) {
                     </span>
                     <h3><?= htmlspecialcharsbx($name) ?></h3>
                     <?php if ($count > 0): ?>
-                        <div class="collection-count"><?= $count ?> книг</div>
+                        <div class="collection-count">Предметов: <?= $count ?></div>
                     <?php endif; ?>
                     <?php if ($preview !== ''): ?>
                         <p class="collection-text"><?= htmlspecialcharsbx($preview) ?></p>

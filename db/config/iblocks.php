@@ -204,7 +204,7 @@ return [
 
         'collections' => [
             'type' => 'nlb_content',
-            'name' => 'Коллекции',
+            'name' => 'Подарочные наборы',
             'sort' => 120,
             'list_page_url' => '/collections/',
             'detail_page_url' => '/collections/#ELEMENT_CODE#/',
@@ -212,7 +212,7 @@ return [
             'sections' => 'N',
             'properties' => [
                 'COUNT' => [
-                    'name' => 'Книг в подборке',
+                    'name' => 'Предметов в наборе',
                     'type' => 'N',
                     'sort' => 100,
                 ],
@@ -239,7 +239,7 @@ return [
 
         'books' => [
             'type' => 'nlb_catalog',
-            'name' => 'Каталог книг',
+            'name' => 'Сувенирная продукция',
             'sort' => 200,
             'list_page_url' => '/books/',
             'detail_page_url' => '/books/#ELEMENT_CODE#/',
@@ -247,66 +247,69 @@ return [
             'sections' => 'Y',
             'properties' => [
                 'AUTHOR' => [
-                    'name' => 'Автор',
+                    'name' => 'Материал',
                     'type' => 'S',
                     'sort' => 100,
                     'searchable' => 'Y',
                 ],
                 'YEAR' => [
-                    'name' => 'Год издания',
-                    'type' => 'N',
+                    'name' => 'Размер',
+                    'type' => 'S',
                     'sort' => 110,
                 ],
                 'ISBN' => [
-                    'name' => 'ISBN',
+                    'name' => 'Артикул',
                     'type' => 'S',
                     'sort' => 120,
                 ],
                 'PUBLISHER' => [
-                    'name' => 'Издательство',
+                    'name' => 'Упаковка',
                     'type' => 'S',
                     'sort' => 130,
                 ],
                 'PAGES' => [
-                    'name' => 'Страниц',
+                    'name' => 'Вес, г',
                     'type' => 'N',
                     'sort' => 140,
                 ],
                 'AGE_LIMIT' => [
-                    'name' => 'Возрастное ограничение',
+                    'name' => 'Кому подойдёт',
                     'type' => 'L',
                     'sort' => 150,
                     'values' => [
-                        ['xml_id' => '0plus', 'value' => '0+', 'sort' => 10],
-                        ['xml_id' => '6plus', 'value' => '6+', 'sort' => 20],
-                        ['xml_id' => '12plus', 'value' => '12+', 'sort' => 30],
-                        ['xml_id' => '16plus', 'value' => '16+', 'sort' => 40],
-                        ['xml_id' => '18plus', 'value' => '18+', 'sort' => 50],
+                        ['xml_id' => 'all', 'value' => 'Всем', 'sort' => 10],
+                        ['xml_id' => 'kids', 'value' => 'Детям', 'sort' => 20],
+                        ['xml_id' => 'adult', 'value' => 'Взрослым', 'sort' => 30],
                     ],
                 ],
                 'AVAILABLE' => [
-                    'name' => 'Доступность',
+                    'name' => 'Наличие',
                     'type' => 'L',
                     'sort' => 160,
                     'values' => [
                         ['xml_id' => 'available', 'value' => 'В наличии', 'sort' => 10],
-                        ['xml_id' => 'reserved', 'value' => 'Забронирована', 'sort' => 20],
-                        ['xml_id' => 'unavailable', 'value' => 'Выдана', 'sort' => 30],
+                        ['xml_id' => 'reserved', 'value' => 'Под заказ', 'sort' => 20],
+                        ['xml_id' => 'unavailable', 'value' => 'Нет в наличии', 'sort' => 30],
                     ],
                 ],
                 'SHELF' => [
-                    'name' => 'Шифр / полка',
+                    'name' => 'Состав',
                     'type' => 'S',
                     'sort' => 170,
                 ],
+                'PRICE' => [
+                    'name' => 'Цена, ₽',
+                    'type' => 'N',
+                    'sort' => 180,
+                ],
             ],
             'sections_data' => [
-                ['code' => 'fiction', 'name' => 'Художественная литература', 'sort' => 100],
-                ['code' => 'history', 'name' => 'История', 'sort' => 110],
-                ['code' => 'science', 'name' => 'Наука', 'sort' => 120],
-                ['code' => 'children', 'name' => 'Детская литература', 'sort' => 130],
-                ['code' => 'business', 'name' => 'Бизнес и саморазвитие', 'sort' => 140],
-                ['code' => 'art', 'name' => 'Искусство', 'sort' => 150],
+                ['code' => 'fiction', 'name' => 'Брелоки', 'sort' => 100],
+                ['code' => 'history', 'name' => 'Посуда и фарфор', 'sort' => 110],
+                ['code' => 'science', 'name' => 'Одежда', 'sort' => 120],
+                ['code' => 'children', 'name' => 'Канцелярия', 'sort' => 130],
+                ['code' => 'business', 'name' => 'Магниты и открытки', 'sort' => 140],
+                ['code' => 'art', 'name' => 'Аксессуары', 'sort' => 150],
             ],
         ],
 

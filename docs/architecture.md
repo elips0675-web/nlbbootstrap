@@ -103,7 +103,7 @@ GET /news/
 | 6 | Услуги | `.service-card`, `.icon-tile` |
 | 7 | Скроллер печати | `.scroller`, `.print-card`, `.scroller-btn` |
 | 8 | События и новости | `.nlb-card`, `.event-date`, `.news-title` |
-| 9 | Коллекции, партнёры, CTA | `.collection-card`, `.partner`, `.cta-banner` |
+| 9 | Сувениры, наборы, партнёры, CTA | `.collection-card`, `.partner`, `.cta-banner` |
 | 10 | Подвал | `.site-footer`, `.footer-links`, `.newsletter` |
 | 11 | Поиск, FAB, «наверх» | `.search-field`, `.fab`, `.to-top` |
 | 12 | Внутренние страницы | `.page-head`, `.breadcrumb-navigation`, `.bitrix-content` |

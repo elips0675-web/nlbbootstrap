@@ -192,13 +192,13 @@ $nlbAuthorized = $USER->IsAuthorized();
                     <div class="search-field mb-3">
                         <svg class="i i-24" aria-hidden="true"><use href="#i-search"/></svg>
                         <input class="form-control" id="nlbSearchInput" type="search" name="q"
-                               placeholder="Книги, авторы, события, услуги…" autocomplete="off">
+                               placeholder="Сувениры, события, услуги…" autocomplete="off">
                     </div>
                     <div class="d-flex flex-wrap gap-2 mb-3" aria-label="Популярные запросы">
-                        <a class="search-chip" href="<?= $nlbSiteDir ?>search/?q=каталог">Каталог книг</a>
+                        <a class="search-chip" href="<?= $nlbSiteDir ?>search/?q=сувенир">Сувениры</a>
+                        <a class="search-chip" href="<?= $nlbSiteDir ?>search/?q=набор">Подарочные наборы</a>
                         <a class="search-chip" href="<?= $nlbSiteDir ?>search/?q=афиша">Афиша</a>
                         <a class="search-chip" href="<?= $nlbSiteDir ?>search/?q=печать">Печать</a>
-                        <a class="search-chip" href="<?= $nlbSiteDir ?>search/?q=коворкинг">Коворкинг</a>
                     </div>
                     <button class="btn btn-nlb w-100 btn-icon" type="submit">
                         Найти

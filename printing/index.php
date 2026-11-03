@@ -18,8 +18,8 @@ $APPLICATION->SetPageProperty(
         <span class="eyebrow eyebrow--violet">Полиграфия</span>
         <h1 class="page-title">Каталог печатных услуг</h1>
         <p class="page-lead">
-            Чёрно-белая и цветная печать, сканирование, переплёт и сувениры —
-            от одного экземпляра до крупного тиража.
+            От визиток до широкоформатных баннеров — всё, что нужно для бизнеса
+            и творчества. Печать документов, сувениры, фото и фирменный стиль.
         </p>
     </div>
 </section>
@@ -31,7 +31,7 @@ $APPLICATION->SetPageProperty(
             'IBLOCK_ID' => nlb_iblock_id('printing'),
             'NLB_CARD' => 'printing',
             'NLB_COLUMNS' => 'col-sm-6 col-xl-3',
-            'NEWS_COUNT' => 12,
+            'NEWS_COUNT' => 40,
             'SORT_BY1' => 'SORT',
             'SORT_ORDER1' => 'ASC',
             'FIELD_CODE' => ['NAME', 'PREVIEW_TEXT', 'PREVIEW_PICTURE', 'DETAIL_PAGE_URL'],

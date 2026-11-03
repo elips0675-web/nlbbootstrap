@@ -262,9 +262,9 @@ $stats = [
 <section class="section" id="collections">
     <div class="container">
         <div class="section-head section-head--left" data-reveal>
-            <span class="eyebrow eyebrow--violet">Наши коллекции</span>
-            <h2 class="section-title">Исследуйте мир знаний</h2>
-            <p class="section-lead">Подборки книг по темам — от классики до научпопа и детской полки.</p>
+            <span class="eyebrow eyebrow--violet">Сувениры</span>
+            <h2 class="section-title">Готовые подарки с символикой библиотеки</h2>
+            <p class="section-lead">Шесть наборов на разные поводы: коллегам, детям, в дорогу и на память о Минске.</p>
         </div>
 
         <?php $APPLICATION->IncludeComponent('bitrix:news.list', 'nlb_cards', [
@@ -285,7 +285,7 @@ $stats = [
         ], false, ['HIDE_ICONS' => 'Y']); ?>
 
         <div class="text-center mt-5">
-            <a class="btn btn-nlb btn-lg-nlb" href="<?= SITE_DIR ?>collections/">Все коллекции</a>
+            <a class="btn btn-nlb btn-lg-nlb" href="<?= SITE_DIR ?>collections/">Все наборы</a>
         </div>
     </div>
 </section>

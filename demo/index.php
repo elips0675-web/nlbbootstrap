@@ -141,7 +141,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
             </div>
 
             <div class="text-center mt-5" data-reveal>
-                <a class="btn btn-nlb-green btn-lg-nlb" href="/printing/">Все услуги</a>
+                <a class="btn btn-nlb-green btn-lg-nlb" href="/services/">Все услуги</a>
             </div>
         </div>
     </section>
@@ -457,75 +457,75 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
     <section class="section" id="collections">
         <div class="container">
             <div class="section-head section-head--left" data-reveal>
-                <span class="eyebrow eyebrow--violet">Наши коллекции</span>
-                <h2 class="section-title">Исследуйте мир знаний</h2>
-                <p class="section-lead">Более 500 000 изданий в разных форматах — для обучения, работы и вдохновения.</p>
+                <span class="eyebrow eyebrow--violet">Сувениры</span>
+                <h2 class="section-title">Готовые подарки с символикой библиотеки</h2>
+                <p class="section-lead">Шесть наборов на разные поводы: коллегам, детям, в дорогу и на память о Минске.</p>
             </div>
 
             <div class="row g-4">
                 <div class="col-md-6 col-lg-4" data-reveal>
                     <div class="collection-card collection-card--blue">
-                        <span class="icon-tile icon-tile--blue"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg></span>
-                        <h3>Классическая литература</h3>
-                        <div class="collection-count">150 000+</div>
-                        <p class="collection-text">Шедевры мировой и русской литературы.</p>
-                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4" data-reveal>
-                    <div class="collection-card collection-card--violet">
-                        <span class="icon-tile icon-tile--violet"><svg class="i" aria-hidden="true"><use href="#i-laptop"/></svg></span>
-                        <h3>Электронные ресурсы</h3>
-                        <div class="collection-count">200 000+</div>
-                        <p class="collection-text">Цифровая библиотека и базы данных.</p>
-                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4" data-reveal>
-                    <div class="collection-card collection-card--orange">
-                        <span class="icon-tile icon-tile--orange"><svg class="i" aria-hidden="true"><use href="#i-headphones"/></svg></span>
-                        <h3>Аудиокниги</h3>
-                        <div class="collection-count">50 000+</div>
-                        <p class="collection-text">Коллекция аудиокниг на разных языках.</p>
-                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <span class="icon-tile icon-tile--blue"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg></span>
+                        <h3>Набор для коллег</h3>
+                        <div class="collection-count">Предметов: 3</div>
+                        <p class="collection-text">Брелок, ежедневник и открытка в крафтовом конверте.</p>
+                        <a class="collection-more" href="/collections/nabor-dlya-kolleg/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
                 <div class="col-md-6 col-lg-4" data-reveal>
                     <div class="collection-card collection-card--green">
-                        <span class="icon-tile icon-tile--green"><svg class="i" aria-hidden="true"><use href="#i-file"/></svg></span>
-                        <h3>Научные издания</h3>
-                        <div class="collection-count">75 000+</div>
-                        <p class="collection-text">Журналы, диссертации и исследования.</p>
-                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <span class="icon-tile icon-tile--green"><svg class="i" aria-hidden="true"><use href="#i-cup"/></svg></span>
+                        <h3>Набор для дома</h3>
+                        <div class="collection-count">Предметов: 2</div>
+                        <p class="collection-text">Кружка с логотипом и хлопковый шоппер.</p>
+                        <a class="collection-more" href="/collections/nabor-dlya-doma/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
                 <div class="col-md-6 col-lg-4" data-reveal>
                     <div class="collection-card collection-card--sky">
-                        <span class="icon-tile icon-tile--sky"><svg class="i" aria-hidden="true"><use href="#i-globe"/></svg></span>
-                        <h3>Иностранные книги</h3>
-                        <div class="collection-count">80 000+</div>
-                        <p class="collection-text">Литература на 45 языках мира.</p>
-                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <span class="icon-tile icon-tile--sky"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg></span>
+                        <h3>Набор «Читаю»</h3>
+                        <div class="collection-count">Предметов: 2</div>
+                        <p class="collection-text">Футболка с надписью «Читаю» и шоппер для книг.</p>
+                        <a class="collection-more" href="/collections/nabor-chitayu/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4" data-reveal>
+                    <div class="collection-card collection-card--orange">
+                        <span class="icon-tile icon-tile--orange"><svg class="i" aria-hidden="true"><use href="#i-globe"/></svg></span>
+                        <h3>Набор для путешествий</h3>
+                        <div class="collection-count">Предметов: 2</div>
+                        <p class="collection-text">Термокружка и компактный зонт с принтом.</p>
+                        <a class="collection-more" href="/collections/nabor-dlya-puteshestviy/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4" data-reveal>
+                    <div class="collection-card collection-card--violet">
+                        <span class="icon-tile icon-tile--violet"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg></span>
+                        <h3>Набор для детей</h3>
+                        <div class="collection-count">Предметов: 3</div>
+                        <p class="collection-text">Брелок «Сова», карандаши и магнит.</p>
+                        <a class="collection-more" href="/collections/nabor-dlya-detey/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
 
                 <div class="col-md-6 col-lg-4" data-reveal>
                     <div class="collection-card collection-card--amber">
-                        <span class="icon-tile"><svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg></span>
-                        <h3>Редкие издания</h3>
-                        <div class="collection-count">5 000+</div>
-                        <p class="collection-text">Уникальные и антикварные книги.</p>
-                        <a class="collection-more" href="/collections/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                        <span class="icon-tile"><svg class="i" aria-hidden="true"><use href="#i-image"/></svg></span>
+                        <h3>Набор на память о Минске</h3>
+                        <div class="collection-count">Предметов: 4</div>
+                        <p class="collection-text">Открытки, магнит и брелок с видами города.</p>
+                        <a class="collection-more" href="/collections/nabor-na-pamyat-o-minske/">Узнать больше <svg class="i i-20" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
                     </div>
                 </div>
             </div>
 
             <div class="text-center mt-5" data-reveal>
-                <a class="btn btn-nlb btn-lg-nlb" href="/books/">Посмотреть каталог полностью</a>
+                <a class="btn btn-nlb btn-lg-nlb" href="/collections/">Все наборы</a>
             </div>
         </div>
     </section>

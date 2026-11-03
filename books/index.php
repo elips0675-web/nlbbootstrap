@@ -1,8 +1,8 @@
 <?php
 /**
- * Каталог книг — список.
+ * Сувенирная продукция — список.
  *
- * Жанры — разделы инфоблока books, поэтому фильтр идёт по SECTION_ID.
+ * Разделы инфоблока books — категории сувениров, фильтр идёт по SECTION_ID.
  */
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/header.php';
@@ -15,27 +15,27 @@ $GLOBALS['nlbBooksFilter'] = $sectionId > 0
     ? ['SECTION_ID' => $sectionId, 'INCLUDE_SUBSECTIONS' => 'Y']
     : [];
 
-$APPLICATION->SetTitle('Каталог книг');
+$APPLICATION->SetTitle('Сувенирная продукция');
 $APPLICATION->SetPageProperty(
     'description',
-    'Каталог книг библиотеки: художественная литература, история, наука, детские книги и бизнес-литература.'
+    'Сувениры библиотеки: брелоки, фарфор, кружки, одежда, канцелярия, магниты и аксессуары.'
 );
 
 ?>
 
 <section class="page-hero">
     <div class="container">
-        <span class="eyebrow eyebrow--violet">Фонды</span>
-        <h1 class="page-title">Каталог книг</h1>
+        <span class="eyebrow eyebrow--violet">Сувениры</span>
+        <h1 class="page-title">Сувениры и подарки</h1>
         <p class="page-lead">
-            Что есть на полках: художественная литература, история, наука,
-            детские книги и бизнес-литература. Наличие обновляется вручную.
+            Брелоки, фарфор, кружки, одежда, канцелярия, магниты и аксессуары
+            для дома и автомобиля. Наличие и цену уточняйте на карточке товара.
         </p>
 
-        <ul class="section-chips" aria-label="Жанры">
+        <ul class="section-chips" aria-label="Категории">
             <li>
                 <a class="section-chip<?= $sectionId === 0 ? ' is-active' : '' ?>"
-                   href="<?= SITE_DIR ?>books/">Все книги</a>
+                   href="<?= SITE_DIR ?>books/">Все сувениры</a>
             </li>
             <?php foreach (nlb_iblock_sections('books') as $section): ?>
                 <li>
@@ -53,9 +53,9 @@ $APPLICATION->SetPageProperty(
     <div class="container">
         <div class="d-flex flex-wrap align-items-center gap-3 mb-4" aria-label="Обозначения наличия">
             <span class="book-status is-available">В наличии</span>
-            <span class="book-status is-reserved">Забронирована</span>
-            <span class="book-status is-unavailable">Выдана</span>
-            <span class="small text-muted">Статус указан на карточке каждой книги.</span>
+            <span class="book-status is-reserved">Под заказ</span>
+            <span class="book-status is-unavailable">Нет в наличии</span>
+            <span class="small text-muted">Статус указан на карточке каждого товара.</span>
         </div>
 
         <?php $APPLICATION->IncludeComponent('bitrix:news.list', 'nlb_cards', [
@@ -70,7 +70,7 @@ $APPLICATION->SetPageProperty(
             'SORT_BY2' => 'NAME',
             'SORT_ORDER2' => 'ASC',
             'FIELD_CODE' => ['NAME', 'PREVIEW_TEXT', 'PREVIEW_PICTURE', 'DETAIL_PAGE_URL'],
-            'PROPERTY_CODE' => ['AUTHOR', 'YEAR', 'AVAILABLE', 'ISBN'],
+            'PROPERTY_CODE' => ['AUTHOR', 'YEAR', 'AVAILABLE', 'PRICE'],
             'DISPLAY_BOTTOM_PAGER' => 'Y',
             'PAGER_TEMPLATE' => '.default',
             'SET_TITLE' => 'N',
@@ -86,16 +86,16 @@ $APPLICATION->SetPageProperty(
     <div class="container">
         <div class="row g-4 align-items-center">
             <div class="col-lg-7" data-reveal>
-                <span class="eyebrow eyebrow--green">Подборки</span>
-                <h2 class="section-title">Не знаете, с чего начать?</h2>
+                <span class="eyebrow eyebrow--green">Наборы</span>
+                <h2 class="section-title">Не знаете, что выбрать?</h2>
                 <p class="section-lead mb-0">
-                    Собрали тематические подборки: классика, книги о путешествиях,
-                    научпоп, детская полка и другие.
+                    Собрали готовые комплекты: для коллег, дома, детей,
+                    в дорогу и на память о Минске.
                 </p>
             </div>
             <div class="col-lg-5 text-lg-end" data-reveal>
                 <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="<?= SITE_DIR ?>collections/">
-                    Смотреть коллекции
+                    Смотреть наборы
                     <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                 </a>
             </div>

@@ -239,7 +239,7 @@ $time = date('H:i', $date);
 
 ```php
 nlb_iblock_count('services');  // сколько активных услуг
-nlb_iblock_count('books');     // сколько книг в каталоге
+nlb_iblock_count('books');     // сколько сувениров в каталоге
 nlb_counts();                  // массив по всем шести инфоблокам
 ```
 
@@ -249,12 +249,12 @@ nlb_counts();                  // массив по всем шести инфо
 <?php
 $counts = nlb_counts();
 $stats = [
-    ['value' => $counts['books'],       'label' => 'книг в каталоге',   'anchor' => '/books/'],
+    ['value' => $counts['books'],       'label' => 'сувениров',         'anchor' => '/books/'],
     ['value' => $counts['events'],      'label' => 'событий в афише',   'anchor' => '/events/'],
     ['value' => $counts['news'],        'label' => 'новостей',          'anchor' => '/news/'],
     ['value' => $counts['services'],    'label' => 'услуг',             'anchor' => '/services/'],
     ['value' => $counts['printing'],    'label' => 'печатных услуг',    'anchor' => '/printing/'],
-    ['value' => $counts['collections'], 'label' => 'подборок',          'anchor' => '/collections/'],
+    ['value' => $counts['collections'], 'label' => 'подарочных наборов', 'anchor' => '/collections/'],
 ];
 ?>
 <div class="row g-3">

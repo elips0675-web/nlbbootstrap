@@ -30,18 +30,34 @@ foreach (['DETAIL_PICTURE', 'PREVIEW_PICTURE'] as $key) {
 }
 $properties = isset($item['PROPERTIES']) && is_array($item['PROPERTIES']) ? $item['PROPERTIES'] : [];
 
+/*
+ * Товар (сувенир) отличается от новости набором свойств: у него есть цена,
+ * а AUTHOR хранит материал. Для товара материал выводим в таблице свойств,
+ * а не в строке метаданных, и показываем цену без приставки «от».
+ */
+$isProduct = isset($properties['PRICE'])
+    || (string)($properties['AUTHOR']['NAME'] ?? '') === 'Материал';
+
 $date = nlb_value($item, 'DATE');
 $timestamp = $date !== '' ? strtotime($date) : false;
-$author = nlb_value($item, 'AUTHOR');
+$author = $isProduct ? '' : nlb_value($item, 'AUTHOR');
 $readTime = nlb_value($item, 'READ_TIME');
 $register = nlb_value($item, 'REGISTER_URL');
-$price = nlb_price(nlb_value($item, 'PRICE_FROM'));
-if ($price === '') {
-    $price = nlb_value($item, 'PRICE');
+if ($isProduct) {
+    $priceNumber = (int)($properties['PRICE']['VALUE'] ?? 0);
+    $price = $priceNumber > 0 ? number_format($priceNumber, 0, '', ' ') . ' ₽' : '';
+} else {
+    $price = nlb_price(nlb_value($item, 'PRICE_FROM'));
+    if ($price === '') {
+        $price = nlb_value($item, 'PRICE');
+    }
 }
 $unit = nlb_value($item, 'UNIT');
 
 $skip = ['ICON', 'COLOR', 'TAGS', 'DATE', 'AUTHOR', 'READ_TIME', 'REGISTER_URL', 'PRICE_FROM', 'PRICE', 'UNIT'];
+if ($isProduct) {
+    $skip = array_values(array_diff($skip, ['AUTHOR']));
+}
 $rows = [];
 foreach ($properties as $code => $property) {
     if (in_array($code, $skip, true)) {
@@ -136,7 +152,7 @@ if (is_array($tagProperty) && !empty($tagProperty['VALUE'])) {
                     <?php endif; ?>
                     <?php if ($price !== ''): ?>
                         <div>
-                            <dt>Стоимость</dt>
+                            <dt><?= $isProduct ? 'Цена' : 'Стоимость' ?></dt>
                             <dd><?= htmlspecialcharsbx($price) ?><?= $unit !== '' ? ' · ' . htmlspecialcharsbx($unit) : '' ?></dd>
                         </div>
                     <?php endif; ?>
