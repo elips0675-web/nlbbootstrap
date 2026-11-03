@@ -181,6 +181,12 @@ const sources = [
     `${tplRel}/footer.php`,
     'demo/index.php',
     'preview/index.html',
+    'db/config/data/news.php',
+    'db/config/data/events.php',
+    'db/config/data/services.php',
+    'db/config/data/printing.php',
+    'db/config/data/collections.php',
+    'db/config/data/books.php',
 ];
 
 const referencedImages = new Set();

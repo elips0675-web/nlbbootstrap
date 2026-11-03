@@ -275,6 +275,31 @@ if (!function_exists('nlb_value')) {
     }
 }
 
+if (!function_exists('nlb_values')) {
+    /**
+     * Все значения множественного свойства (например, FEATURES у услуги).
+     *
+     * @return string[]
+     */
+    function nlb_values(array $item, string $code): array
+    {
+        $property = $item['PROPERTIES'][$code] ?? null;
+        if (!is_array($property)) {
+            return [];
+        }
+
+        $value = $property['VALUE'] ?? [];
+        $value = is_array($value) ? $value : [$value];
+        $value = array_filter($value, static function ($one) {
+            return is_scalar($one) && trim((string)$one) !== '';
+        });
+
+        return array_values(array_map(static function ($one) {
+            return trim((string)$one);
+        }, $value));
+    }
+}
+
 if (!function_exists('nlb_xml_id')) {
     /**
      * XML_ID значения списка (например, категории события).

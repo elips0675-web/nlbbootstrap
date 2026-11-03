@@ -297,7 +297,12 @@ if (!function_exists('nlb_prepare_property_values')) {
             } elseif ($type === 'N') {
                 $prepared[$code] = (int)$value;
             } else {
-                $prepared[$code] = (string)$value;
+                // Множественное строковое свойство (например, список особенностей).
+                $prepared[$code] = ($property['multiple'] ?? 'N') === 'Y'
+                    ? array_values(array_map(static function ($one) {
+                        return (string)$one;
+                    }, (array)$value))
+                    : (string)$value;
             }
         }
         return $prepared;

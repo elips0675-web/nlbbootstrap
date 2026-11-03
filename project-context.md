@@ -23,7 +23,7 @@ Lovable-проекта `../src/` (React 18 + Tailwind 3 + shadcn/ui) на сер
 | Свой JS | ES5-совместимый vanilla, IIFE | `script.js`, 10 модулей + `pwa.js`, `consent.js` |
 | Шрифт | системный стек (`Manrope` — если установлен) | `styles.css:53`, внешних запросов нет |
 | Иконки | inline SVG `<symbol>` | спрайт в `header.php`, копия в `preview/index.html` |
-| Изображения | JPG, пережаты и обрезаны под пропорции вывода | `assets/images/`, 18 файлов |
+| Изображения | JPG, пережаты и обрезаны под пропорции вывода | `assets/images/`, 20 файлов |
 | Данные | миграции на API Битрикса | `db/`, 6 инфоблоков, 48 элементов |
 | SEO | свои хелперы | `local/php_interface/include/nlb_seo.php` |
 | Безопасность | заголовки + CSP из PHP | `local/php_interface/include/nlb_security.php` |

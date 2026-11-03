@@ -67,6 +67,73 @@ if (!$items) {
     return;
 }
 ?>
+<?php if ($card === 'service-feature'): ?>
+    <div class="service-feature-list">
+        <?php foreach ($items as $index => $arItem):
+            $editArea = nlb_card_edit($this, $arItem);
+            $name = (string)($arItem['NAME'] ?? '');
+            $link = (string)($arItem['DETAIL_PAGE_URL'] ?? '');
+            $preview = (string)($arItem['PREVIEW_TEXT'] ?? '');
+            $image = nlb_card_picture($arItem, $fallbackImage);
+            $icon = nlb_value($arItem, 'ICON', 'book');
+            $color = nlb_grad_class(nlb_xml_id($arItem, 'COLOR'));
+            $duration = nlb_value($arItem, 'DURATION');
+            $features = nlb_values($arItem, 'FEATURES');
+            $price = nlb_price(nlb_value($arItem, 'PRICE_FROM'));
+            $reverse = $index % 2 === 1;
+            ?>
+            <article class="service-feature<?= $reverse ? ' service-feature--reverse' : '' ?>"
+                <?= $editArea !== '' ? ' id="' . $editArea . '"' : '' ?>>
+                <div class="service-feature-media">
+                    <img src="<?= htmlspecialcharsbx($image) ?>" alt="<?= htmlspecialcharsbx($name) ?>"
+                         loading="lazy" decoding="async">
+                    <span class="service-feature-icon bg-grad-<?= htmlspecialcharsbx($color) ?>">
+                        <svg class="i" aria-hidden="true"><use href="#i-<?= htmlspecialcharsbx($icon) ?>"/></svg>
+                    </span>
+                </div>
+                <div class="service-feature-body">
+                    <?php if ($duration !== ''): ?>
+                        <span class="service-feature-badge">
+                            <svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>
+                            <?= htmlspecialcharsbx($duration) ?>
+                        </span>
+                    <?php endif; ?>
+                    <h2 class="service-feature-title"><?= htmlspecialcharsbx($name) ?></h2>
+                    <?php if ($preview !== ''): ?>
+                        <p class="service-feature-lead"><?= htmlspecialcharsbx($preview) ?></p>
+                    <?php endif; ?>
+                    <span class="service-feature-price bg-grad-<?= htmlspecialcharsbx($color) ?>">
+                        <?= $price !== '' ? htmlspecialcharsbx($price) : 'Бесплатно для читателей' ?>
+                    </span>
+                    <?php if ($features): ?>
+                        <ul class="service-feature-points">
+                            <?php foreach ($features as $feature): ?>
+                                <li>
+                                    <span class="service-feature-check bg-grad-<?= htmlspecialcharsbx($color) ?>">
+                                        <svg class="i" aria-hidden="true"><use href="#i-check"/></svg>
+                                    </span>
+                                    <?= htmlspecialcharsbx($feature) ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                    <div class="service-feature-actions">
+                        <a class="btn btn-nlb btn-lg-nlb" href="<?= SITE_DIR ?>feedback/">
+                            Забронировать
+                            <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+                        </a>
+                        <?php if ($link !== ''): ?>
+                            <a class="btn btn-nlb-outline btn-lg-nlb" href="<?= htmlspecialcharsbx($link) ?>">
+                                Узнать подробнее
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </article>
+        <?php endforeach; ?>
+    </div>
+    <?php return; ?>
+<?php endif; ?>
 <div class="row g-4">
     <?php foreach ($items as $arItem):
         $editArea = nlb_card_edit($this, $arItem);

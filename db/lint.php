@@ -319,7 +319,10 @@ foreach ($dataFiles as $file) {
                     nlb_fail("{$label}: {$propCode} '{$value}' должен быть числом");
                 }
             } elseif (is_array($value)) {
-                nlb_fail("{$label}: {$propCode} не список, массив недопустим");
+                // Массив допустим только у множественного свойства (S/T).
+                if (($prop['multiple'] ?? 'N') !== 'Y') {
+                    nlb_fail("{$label}: {$propCode} не множественное, массив недопустим");
+                }
             }
         }
 

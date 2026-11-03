@@ -346,6 +346,12 @@ return [
                     'type' => 'S',
                     'sort' => 130,
                 ],
+                'FEATURES' => [
+                    'name' => 'Что входит (по строке на пункт)',
+                    'type' => 'S',
+                    'multiple' => 'Y',
+                    'sort' => 140,
+                ],
             ],
             'sections_data' => [],
         ],
