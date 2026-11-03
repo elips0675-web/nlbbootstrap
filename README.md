@@ -50,7 +50,7 @@ bitrix/                        ← этот репозиторий = DOCUMENT_RO
 | Услуга | `/services/<код>/` | `services/detail.php` | — |
 | Печать | `/printing/` | `printing/index.php` | каталог печатных услуг |
 | Печатная услуга | `/printing/<код>/` | `printing/detail.php` | — |
-| Книги | `/books/` | `books/index.php` | жанры из разделов |
+| Каталог продукции | `/books/` | `books/index.php` | жанры из разделов |
 | Книга | `/books/<код>/` | `books/detail.php` | — |
 | Коллекции | `/collections/` | `collections/index.php` | — |
 | Коллекция | `/collections/<код>/` | `collections/detail.php` | — |
@@ -64,7 +64,7 @@ bitrix/                        ← этот репозиторий = DOCUMENT_RO
 | Карта сайта | `/sitemap/` | `sitemap/index.php` | — |
 | Правила / политика / условия | `/rules/`, `/privacy/`, `/terms/` | `*/index.php` | — |
 
-Меню — семь пунктов: Главная, Новости, События, Услуги, Печать, Книги, Контакты
+Меню — семь пунктов: Главная, Новости, События, Услуги, Печать, Каталог продукции, Контакты
 (`db/menu/top.menu.php`). Интерактивная карта в объём работ не входит и в меню
 не включена.
 

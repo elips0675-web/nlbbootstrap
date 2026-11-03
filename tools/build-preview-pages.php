@@ -147,7 +147,7 @@ function nav_items(): array
         ['События', 'events/', 'events'],
         ['Услуги', 'services/', 'services'],
         ['Печать', 'printing/', 'printing'],
-        ['Книги', 'books/', 'books'],
+        ['Каталог продукции', 'books/', 'books'],
         ['Контакты', 'contacts/', 'contacts'],
     ];
 }

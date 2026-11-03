@@ -449,7 +449,7 @@ img {
     gap: 0.15rem;
 }
 
-.navbar-nlb .nav-link {
+.navbar-nlb .navbar-nav .nav-link {
     color: #334155;
     font-weight: 600;
     font-size: 0.95rem;
@@ -2169,9 +2169,17 @@ img {
     font-weight: 600;
 }
 
-/* В меню семь пунктов: на средних экранах делаем их компактнее */
+/* В меню семь пунктов: до 1400px делаем их компактнее, чтобы
+   «Каталог продукции» помещался в одну строку */
 @media (min-width: 992px) and (max-width: 1199.98px) {
-    .navbar-nlb .nav-link {
+    .navbar-nlb .navbar-nav .nav-link {
+        padding: 0.5rem 0.35rem;
+        font-size: 0.875rem;
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+    .navbar-nlb .navbar-nav .nav-link {
         padding: 0.5rem 0.55rem;
         font-size: 0.9rem;
     }

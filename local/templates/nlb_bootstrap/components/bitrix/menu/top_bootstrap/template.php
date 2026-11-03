@@ -21,7 +21,7 @@ if (empty($items)) {
         ['TEXT' => 'События', 'LINK' => SITE_DIR . 'events/'],
         ['TEXT' => 'Услуги', 'LINK' => SITE_DIR . 'services/'],
         ['TEXT' => 'Печать', 'LINK' => SITE_DIR . 'printing/'],
-        ['TEXT' => 'Книги', 'LINK' => SITE_DIR . 'books/'],
+        ['TEXT' => 'Каталог продукции', 'LINK' => SITE_DIR . 'books/'],
         ['TEXT' => 'Контакты', 'LINK' => SITE_DIR . 'contacts/'],
     ];
 
