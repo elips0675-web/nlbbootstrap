@@ -374,7 +374,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                 <p class="text-white-75 mb-4">Подпишитесь на рассылку и получайте уведомления о новых мероприятиях.</p>
                 <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
                     <a class="btn btn-nlb-white btn-lg-nlb" href="/subscribe/">Подписаться на рассылку</a>
-                    <a class="btn btn-nlb-outline btn-lg-nlb" href="/events/">Все события</a>
+                    <a class="btn btn-nlb-outline btn-lg-nlb" href="/events/">Все мероприятия</a>
                 </div>
             </div>
         </div>
