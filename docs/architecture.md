@@ -1,0 +1,199 @@
+# Архитектура шаблона
+
+## 1. Место в Битриксе
+
+Шаблон сайта — это набор файлов, который ядро подключает для каждой страницы:
+
+```
+local/templates/nlb_bootstrap/
+├── header.php              ← $APPLICATION->ShowHead(), шапка, <main>
+├── footer.php              ← подвал, модалки, </body>
+├── styles.css              ← дизайн-система
+├── script.js               ← поведение
+├── .description.php        ← карточка шаблона в админке
+├── assets/
+│   ├── css/bootstrap.min.css
+│   ├── js/bootstrap.bundle.min.js
+│   └── images/*.jpg
+└── components/
+    └── bitrix/
+        ├── menu/top_bootstrap/template.php
+        └── breadcrumb/bootstrap/template.php
+```
+
+Поток запроса:
+
+```
+GET /news/
+  → bitrix/modules/main/include/prolog.php
+  → SITE_TEMPLATE_PATH/header.php
+      → ShowHead()            (мета, CSS/JS ядра, SEO)
+      → ShowPanel()           (панель редактирования для админа)
+      → navbar + bitrix:menu  (тип top)
+      → breadcrumb            (кроме главной)
+      → <main>
+  → /news/index.php            (контент страницы или компонент)
+  → SITE_TEMPLATE_PATH/footer.php
+      → Bootstrap bundle + script.js
+      → </html>
+```
+
+`header.php` открывает `<main class="site-main" id="main">`, `footer.php`
+закрывает его первой строкой (`footer.php:1`). Любая страница обязана
+подключаться через `bitrix:header.php`/`bitrix:footer.php`, иначе шапка и
+подвал не появятся.
+
+## 2. header.php
+
+Слои сверху вниз:
+
+| Строки | Что |
+|---|---|
+| 1–16 | защита от прямого вызова, `$nlbSiteDir`, `$nlbTpl`, `$nlbAuthorized` |
+| 18–31 | `<head>`: meta, preconnect, Manrope, `ShowHead()`, `<title>` |
+| 33–35 | `ShowPanel()`, открытие `<body>` |
+| 39–77 | inline SVG-спрайт: 37 символов `#i-*` |
+| 80–102 | `.topbar`: адрес, часы, телефон, e-mail (только ≥ lg) |
+| 104–168 | navbar: логотип, бургер, меню, поиск, уведомления, кабинет |
+| 170–200 | модалка поиска `#searchModal` |
+| 202–215 | контейнер хлебных крошек (не на главной) |
+| 217 | открытие `<main>` |
+
+Важные переменные:
+
+- `SITE_DIR` — корень текущего сайта (`/` или `/ru/`), используется во всех
+  ссылках, чтобы шаблон работал на мультисайте;
+- `SITE_TEMPLATE_PATH` — путь к шаблону (`/local/templates/nlb_bootstrap`);
+- `LANGUAGE_ID` — язык сайта для `<html lang>`;
+- `$USER->IsAuthorized()` — переключает «Войти» ↔ «Кабинет» и зелёную точку
+  уведомлений.
+
+`ShowHead()` обязателен: он выводит `<meta>` заголовка, CSS/JS ядра и
+служебные скрипты. Свои `<link rel="stylesheet">` идут **после** него, чтобы
+`styles.css` перекрывал Bootstrap.
+
+## 3. footer.php
+
+| Строки | Что |
+|---|---|
+| 1–16 | закрытие `<main>`, защита, переменные |
+| 18–115 | подвал: бренд, соцсети, 2 колонки ссылок, контакты, подписка |
+| 105–112 | нижняя строка: копирайт, политика, условия, карта сайта |
+| 117–143 | FAB: Telegram, WhatsApp, звонок, e-mail, обратная связь |
+| 145–147 | кнопка «наверх» |
+| 149–188 | модалка обратной связи `#feedbackModal` (форма-заглушка) |
+| 190–213 | модалка реквизитов `#requisitesModal` |
+| 215–216 | `bootstrap.bundle.min.js` + `script.js` |
+
+Скрипты подключаются в конце `<body>`, без `defer`: bundle нужен до
+`script.js`, а оба файла локальные и лёгкие. `script.js` сам проверяет наличие
+элементов, поэтому на страницах без карусели/скроллера ошибок нет.
+
+## 4. styles.css
+
+Файл разбит на 15 пронумерованных разделов:
+
+| № | Раздел | Примеры |
+|---|---|---|
+| 1 | Токены | `:root`, градиенты |
+| 2 | База и утилиты | `.section`, `.eyebrow`, `.text-gradient`, `.i` |
+| 3 | Кнопки, формы, модалки | `.btn-nlb`, `.form-control`, `.modal-nlb` |
+| 4 | Топбар и шапка | `.topbar`, `.site-header`, `.brand` |
+| 5 | Hero | `.hero`, `.hero-title`, `.hero-arrow` |
+| 6 | Услуги | `.service-card`, `.icon-tile` |
+| 7 | Скроллер печати | `.scroller`, `.print-card`, `.scroller-btn` |
+| 8 | События и новости | `.nlb-card`, `.event-date`, `.news-title` |
+| 9 | Коллекции, партнёры, CTA | `.collection-card`, `.partner`, `.cta-banner` |
+| 10 | Подвал | `.site-footer`, `.footer-links`, `.newsletter` |
+| 11 | Поиск, FAB, «наверх» | `.search-field`, `.fab`, `.to-top` |
+| 12 | Внутренние страницы | `.page-head`, `.breadcrumb-navigation`, `.bitrix-content` |
+| 13 | Анимация появления | `.reveal`, `prefers-reduced-motion` |
+| 14 | Адаптив | `@media (max-width: …)` |
+| 15 | Печать | `@media print` |
+
+Порядок каскада: `bootstrap.min.css` → `styles.css`. Специфичность повышается
+точечно (`.site-footer .brand-tag`, `.collection-card .icon-tile`), без
+`!important`, кроме утилит и печати.
+
+## 5. script.js
+
+Девять независимых модулей в одном IIFE:
+
+| № | Модуль | Триггер | Строки |
+|---|---|---|---|
+| 1 | Тень шапки | `#siteHeader`, `scroll > 8` | 13–21 |
+| 2 | Reveal-анимация | `[data-reveal]`, IntersectionObserver | 24–42 |
+| 3 | Скроллер печати | `[data-scroller]`, кнопки `[data-scroll-*]` | 46–82 |
+| 4 | FAB | `.fab`, `.fab-toggle` | 85–110 |
+| 5 | «Наверх» | `.to-top`, `scroll > 480` | 113–126 |
+| 6 | Мобильное меню | `#nlbNav`, клик по `.nav-link` | 129–139 |
+| 7 | Автофокус поиска | `#searchModal`, `shown.bs.modal` | 142–150 |
+| 8 | Валидация форм | `form.needs-validation` | 153–163 |
+| 9 | Ctrl+K | `keydown`, `#searchModal` | 166–175 |
+
+В конце на `<html>` добавляется класс `js` (`script.js:178`) — это позволяет
+в будущем скрывать анимации при отключённом JS.
+
+## 6. Компонентные шаблоны
+
+### Меню `top_bootstrap`
+
+`components/bitrix/menu/top_bootstrap/template.php`:
+
+- `setFrameMode(true)` — режим компонента, чтобы правки в админке применялись к
+  фрагменту;
+- если `$arResult` пуст — подставляется демо-меню из 6 пунктов
+  (`template.php:18`), чтобы сайт не остался без навигации до создания типа
+  `top`;
+- активный пункт: `SELECTED` → класс `active` + `aria-current="page"`;
+- ссылка и текст экранируются: `htmlspecialcharsbx()`.
+
+Вызов — `header.php:122`:
+
+```php
+$APPLICATION->IncludeComponent('bitrix:menu', 'top_bootstrap', [
+    'ROOT_MENU_TYPE' => 'top',
+    'MAX_LEVEL' => '1',
+    'CHILD_MENU_TYPE' => 'left',
+    'USE_EXT' => 'Y',
+    'DELAY' => 'N',
+    'ALLOW_MULTI_SELECT' => 'N',
+    'MENU_CACHE_TYPE' => 'A',
+    'MENU_CACHE_TIME' => '3600',
+    'MENU_CACHE_USE_GROUPS' => 'Y',
+    'MENU_CACHE_GET_VARS' => [],
+], false, ['HIDE_ICONS' => 'Y']);
+```
+
+### Хлебные крошки `bootstrap`
+
+`components/bitrix/breadcrumb/bootstrap/template.php`:
+
+- выводит `<nav aria-label="Хлебные крошки"><ol class="breadcrumb-navigation">`;
+- последний элемент без ссылки получает `aria-current="page"`;
+- пустой `$arResult` → компонент ничего не рисует;
+- вызов — `header.php:204`, только если `GetCurPage(false) !== SITE_DIR`.
+
+## 7. Демо-лендинг и превью
+
+| Файл | Что это | Зачем |
+|---|---|---|
+| `preview/index.html` | статическая копия лендинга | посмотреть дизайн без Битрикса |
+| `demo/index.php` | тот же лендинг через `header.php`/`footer.php` | быстро получить главную на живом сайте |
+
+`demo/index.php` собран из `<main>` превью: пути к картинкам заменены на
+`<?= SITE_TEMPLATE_PATH ?>/assets/images/…`, поэтому файл не зависит от
+расположения страницы. Ссылки в демо — якоря (`#events`, `#news`); на живом
+сайте их нужно заменить на адреса разделов (`/events/`, `/news/`).
+
+## 8. Зависимости
+
+```
+Bootstrap CSS ─┐
+               ├→ styles.css (переопределения) → страница
+Bootstrap JS  ─┴→ script.js (поведение)
+```
+
+Внешних зависимостей нет: Bootstrap и все ассеты лежат в `assets/`, шрифты
+системные, изображения — в `assets/images/`. Сайт работает в закрытом контуре
+без обращений к CDN и Google Fonts.

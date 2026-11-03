@@ -1,0 +1,101 @@
+<?php
+/**
+ * Проверка значений, которые миграция записала в «базу» (заглушки).
+ *
+ * Запускается из db/tests/run.php в песочнице с флагом NLB_ROOT.
+ */
+
+declare(strict_types=1);
+
+require __DIR__ . '/../lib/boot.php';
+
+$errors = [];
+
+$eventsIblock = nlb_iblock_id('events');
+$eventId = nlb_element_id($eventsIblock, 'nlb-evt-001');
+if ($eventId <= 0) {
+    $errors[] = 'не найден элемент nlb-evt-001';
+} else {
+    $values = NlbStubStore::$elements[$eventId]['PROPERTY_VALUES'] ?? [];
+    if (($values['DATE'] ?? '') !== '06.11.2026 18:30:00') {
+        $errors[] = 'DATE события: ' . var_export($values['DATE'] ?? null, true)
+            . ' вместо 06.11.2026 18:30:00';
+    }
+    if (($values['CATEGORY'] ?? 0) <= 0) {
+        $errors[] = 'CATEGORY события не преобразован в ID значения списка';
+    }
+    if (!isset($values['SEATS']) || $values['SEATS'] !== 40) {
+        $errors[] = 'SEATS события должен быть числом 40';
+    }
+}
+
+$newsIblock = nlb_iblock_id('news');
+$newsId = nlb_element_id($newsIblock, 'nlb-news-001');
+if ($newsId <= 0) {
+    $errors[] = 'не найден элемент nlb-news-001';
+} else {
+    $values = NlbStubStore::$elements[$newsId]['PROPERTY_VALUES'] ?? [];
+    $tags = $values['TAGS'] ?? [];
+    if (!is_array($tags) || count($tags) !== 2) {
+        $errors[] = 'TAGS новости: ожидались 2 ID значений, получено ' . var_export($tags, true);
+    } else {
+        foreach ($tags as $tagId) {
+            if (!isset(NlbStubStore::$enums[$tagId])) {
+                $errors[] = 'TAGS новости: ID ' . $tagId . ' не найден среди значений списка';
+            }
+        }
+    }
+    if ((int)(NlbStubStore::$elements[$newsId]['PREVIEW_PICTURE'] ?? 0) <= 0) {
+        $errors[] = 'у новости не заполнена картинка анонса';
+    }
+    if (empty(NlbStubStore::$elements[$newsId]['DATE_ACTIVE_FROM'])) {
+        $errors[] = 'у новости не заполнена дата активности';
+    }
+}
+
+$booksIblock = nlb_iblock_id('books');
+$bookId = nlb_element_id($booksIblock, 'nlb-book-001');
+if ($bookId <= 0) {
+    $errors[] = 'не найден элемент nlb-book-001';
+} else {
+    $values = NlbStubStore::$elements[$bookId]['PROPERTY_VALUES'] ?? [];
+    if (($values['YEAR'] ?? 0) !== 1940) {
+        $errors[] = 'YEAR книги должен быть числом 1940';
+    }
+    if (($values['AVAILABLE'] ?? 0) <= 0) {
+        $errors[] = 'AVAILABLE книги не преобразован в ID значения списка';
+    }
+}
+
+$elements = count(NlbStubStore::$elements);
+if ($elements !== 48) {
+    $errors[] = 'элементов в песочнице ' . $elements . ' вместо 48';
+}
+
+$sections = count(NlbStubStore::$sections);
+if ($sections !== 12) {
+    $errors[] = 'разделов в песочнице ' . $sections . ' вместо 12';
+}
+
+/* Счётчиков в структуре нет: количество берётся из инфоблока. */
+if (nlb_iblock_count('news') !== 10) {
+    $errors[] = 'nlb_iblock_count(news) = ' . nlb_iblock_count('news') . ' вместо 10';
+}
+if (nlb_iblock_count('printing') !== 8) {
+    $errors[] = 'nlb_iblock_count(printing) = ' . nlb_iblock_count('printing') . ' вместо 8';
+}
+$counts = nlb_counts();
+if (array_sum($counts) !== 48) {
+    $errors[] = 'сумма nlb_counts() = ' . array_sum($counts) . ' вместо 48';
+}
+
+if ($errors) {
+    echo "Ошибки inspect:\n";
+    foreach ($errors as $error) {
+        echo "  x {$error}\n";
+    }
+    exit(1);
+}
+
+echo "OK: значения свойств, даты, списки и картинки корректны\n";
+exit(0);
