@@ -1,0 +1,178 @@
+СТРУКТУРА САЙТА И КАРТА ФАЙЛОВ
+Дата среза: 04.11.2026
+
+================================================================
+1. ДЕРЕВО РЕПОЗИТОРИЯ (корень = DOCUMENT_ROOT сайта)
+================================================================
+
+    index.php, 404.php          главная и 404
+    sitemap.php                 XML-карта (отдаётся как /sitemap.xml)
+    urlrewrite.php              правила ЧПУ
+    robots.txt                  индексация, Clean-param, Sitemap
+    manifest.webmanifest        PWA-манифест
+    sw.js                       service worker
+    offline.html                офлайн-заглушка
+    about/ news/ events/ …      17 разделов, у каждого index.php
+    local/templates/nlb_bootstrap/   шаблон сайта
+    local/php_interface/        init.php + 5 хелперов
+    db/                         миграции, конфиги, демо-контент, тесты
+    docs/                       документация (14 .md)
+    tools/                      гейты и служебные скрипты
+    preview/                    статическое демо (106 HTML)
+    demo/index.php              демо-лендинг через шаблон
+    test/                       этот набор для внешнего ИИ-анализа
+
+================================================================
+2. СТРАНИЦЫ
+================================================================
+
+    Раздел                Адрес               Файл
+    ----------------------------------------------------------------
+    Главная               /                   index.php
+    Новости               /news/              news/index.php
+    Новость               /news/<код>/        news/detail.php
+    События               /events/            events/index.php
+    Событие               /events/<код>/      events/detail.php
+    Услуги                /services/          services/index.php
+    Услуга                /services/<код>/    services/detail.php
+    Печать                /printing/          printing/index.php
+    Печатная услуга       /printing/<код>/    printing/detail.php
+    Каталог продукции     /books/             books/index.php
+    Сувенир               /books/<код>/       books/detail.php
+    Подарочные наборы     /collections/       collections/index.php
+    Набор                 /collections/<код>/ collections/detail.php
+    О библиотеке          /about/             about/index.php
+    Контакты              /contacts/          contacts/index.php
+    Обратная связь        /feedback/          feedback/index.php
+    Подписка              /subscribe/         subscribe/index.php
+    Поиск                 /search/            search/index.php
+    Личный кабинет        /personal/          personal/index.php
+    Вход                  /auth/login/        auth/login/index.php
+    Регистрация           /auth/registration/ auth/registration/index.php
+    Забыли пароль         /auth/forgot-password/  …
+    Смена пароля          /auth/change-password/  …
+    Правила               /rules/             rules/index.php
+    Политика              /privacy/           privacy/index.php
+    Условия               /terms/             terms/index.php
+    Карта сайта           /sitemap/           sitemap/index.php
+    404                   /404.php            404.php
+
+Итого 28 страниц: главная + 17 разделов + 6 детальных + 4 авторизации + 404.
+
+================================================================
+3. МЕНЮ
+================================================================
+
+Верхнее меню — 7 пунктов (db/menu/top.menu.php): Главная, Новости, События,
+Услуги, Печать, Каталог продукции, Контакты. Выводится bitrix:menu с
+шаблоном top_bootstrap (header.php:135).
+
+Дополнительно: db/menu/bottom.menu.php (подвал),
+db/menu/services.left.menu.php и db/menu/printing.left.menu.php (боковые
+меню разделов), миграция 011_section_menus.php раскладывает их по разделам.
+
+================================================================
+4. ЧПУ (urlrewrite.php:12-62)
+================================================================
+
+    /sitemap.xml            → /sitemap.php
+    /news/<код>/            → /news/detail.php?CODE=<код>
+    /events/<код>/          → /events/detail.php?CODE=<код>
+    /services/<код>/        → /services/detail.php?CODE=<код>
+    /printing/<код>/        → /printing/detail.php?CODE=<код>
+    /books/<код>/           → /books/detail.php?CODE=<код>
+    /collections/<код>/     → /collections/detail.php?CODE=<код>
+
+Код элемента санитизируется: preg_replace('/[^a-z0-9_-]/i') — например
+services/detail.php:13-16. Несуществующий код отдаёт 404 и пустое состояние.
+
+================================================================
+5. ШАБЛОН И КОМПОНЕНТЫ
+================================================================
+
+local/templates/nlb_bootstrap/
+    header.php          <head>, мета, SEO, JSON-LD, топбар, меню, поиск, крошки
+    footer.php          подвал, подписка, модалки (обратная связь, реквизиты), FAB
+    styles.css          2 607 строк, токены в :root (styles.css:12)
+    script.js           270 строк, 10 модулей + формы и слоты (раздел 8.1)
+    assets/css/bootstrap.min.css        5.3.3, локально
+    assets/js/bootstrap.bundle.min.js   5.3.3, локально
+    assets/js/pwa.js, consent.js
+    assets/icons/       6 иконок
+    assets/images/      162 файла (JPG/WebP/AVIF, ширины 480/960/1280)
+
+Шаблоны компонентов (7):
+    menu/top_bootstrap                  верхнее меню
+    breadcrumb/bootstrap                хлебные крошки
+    news.list/nlb_cards                 универсальный список (NLB_CARD)
+    news.detail/nlb_detail              детальная новости/сувенира
+    news.detail/nlb_service             детальная услуги (тарифы, галерея)
+    iblock.element.add.form/bootstrap   три формы заявок
+    main.feedback/bootstrap             модалка обратной связи
+
+================================================================
+6. ХЕЛПЕРЫ (local/php_interface/)
+================================================================
+
+    init.php                подключает include/*, регистрирует обработчики
+    include/nlb_db.php      чтение инфоблоков: nlb_iblock_id(),
+                            nlb_iblock_properties(), nlb_element_name(),
+                            nlb_element_values(), nlb_counts()
+    include/nlb_forms.php   формы: конфиг полей, разметка, слоты, события
+    include/nlb_media.php   nlb_picture(): <picture> + srcset + WebP/AVIF
+    include/nlb_seo.php     canonical, OG, Twitter, JSON-LD (Library, WebSite)
+    include/nlb_security.php  заголовки и CSP
+
+================================================================
+7. СЛОЙ ДАННЫХ (db/)
+================================================================
+
+    db/config/iblocks.php       9 инфоблоков, 65 свойств, 12 разделов
+    db/config/data/*.php        6 файлов демо-контента (news, events,
+                                collections, books, services, printing)
+    db/migrations/001–011.php   идемпотентные шаги на API Битрикса
+    db/menu/*.menu.php          4 файла меню
+    db/lib/boot.php             загрузка конфигов без ядра
+    db/lib/helpers.php          создание типов, инфоблоков, свойств, элементов
+    db/sql/checks.sql           проверки схемы для check.php
+    db/tests/run.php            26 проверок на заглушках ядра
+    db/tests/stub/bitrix.php    заглушка ядра (26 КБ)
+    db/run.php                  накат миграций (--only, --set-template)
+    db/check.php                что реально в базе (нужно ядро)
+    db/rollback.php             откат демо-контента
+    db/lint.php                 проверка конфигов без ядра
+
+Миграции: 001 типы, 002 инфоблоки, 003 свойства, 004 разделы, 005 элементы,
+006 меню, 007 привязка шаблона, 008 заявки (requests/bookings/orders +
+почтовое событие NLB_NEW_REQUEST), 009 синхронизация существующих
+инфоблоков, 010 перевод книжной базы в сувениры и расширение услуг,
+011 меню разделов.
+
+================================================================
+8. ГЕЙТЫ И СЛУЖЕБНЫЕ СКРИПТЫ (tools/)
+================================================================
+
+    check-template.mjs        структура шаблона, ассеты, спрайт, баланс тегов
+    check-docs.mjs            битые ссылки между документами
+    build-preview-pages.php   сборка preview/ из db/config/
+    build-image-variants.php  WebP/AVIF и ширины 480/960/1280 (нужен GD)
+    optimize-images.ps1       кадрирование и пережатие исходных JPG
+    .htaccess                 закрывает каталог от веба
+
+================================================================
+9. ГДЕ ЧТО МЕНЯТЬ (для оценки поддерживаемости)
+================================================================
+
+    Цвета, отступы, радиусы     styles.css:12 (:root, токены --nlb-*)
+    Шапка, меню, поиск, крошки  header.php
+    Подвал, подписка, модалки   footer.php
+    Поведение JS                script.js (IIFE, без jQuery)
+    Тексты страниц              PHP-файлы разделов + инфоблоки
+    Поля форм и их обязательность  nlb_forms.php:32-236
+    Данные каталога             db/config/data/*.php
+    Структура инфоблоков        db/config/iblocks.php
+    SEO                         nlb_seo.php, sitemap.php, robots.txt
+    Заголовки безопасности      nlb_security.php
+
+Вендорные файлы (bootstrap.min.css/js) не правятся: все переопределения —
+только в styles.css (AGENTS.md:18-22).
