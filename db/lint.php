@@ -351,10 +351,19 @@ foreach ($perIblock as $code => $count) {
 /* ------------------------------------------------------------------ */
 
 $menuDir = $base . '/db/menu';
+$menuFiles = [];
 foreach (['top', 'bottom'] as $menuType) {
-    $file = $menuDir . '/' . $menuType . '.menu.php';
+    $menuFiles[] = ['db/menu/' . $menuType . '.menu.php', 'меню ' . $menuType];
+}
+foreach (glob($menuDir . '/*.left.menu.php') ?: [] as $sectionMenuFile) {
+    $sectionName = basename($sectionMenuFile, '.left.menu.php');
+    $menuFiles[] = ['db/menu/' . $sectionName . '.left.menu.php', 'меню ' . $sectionName];
+}
+
+foreach ($menuFiles as [$menuRel, $menuLabel]) {
+    $file = $base . '/' . $menuRel;
     if (!is_file($file)) {
-        nlb_fail("нет файла меню: db/menu/{$menuType}.menu.php");
+        nlb_fail("нет файла меню: {$menuRel}");
         continue;
     }
 
@@ -364,22 +373,22 @@ foreach (['top', 'bottom'] as $menuType) {
     ob_end_clean();
 
     if (!is_array($aMenuLinks) || !$aMenuLinks) {
-        nlb_fail("db/menu/{$menuType}.menu.php: \$aMenuLinks не массив");
+        nlb_fail("{$menuRel}: \$aMenuLinks не массив");
         continue;
     }
     foreach ($aMenuLinks as $i => $link) {
         if (!is_array($link) || count($link) < 2) {
-            nlb_fail("db/menu/{$menuType}.menu.php: пункт #{$i} должен быть массивом из 5 элементов");
+            nlb_fail("{$menuRel}: пункт #{$i} должен быть массивом из 5 элементов");
             continue;
         }
         if (empty($link[0])) {
-            nlb_fail("db/menu/{$menuType}.menu.php: у пункта #{$i} нет текста");
+            nlb_fail("{$menuRel}: у пункта #{$i} нет текста");
         }
         if (!str_starts_with((string)$link[1], '/')) {
-            nlb_fail("db/menu/{$menuType}.menu.php: ссылка пункта #{$i} должна начинаться с /");
+            nlb_fail("{$menuRel}: ссылка пункта #{$i} должна начинаться с /");
         }
     }
-    nlb_ok("меню {$menuType}: " . count($aMenuLinks) . ' пунктов');
+    nlb_ok("{$menuLabel}: " . count($aMenuLinks) . ' пунктов');
 }
 
 /* ------------------------------------------------------------------ */

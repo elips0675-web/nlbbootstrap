@@ -140,7 +140,7 @@ $nlbAuthorized = $USER->IsAuthorized();
                     'top_bootstrap',
                     [
                         'ROOT_MENU_TYPE' => 'top',
-                        'MAX_LEVEL' => '1',
+                        'MAX_LEVEL' => '2',
                         'CHILD_MENU_TYPE' => 'left',
                         'USE_EXT' => 'Y',
                         'DELAY' => 'N',

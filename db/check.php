@@ -120,6 +120,12 @@ foreach (['top', 'bottom'] as $type) {
         nlb_check_fail("нет файла меню /menu/{$type}.menu.php (шаг 006)");
     }
 }
+foreach (['services', 'printing'] as $section) {
+    $file = nlb_root() . '/' . $section . '/.left.menu.php';
+    if (!is_file($file)) {
+        nlb_check_fail("нет файла меню /{$section}/.left.menu.php (шаг 011)");
+    }
+}
 
 /* 4. Шаблон сайта */
 $siteId = nlb_site_id();

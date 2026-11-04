@@ -129,6 +129,12 @@ if ($removeMenus) {
             nlb_say("  удалён /menu/{$menuType}.menu.php");
         }
     }
+    foreach (['services', 'printing'] as $section) {
+        $file = $root . '/' . $section . '/.left.menu.php';
+        if (is_file($file) && @unlink($file)) {
+            nlb_say("  удалён /{$section}/.left.menu.php");
+        }
+    }
 }
 
 nlb_clear_cache();

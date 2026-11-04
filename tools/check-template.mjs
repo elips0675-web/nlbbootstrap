@@ -616,6 +616,65 @@ if (topMenu) {
     ok(`меню top: ${items.length} пунктов, все страницы на месте`);
 }
 
+const headerMenuPhp = read(`${tplRel}/header.php`);
+if (headerMenuPhp && !headerMenuPhp.includes("'MAX_LEVEL' => '2'")) {
+    fail('header.php: bitrix:menu без MAX_LEVEL = 2 — второй уровень не подключён');
+}
+
+const menuTemplate = read(`${tplRel}/components/bitrix/menu/top_bootstrap/template.php`);
+if (!menuTemplate) {
+    fail('нет шаблона меню top_bootstrap/template.php');
+} else {
+    for (const part of ['DEPTH_LEVEL', 'dropdown-menu', 'dropdown-item', 'data-bs-toggle="dropdown"']) {
+        if (!menuTemplate.includes(part)) {
+            fail(`шаблон меню top_bootstrap: нет фрагмента ${part}`);
+        }
+    }
+    ok('шаблон меню: второй уровень и выпадающие списки');
+}
+
+for (const section of ['services', 'printing']) {
+    const rel = `db/menu/${section}.left.menu.php`;
+    const text = read(rel);
+    const data = read(`db/config/data/${section}.php`) || '';
+    if (!text) {
+        fail(`нет файла меню: ${rel}`);
+        continue;
+    }
+    if (!fs.existsSync(path.join(root, section, 'index.php'))) {
+        fail(`${section}/index.php: нет страницы каталога`);
+    }
+    const links = [...text.matchAll(/^\s*\['([^']+)',\s*'([^']+)'/gm)];
+    let details = 0;
+    for (const [, label, url] of links) {
+        if (url === `/${section}/`) continue;
+        details++;
+        // Детальные страницы работают через detail.php и ЧПУ: каталога
+        // /services/<код>/ на диске нет, поэтому сверяем код с демо-данными.
+        const code = url.replace(/\/+$/, '').split('/').pop();
+        if (!data.includes(`'code' => '${code}'`)) {
+            fail(`${rel}: пункт «${label}» ведёт на ${url}, в демо-данных нет кода ${code}`);
+        }
+    }
+    if (links.length !== 9 || details !== 8) {
+        fail(`${rel}: ${links.length} пунктов, из них ${details} ссылок на услуги (нужно 9 и 8)`);
+    }
+}
+ok('меню разделов: услуги и печать, 8 ссылок в каждом');
+
+const homePreview = read('preview/index.html') || '';
+if ((homePreview.match(/nav-item dropdown/g) || []).length !== 2) {
+    fail('preview/index.html: нет двух выпадающих пунктов верхнего меню');
+}
+if (!homePreview.includes('services/observation-deck/') || !homePreview.includes('printing/pechat-dokumentov/')) {
+    fail('preview/index.html: в выпадающих списках нет ссылок на услуги');
+}
+const menuStyles = read(`${tplRel}/styles.css`) || '';
+if (!menuStyles.includes('.dropdown-menu') || !menuStyles.includes('.dropdown-item')) {
+    fail('styles.css: нет стилей выпадающего меню');
+}
+ok('preview: выпадающее меню в шапке');
+
 const migrations = fs.existsSync(path.join(root, 'db/migrations'))
     ? fs.readdirSync(path.join(root, 'db/migrations')).filter((name) => name.endsWith('.php'))
     : [];

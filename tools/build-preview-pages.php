@@ -142,13 +142,33 @@ function strip_fonts(string $html): string
 function nav_items(): array
 {
     return [
-        ['Главная', '', 'home'],
-        ['Новости', 'news/', 'news'],
-        ['События', 'events/', 'events'],
-        ['Услуги', 'services/', 'services'],
-        ['Печать', 'printing/', 'printing'],
-        ['Каталог продукции', 'books/', 'books'],
-        ['Контакты', 'contacts/', 'contacts'],
+        ['Главная', '', 'home', []],
+        ['Новости', 'news/', 'news', []],
+        ['События', 'events/', 'events', []],
+        ['Услуги', 'services/', 'services', [
+            ['Все услуги', 'services/'],
+            ['Обзорная площадка', 'services/observation-deck/'],
+            ['Сауна', 'services/sauna/'],
+            ['Кафе', 'services/cafe/'],
+            ['Лекторий', 'services/lecture-hall/'],
+            ['Концертный зал', 'services/concert-hall/'],
+            ['Детская комната', 'services/kids-zone/'],
+            ['Спортзал', 'services/gym/'],
+            ['Коворкинг', 'services/coworking/'],
+        ]],
+        ['Печать', 'printing/', 'printing', [
+            ['Все услуги печати', 'printing/'],
+            ['Печать и копирование', 'printing/pechat-dokumentov/'],
+            ['Сканирование', 'printing/skanirovanie/'],
+            ['Переплёт и ламинирование', 'printing/pereplyot-i-laminirovanie/'],
+            ['Визитки', 'printing/vizitki/'],
+            ['Брошюры и буклеты', 'printing/broshyury-i-buklety/'],
+            ['Широкоформатная печать', 'printing/shirokiy-format/'],
+            ['Печать на холсте', 'printing/pechat-na-holste/'],
+            ['Печать на кружках', 'printing/kruzhki/'],
+        ]],
+        ['Каталог продукции', 'books/', 'books', []],
+        ['Контакты', 'contacts/', 'contacts', []],
     ];
 }
 
@@ -156,12 +176,28 @@ function nav_html(int $depth, string $active): string
 {
     $prefix = base($depth);
     $html = '<ul class="navbar-nav mx-auto">' . "\n";
-    foreach (nav_items() as [$label, $path, $key]) {
+    foreach (nav_items() as [$label, $path, $key, $children]) {
         $href = $path === '' ? ($prefix === '' ? './' : $prefix) : $prefix . $path;
         $isActive = $key === $active;
-        $html .= '                    <li class="nav-item"><a class="nav-link'
-            . ($isActive ? ' active' : '') . '" href="' . e($href) . '"'
-            . ($isActive ? ' aria-current="page"' : '') . '>' . e($label) . '</a></li>' . "\n";
+
+        if (!$children) {
+            $html .= '                    <li class="nav-item"><a class="nav-link'
+                . ($isActive ? ' active' : '') . '" href="' . e($href) . '"'
+                . ($isActive ? ' aria-current="page"' : '') . '>' . e($label) . '</a></li>' . "\n";
+            continue;
+        }
+
+        $html .= '                    <li class="nav-item dropdown"><a class="nav-link dropdown-toggle'
+            . ($isActive ? ' active' : '') . '" href="' . e($href) . '" role="button"'
+            . ' data-bs-toggle="dropdown" aria-expanded="false"'
+            . ($isActive ? ' aria-current="page"' : '') . '>' . e($label) . '</a>' . "\n"
+            . '                        <ul class="dropdown-menu">' . "\n";
+        foreach ($children as [$childLabel, $childPath]) {
+            $html .= '                            <li><a class="dropdown-item" href="'
+                . e($prefix . $childPath) . '">' . e($childLabel) . '</a></li>' . "\n";
+        }
+        $html .= '                        </ul>' . "\n"
+            . '                    </li>' . "\n";
     }
 
     return $html . '                </ul>';
@@ -173,7 +209,24 @@ function replace_nav(string $html, int $depth, string $active): string
     if ($start === false) {
         return $html;
     }
-    $end = strpos($html, '</ul>', $start);
+
+    // Ищем парный </ul> с учётом вложенных выпадающих списков.
+    $end = false;
+    $offset = $start;
+    $level = 0;
+    while (preg_match('~</?ul\b~i', $html, $match, PREG_OFFSET_CAPTURE, $offset)) {
+        $tag = $match[0][0];
+        $offset = $match[0][1] + strlen($tag);
+        if (str_contains($tag, '/')) {
+            $level--;
+            if ($level === 0) {
+                $end = $match[0][1];
+                break;
+            }
+        } else {
+            $level++;
+        }
+    }
     if ($end === false) {
         return $html;
     }

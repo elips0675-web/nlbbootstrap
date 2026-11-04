@@ -164,8 +164,8 @@ nlb_test_assert($code === 0, 'lint.php: exit 0');
 nlb_test_assert($code === 0, 'первый запуск: exit 0');
 nlb_test_assert(str_contains($output, 'Готово'), 'первый запуск: есть итоговая строка');
 nlb_test_assert(
-    str_contains($output, 'создано объектов 182'),
-    'первый запуск: создано 182 объектов (в выводе: '
+    str_contains($output, 'создано объектов 184'),
+    'первый запуск: создано 184 объектов (в выводе: '
     . (preg_match('/создано объектов (\d+)/', $output, $m) ? $m[1] : '?') . ')'
 );
 if ($code !== 0) {
@@ -261,6 +261,7 @@ if ($code !== 0) {
 nlb_test_assert($code === 0, 'откат: exit 0');
 nlb_test_assert(str_contains($output, 'элементы 91'), 'откат: удалено 91 элементов');
 nlb_test_assert(!is_file($temp . '/menu/top.menu.php'), 'откат: меню удалено');
+nlb_test_assert(!is_file($temp . '/services/.left.menu.php'), 'откат: меню раздела удалено');
 
 [$output, $code] = nlb_test_run($temp . '/db/check.php', [], $temp);
 nlb_test_assert($code === 1, 'check.php после отката: exit 1 (ожидаемо)');

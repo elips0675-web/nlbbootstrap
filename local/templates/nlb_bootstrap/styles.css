@@ -486,6 +486,41 @@ img {
     background: #eff6ff;
 }
 
+.navbar-nlb .navbar-nav .dropdown-toggle::after {
+    margin-left: 0.4rem;
+    vertical-align: 0.15em;
+}
+
+.navbar-nlb .navbar-nav .dropdown-menu {
+    margin-top: 0.35rem;
+    padding: 0.4rem;
+    min-width: 15rem;
+    border: 1px solid var(--nlb-line);
+    border-radius: var(--nlb-radius-sm);
+    box-shadow: var(--nlb-shadow-sm);
+}
+
+.navbar-nlb .navbar-nav .dropdown-item {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.6rem;
+    color: var(--nlb-body);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    white-space: normal;
+}
+
+.navbar-nlb .navbar-nav .dropdown-item:hover,
+.navbar-nlb .navbar-nav .dropdown-item:focus-visible {
+    background: #eff6ff;
+    color: var(--nlb-primary-dark);
+}
+
+.navbar-nlb .navbar-nav .dropdown-item.active,
+.navbar-nlb .navbar-nav .dropdown-item[aria-current="page"] {
+    background: #eff6ff;
+    color: var(--nlb-primary-dark);
+}
+
 .header-actions {
     display: flex;
     align-items: center;

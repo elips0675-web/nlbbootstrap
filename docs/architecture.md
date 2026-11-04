@@ -145,18 +145,22 @@ GET /news/
 
 - `setFrameMode(true)` — режим компонента, чтобы правки в админке применялись к
   фрагменту;
-- если `$arResult` пуст — подставляется демо-меню из 6 пунктов
-  (`template.php:18`), чтобы сайт не остался без навигации до создания типа
-  `top`;
-- активный пункт: `SELECTED` → класс `active` + `aria-current="page"`;
+- если `$arResult` пуст — подставляется демо-меню из 7 пунктов с демо-подпунктами
+  для «Услуг» и «Печати» (`template.php:16`), чтобы сайт не остался без
+  навигации до создания типа `top`;
+- `$arResult` приходит плоским списком (`DEPTH_LEVEL`): шаблон собирает из него
+  дерево и пункты с детьми рисует как `.nav-item.dropdown` с
+  `.dropdown-menu` и `.dropdown-item`;
+- активный пункт: `SELECTED` → класс `active` + `aria-current="page"`; если
+  выбран дочерний пункт, подсвечивается и родитель;
 - ссылка и текст экранируются: `htmlspecialcharsbx()`.
 
-Вызов — `header.php:122`:
+Вызов — `header.php:139`:
 
 ```php
 $APPLICATION->IncludeComponent('bitrix:menu', 'top_bootstrap', [
     'ROOT_MENU_TYPE' => 'top',
-    'MAX_LEVEL' => '1',
+    'MAX_LEVEL' => '2',
     'CHILD_MENU_TYPE' => 'left',
     'USE_EXT' => 'Y',
     'DELAY' => 'N',
@@ -167,6 +171,9 @@ $APPLICATION->IncludeComponent('bitrix:menu', 'top_bootstrap', [
     'MENU_CACHE_GET_VARS' => [],
 ], false, ['HIDE_ICONS' => 'Y']);
 ```
+
+Второй уровень — файлы `.left.menu.php` в разделах (`/services/`, `/printing/`),
+их копирует миграция 011.
 
 ### Хлебные крошки `bootstrap`
 
