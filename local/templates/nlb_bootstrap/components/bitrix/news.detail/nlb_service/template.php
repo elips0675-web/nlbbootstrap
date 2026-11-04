@@ -174,8 +174,7 @@ foreach ($tariffs as $tariff) {
     <div class="service-gallery">
         <?php if ($picture !== ''): ?>
             <figure class="service-gallery-item service-gallery-item--wide">
-                <img src="<?= htmlspecialcharsbx($picture) ?>" alt="<?= htmlspecialcharsbx($name) ?>"
-                     loading="lazy" decoding="async">
+                <?= nlb_picture($picture, $name, ['sizes' => '(max-width: 991px) 50vw, 360px']) ?>
             </figure>
         <?php endif; ?>
         <?php for ($i = $picture !== '' ? 1 : 0; $i < 3; $i++): ?>

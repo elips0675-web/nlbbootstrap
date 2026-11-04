@@ -127,7 +127,7 @@ if (is_array($tagProperty) && !empty($tagProperty['VALUE'])) {
 
     <?php if ($picture !== ''): ?>
         <figure class="article-cover">
-            <img src="<?= htmlspecialcharsbx($picture) ?>" alt="<?= htmlspecialcharsbx($name) ?>" loading="lazy" decoding="async">
+            <?= nlb_picture($picture, $name, ['sizes' => '(max-width: 991px) 100vw, 760px']) ?>
         </figure>
     <?php endif; ?>
 

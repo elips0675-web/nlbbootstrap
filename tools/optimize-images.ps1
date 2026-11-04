@@ -10,6 +10,10 @@
 #
 # Запуск: powershell -NoProfile -ExecutionPolicy Bypass -File tools\optimize-images.ps1
 #
+# После пережатия запустите php tools\build-image-variants.php — он соберёт
+# WebP, AVIF и ширины 480/960/1280 для <picture> и srcset. System.Drawing
+# не умеет WebP/AVIF, поэтому это отдельный PHP-скрипт на GD.
+#
 # Требуется Windows PowerShell 5.1+ и System.Drawing (.NET Framework).
 
 Add-Type -AssemblyName System.Drawing

@@ -23,7 +23,7 @@ Lovable-проекта `../src/` (React 18 + Tailwind 3 + shadcn/ui) на сер
 | Свой JS | ES5-совместимый vanilla, IIFE | `script.js`, 10 модулей + `pwa.js`, `consent.js` |
 | Шрифт | системный стек (`Manrope` — если установлен) | `styles.css:53`, внешних запросов нет |
 | Иконки | inline SVG `<symbol>` | спрайт в `header.php`, копия в `preview/index.html` |
-| Изображения | JPG, пережаты и обрезаны под пропорции вывода | `assets/images/`, 20 файлов |
+| Изображения | JPG + WebP/AVIF, ширины 480/960/1280, `<picture>` и `srcset` | `assets/images/`, 20 исходников |
 | Данные | миграции на API Битрикса | `db/`, 6 инфоблоков, 48 элементов |
 | SEO | свои хелперы | `local/php_interface/include/nlb_seo.php` |
 | Безопасность | заголовки + CSP из PHP | `local/php_interface/include/nlb_security.php` |
@@ -144,8 +144,9 @@ Lovable-проекта `../src/` (React 18 + Tailwind 3 + shadcn/ui) на сер
   используются, но второй сайт не тестировался.
 - **Только светлая тема.** Тёмная не планируется — решение владельца
   от 04.11.2026, `prefers-color-scheme` не подключается.
-- **Без WebP/AVIF.** JPG пережаты (3722 → 1813 КБ), но адаптивных версий и
-  `srcset` нет — это следующий шаг, нужна сборка.
+- **Картинки с вариантами.** JPG пережаты (3722 → 1813 КБ); рядом лежат WebP,
+  AVIF и ширины 480/960/1280, вывод — через `nlb_picture()`. Варианты собирает
+  `php tools/build-image-variants.php` (GD с `imagewebp`/`imageavif`).
 - **Без CI.** Гейты локальные: `node tools/check-template.mjs`,
   `node tools/check-docs.mjs`, `php db/lint.php`, `php db/tests/run.php`.
 

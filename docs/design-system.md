@@ -124,6 +124,12 @@ system-ui.
 hover-подъём `translateY(-6px)` и тень `--nlb-shadow`. Внутри карточки
 картинка масштабируется `scale(1.06–1.07)` за 0.55s.
 
+Картинки выводятся через `nlb_picture()` (`local/php_interface/include/nlb_media.php`):
+`<picture class="nlb-picture">` с AVIF и WebP, JPG-фолбэком и `srcset`.
+Обёртка имеет `display: contents`, своей коробки не создаёт — `img` остаётся
+прямым участником раскладки, селекторы `.nlb-card__media img`, `.hero-img`,
+`.print-media img` работают как раньше.
+
 ### Иконки-плитки
 
 `.icon-tile` — 64×64, радиус 18px, градиентный фон, цветная иконка 30px.

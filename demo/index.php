@@ -19,7 +19,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
             <div class="carousel-inner">
                 <div class="carousel-item active">
-                    <img class="hero-img" src="<?= SITE_TEMPLATE_PATH ?>/assets/images/hero-1.jpg" alt="Современный интерьер библиотеки">
+                    <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/hero-1.jpg', 'Современный интерьер библиотеки', ['class' => 'hero-img', 'sizes' => '100vw', 'priority' => true]) ?>
                     <div class="hero-overlay"></div>
                     <div class="hero-body">
                         <div class="container">
@@ -38,7 +38,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                 </div>
 
                 <div class="carousel-item">
-                    <img class="hero-img" src="<?= SITE_TEMPLATE_PATH ?>/assets/images/hero-2.jpg" alt="Коворкинг в библиотеке">
+                    <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/hero-2.jpg', 'Коворкинг в библиотеке', ['class' => 'hero-img', 'sizes' => '100vw', 'priority' => true]) ?>
                     <div class="hero-overlay"></div>
                     <div class="hero-body">
                         <div class="container">
@@ -57,7 +57,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                 </div>
 
                 <div class="carousel-item">
-                    <img class="hero-img" src="<?= SITE_TEMPLATE_PATH ?>/assets/images/hero-3.jpg" alt="Лекционный зал">
+                    <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/hero-3.jpg', 'Лекционный зал', ['class' => 'hero-img', 'sizes' => '100vw', 'priority' => true]) ?>
                     <div class="hero-overlay"></div>
                     <div class="hero-body">
                         <div class="container">
@@ -158,7 +158,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                 <div class="scroller" role="list">
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/print-docs.jpg" alt="Печать документов" loading="lazy">
+                            <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-docs.jpg', 'Печать документов', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-primary"><svg class="i" aria-hidden="true"><use href="#i-printer"/></svg></span>
                         </div>
                         <div class="print-body">
@@ -174,7 +174,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/print-scanning.jpg" alt="Сканирование документов" loading="lazy">
+                            <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-scanning.jpg', 'Сканирование документов', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-green"><svg class="i" aria-hidden="true"><use href="#i-scan"/></svg></span>
                         </div>
                         <div class="print-body">
@@ -190,7 +190,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/print-cards.jpg" alt="Печать визиток" loading="lazy">
+                            <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-cards.jpg', 'Печать визиток', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-sky"><svg class="i" aria-hidden="true"><use href="#i-card"/></svg></span>
                         </div>
                         <div class="print-body">
@@ -206,7 +206,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/print-brochures.jpg" alt="Брошюры и буклеты" loading="lazy">
+                            <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-brochures.jpg', 'Брошюры и буклеты', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-pink"><svg class="i" aria-hidden="true"><use href="#i-file"/></svg></span>
                         </div>
                         <div class="print-body">
@@ -222,7 +222,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/print-large.jpg" alt="Широкоформатная печать" loading="lazy">
+                            <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-large.jpg', 'Широкоформатная печать', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-orange"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg></span>
                         </div>
                         <div class="print-body">
@@ -238,7 +238,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/print-canvas.jpg" alt="Печать на холсте" loading="lazy">
+                            <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-canvas.jpg', 'Печать на холсте', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-green"><svg class="i" aria-hidden="true"><use href="#i-image"/></svg></span>
                         </div>
                         <div class="print-body">
@@ -254,7 +254,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/print-mug.jpg" alt="Печать на кружках" loading="lazy">
+                            <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-mug.jpg', 'Печать на кружках', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-orange"><svg class="i" aria-hidden="true"><use href="#i-cup"/></svg></span>
                         </div>
                         <div class="print-body">
@@ -270,7 +270,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
                     <article class="print-card" role="listitem">
                         <div class="print-media">
-                            <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/print-tshirts.jpg" alt="Печать на футболках" loading="lazy">
+                            <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-tshirts.jpg', 'Печать на футболках', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-sky"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg></span>
                         </div>
                         <div class="print-body">
@@ -311,7 +311,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                 <div class="col-lg-4" data-reveal>
                     <article class="nlb-card">
                         <div class="nlb-card__media">
-                            <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/event.jpg" alt="Встреча с автором" loading="lazy">
+                            <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/event.jpg', 'Встреча с автором', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 33vw']) ?>
                             <span class="event-cat bg-grad-sky">Литература</span>
                             <span class="event-date"><b>15</b><span>апр</span></span>
                         </div>
@@ -331,7 +331,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                 <div class="col-lg-4" data-reveal>
                     <article class="nlb-card">
                         <div class="nlb-card__media">
-                            <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/event.jpg" alt="Детский читательский клуб" loading="lazy">
+                            <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/event.jpg', 'Детский читательский клуб', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 33vw']) ?>
                             <span class="event-cat bg-grad-pink">Для детей</span>
                             <span class="event-date"><b>22</b><span>апр</span></span>
                         </div>
@@ -351,7 +351,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                 <div class="col-lg-4" data-reveal>
                     <article class="nlb-card">
                         <div class="nlb-card__media">
-                            <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/event.jpg" alt="Цифровые технологии в образовании" loading="lazy">
+                            <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/event.jpg', 'Цифровые технологии в образовании', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 33vw']) ?>
                             <span class="event-cat bg-grad-green">Технологии</span>
                             <span class="event-date"><b>28</b><span>апр</span></span>
                         </div>
@@ -395,7 +395,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                     <article class="nlb-card">
                         <a class="d-block h-100" href="/news/">
                             <div class="nlb-card__media">
-                                <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/news-1.jpg" alt="ИИ-ассистент в библиотеке" loading="lazy">
+                                <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/news-1.jpg', 'ИИ-ассистент в библиотеке', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 33vw']) ?>
                             </div>
                             <div class="nlb-card__body">
                                 <p class="news-date">18 июня 2024</p>
@@ -410,7 +410,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                     <article class="nlb-card">
                         <a class="d-block h-100" href="/news/">
                             <div class="nlb-card__media">
-                                <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/news-2.jpg" alt="Летний читальный зал" loading="lazy">
+                                <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/news-2.jpg', 'Летний читальный зал', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 33vw']) ?>
                             </div>
                             <div class="nlb-card__body">
                                 <p class="news-date">15 июня 2024</p>
@@ -425,7 +425,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                     <article class="nlb-card">
                         <a class="d-block h-100" href="/news/">
                             <div class="nlb-card__media">
-                                <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/news-3.jpg" alt="Новые книги" loading="lazy">
+                                <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/news-3.jpg', 'Новые книги', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 33vw']) ?>
                             </div>
                             <div class="nlb-card__body">
                                 <p class="news-date">12 июня 2024</p>
@@ -440,7 +440,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                     <article class="nlb-card">
                         <a class="d-block h-100" href="/news/">
                             <div class="nlb-card__media">
-                                <img src="<?= SITE_TEMPLATE_PATH ?>/assets/images/news-4.jpg" alt="Встреча с писателем" loading="lazy">
+                                <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/news-4.jpg', 'Встреча с писателем', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 33vw']) ?>
                             </div>
                             <div class="nlb-card__body">
                                 <p class="news-date">10 июня 2024</p>

@@ -7,7 +7,7 @@
  *
  * Порядок важен:
  *   1. заголовки безопасности — до любого вывода;
- *   2. хелперы данных и SEO — их используют шаблон и страницы.
+ *   2. хелперы данных, медиа и SEO — их используют шаблон и страницы.
  */
 
 if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) {
@@ -17,6 +17,7 @@ if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) {
 require_once __DIR__ . '/include/nlb_security.php';
 require_once __DIR__ . '/include/nlb_db.php';
 require_once __DIR__ . '/include/nlb_forms.php';
+require_once __DIR__ . '/include/nlb_media.php';
 require_once __DIR__ . '/include/nlb_seo.php';
 
 nlb_security_headers();

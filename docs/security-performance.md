@@ -167,6 +167,8 @@ e-mail и `sameAs` правятся в двух местах — `footer.php` и
 | Bootstrap локально, без CDN | `assets/` | нет лишнего DNS/TLS |
 | Нет jQuery, нет сборки | `script.js` | 8,4 КБ своего JS |
 | Картинки пережаты и обрезаны под пропорции вывода | `assets/images/` | 20 файлов, 2002 КБ (базовые 17: 3722 → 1813 КБ, −51 %) |
+| WebP/AVIF и ширины 480/960/1280 рядом с JPG | `assets/images/` | 162 файла: JPG 3885 КБ, WebP 2331 КБ, AVIF 2033 КБ |
+| `<picture>` + `srcset`/`sizes` | `nlb_picture()`, `nlb_media.php` | браузер берёт AVIF/WebP и ширину под слот |
 | Шрифты системные, Google Fonts убран | `header.php`, `styles.css` | минус внешний запрос, офлайн работает |
 | `loading="lazy"` + `decoding="async"` ниже первого экрана | шаблоны, `nlb_cards` | меньше декодирования до LCP |
 | `fetchpriority="high"` у первого hero | `index.php` | hero грузится раньше |
@@ -199,11 +201,18 @@ e-mail и `sameAs` правятся в двух местах — `footer.php` и
 
 `og-cover.jpg` (1200×630) — карточка для соцсетей, генерируется из `hero-1.jpg`.
 
-Что осталось на прод (требует сборки или сервера):
+Адаптивные варианты собирает `php tools/build-image-variants.php` (GD с
+`imagewebp`/`imageavif`): к каждому JPG добавляются `.webp`, `.avif` и ширины
+`480`, `960`, `1280`, если исходник шире. Всего 20 исходников и 142 варианта:
+JPG 3885 КБ, WebP 2331 КБ, AVIF 2033 КБ. На странице остаётся один JPG-фолбэк,
+остальное браузер выбирает сам; ПК получает десктопную ширину, телефон — 480px.
 
-1. WebP/AVIF с JPEG-fallback через `<picture>` — ещё −30…40 % к весу;
-2. `srcset` для hero под 2× DPR;
-3. `Cache-Control: public, max-age=31536000, immutable` для `assets/` (nginx/Apache).
+Что осталось на прод:
+
+1. `Cache-Control: public, max-age=31536000, immutable` для `assets/`
+   (nginx/Apache — конфиг сервера, из PHP не задаётся);
+2. Lighthouse на живом домене: варианты и `srcset` локально проверены по
+   разметке, но реальные метрики снимаются только на HTTPS-стенде.
 
 ### 2.3 Шрифт
 
@@ -247,7 +256,7 @@ e-mail и `sameAs` правятся в двух местах — `footer.php` и
 - TTFB < 300 ms после прогрева кеша.
 
 Главные оставшиеся риски: отсутствие кеша Битрикса на старте (TTFB), 227 КБ
-Bootstrap без кастомной сборки, картинки без WebP.
+Bootstrap без кастомной сборки, нет `Cache-Control` для `assets/` на сервере.
 
 ## 3. Бэкапы и обновления
 

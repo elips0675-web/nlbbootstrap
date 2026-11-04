@@ -33,6 +33,13 @@ $root = dirname(__DIR__);
 $previewDir = $root . '/preview';
 $tplDir = $root . '/local/templates/nlb_bootstrap';
 
+// Сборщик использует тот же хелпер <picture>, что и шаблон Битрикса:
+// файлы вариантов ищутся в preview/assets, адреса получают префикс глубины.
+require_once $root . '/local/php_interface/include/nlb_media.php';
+if (!defined('NLB_MEDIA_ROOT')) {
+    define('NLB_MEDIA_ROOT', $previewDir);
+}
+
 /* ---------------------------------------------------------------------- */
 /* Хелперы                                                                */
 /* ---------------------------------------------------------------------- */
@@ -81,6 +88,36 @@ function link_to(int $depth, string $path): string
 function image_url(int $depth, string $relative): string
 {
     return base($depth) . ltrim($relative, '/');
+}
+
+/** Ширины вывода: карточки, печать, обложка статьи, hero. */
+const PICTURE_SIZES_CARD = '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 33vw';
+const PICTURE_SIZES_PRINT = '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw';
+const PICTURE_SIZES_COVER = '(max-width: 991px) 100vw, 760px';
+const PICTURE_SIZES_GALLERY = '(max-width: 991px) 50vw, 360px';
+
+/**
+ * <picture> с AVIF/WebP и JPG-фолбэком — как nlb_picture() в шаблоне.
+ * $alt принимается в escaped-виде, как в остальном сборщике.
+ */
+function picture_html(
+    int $depth,
+    string $relative,
+    string $alt,
+    string $sizes,
+    string $class = '',
+    bool $priority = false
+): string {
+    return nlb_picture(
+        ltrim($relative, '/'),
+        html_entity_decode($alt, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+        [
+            'class'    => $class,
+            'sizes'    => $sizes,
+            'prefix'   => base($depth),
+            'priority' => $priority,
+        ]
+    );
 }
 
 function ru_month(int $month, bool $short = false): string
@@ -310,7 +347,52 @@ function prepare_home(string $previewDir): void
     $html = rewrite_home_links($html);
     $html = replace_nav($html, 0, 'home');
     $html = str_replace('../local/templates/nlb_bootstrap/', '', $html);
+    $html = upgrade_home_pictures($html);
     file_put_contents($file, $html);
+}
+
+/**
+ * Главная в preview — статический слепок вёрстки. Заменяет <img> из
+ * assets/images на <picture> с вариантами; уже собранные <picture>
+ * сначала разворачивает, поэтому повторная сборка ничего не меняет.
+ */
+function upgrade_home_pictures(string $html): string
+{
+    $html = (string)preg_replace_callback(
+        '~<picture class="nlb-picture">\s*(?:<source\b[^>]*>\s*)*<img\b[^>]*>\s*</picture>~',
+        static function (array $m): string {
+            preg_match('~<img\b[^>]*>~', $m[0], $img);
+
+            return $img[0] ?? $m[0];
+        },
+        $html
+    );
+
+    return (string)preg_replace_callback(
+        '~<img\b([^>]*?)\s*/?>~',
+        static function (array $m): string {
+            $attrs = $m[1];
+            if (!preg_match('~\bsrc="(assets/images/[^"]+\.jpe?g)"~', $attrs, $srcMatch)) {
+                return $m[0];
+            }
+            $relative = $srcMatch[1];
+            if (!is_file(NLB_MEDIA_ROOT . '/' . $relative)) {
+                return $m[0];
+            }
+            $class = preg_match('~\bclass="([^"]*)"~', $attrs, $classMatch) ? $classMatch[1] : '';
+            $alt = preg_match('~\balt="([^"]*)"~', $attrs, $altMatch) ? $altMatch[1] : '';
+            $file = basename($relative);
+            $sizes = PICTURE_SIZES_CARD;
+            if (str_starts_with($file, 'hero-')) {
+                $sizes = '100vw';
+            } elseif (str_starts_with($file, 'print-')) {
+                $sizes = PICTURE_SIZES_PRINT;
+            }
+
+            return picture_html(0, $relative, $alt, $sizes, $class, str_contains($class, 'hero-img'));
+        },
+        $html
+    );
 }
 
 function home_template(string $previewDir): string
@@ -418,9 +500,9 @@ function news_cards(array $items, int $depth): string
         $href = link_to($depth, 'news/' . $item['code'] . '/');
         $cards .= '<div class="col-sm-6 col-lg-4" data-nlb-item="' . e($item['section'] ?? '') . '">'
             . '<article class="nlb-card h-100"><a class="d-block h-100" href="' . e($href) . '">'
-            . '<div class="nlb-card__media"><img src="'
-            . e(image_url($depth, (string)($item['image'] ?? 'assets/images/news-1.jpg')))
-            . '" alt="' . e($item['name']) . '" loading="lazy" decoding="async"></div>'
+            . '<div class="nlb-card__media">'
+            . picture_html($depth, (string)($item['image'] ?? 'assets/images/news-1.jpg'), (string)$item['name'], PICTURE_SIZES_CARD)
+            . '</div>'
             . '<div class="nlb-card__body">'
             . '<p class="news-date">' . e(dmy((string)($item['active_from'] ?? ''))) . '</p>'
             . '<h3 class="news-title">' . e($item['name']) . '</h3>'
@@ -453,8 +535,7 @@ function event_cards(array $items, int $depth, array $config): string
 
         $cards .= '<div class="col-sm-6 col-lg-4" data-nlb-item="' . e($category) . '">'
             . '<article class="nlb-card h-100"><div class="nlb-card__media">'
-            . '<img src="' . e(image_url($depth, (string)($item['image'] ?? 'assets/images/event.jpg')))
-            . '" alt="' . e($item['name']) . '" loading="lazy" decoding="async">'
+            . picture_html($depth, (string)($item['image'] ?? 'assets/images/event.jpg'), (string)$item['name'], PICTURE_SIZES_CARD)
             . '<span class="event-cat ' . e($classes[$category] ?? 'bg-grad-sky') . '">'
             . e($names[$category] ?? 'Событие') . '</span>';
         if ($timestamp) {
@@ -550,9 +631,8 @@ function printing_cards(array $items, int $depth, int $limit = 0): string
         $unit = (string)($props['UNIT'] ?? '');
 
         $cards .= '<div class="col-sm-6 col-xl-3"><article class="print-card h-100">'
-            . '<div class="print-media"><img src="'
-            . e(image_url($depth, (string)($item['image'] ?? 'assets/images/print-docs.jpg')))
-            . '" alt="' . $name . '" loading="lazy" decoding="async">'
+            . '<div class="print-media">'
+            . picture_html($depth, (string)($item['image'] ?? 'assets/images/print-docs.jpg'), (string)$item['name'], PICTURE_SIZES_PRINT)
             . '<span class="print-badge bg-grad-' . e($color) . '">'
             . '<svg class="i" aria-hidden="true"><use href="#i-' . e($props['ICON'] ?? 'printer') . '"/></svg>'
             . '</span></div><div class="print-body">'
@@ -649,8 +729,9 @@ function detail_page(string $previewDir, array $o): string
 
     $cover = '';
     if (!empty($o['image'])) {
-        $cover = '<figure class="article-cover"><img src="' . e(image_url($depth, (string)$o['image']))
-            . '" alt="' . $name . '" loading="lazy" decoding="async"></figure>';
+        $cover = '<figure class="article-cover">'
+            . picture_html($depth, (string)$o['image'], (string)$o['name'], PICTURE_SIZES_COVER)
+            . '</figure>';
     }
     $cta = '';
     if (!empty($o['cta'])) {
@@ -697,7 +778,7 @@ function service_page(string $previewDir, array $item, int $depth): string
     $schedule = (array)($props['SCHEDULE'] ?? []);
     $phone = trim((string)($props['PHONE'] ?? ''));
     $email = trim((string)($props['EMAIL'] ?? ''));
-    $picture = !empty($item['image']) ? image_url($depth, (string)$item['image']) : '';
+    $picture = !empty($item['image']) ? (string)$item['image'] : '';
 
     $body = $detail !== '' ? $detail : '<p>' . e($preview) . '</p>';
 
@@ -739,8 +820,9 @@ function service_page(string $previewDir, array $item, int $depth): string
     $gallery = '<div class="service-gallery">';
     $emptyCount = 3;
     if ($picture !== '') {
-        $gallery .= '<figure class="service-gallery-item"><img src="' . e($picture) . '" alt="' . $name
-            . '" loading="lazy" decoding="async"></figure>';
+        $gallery .= '<figure class="service-gallery-item">'
+            . picture_html($depth, $picture, (string)$item['name'], PICTURE_SIZES_GALLERY)
+            . '</figure>';
         $emptyCount = 2;
     }
     for ($i = 0; $i < $emptyCount; $i++) {

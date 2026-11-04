@@ -201,14 +201,18 @@ for (const rel of sources) {
 
 const imagesDir = path.join(tpl, 'assets/images');
 const actualImages = fs.existsSync(imagesDir)
-    ? fs.readdirSync(imagesDir).filter((name) => /\.(jpe?g|png|webp|svg)$/i.test(name))
+    ? fs.readdirSync(imagesDir).filter((name) => /\.(jpe?g|png|webp|avif|svg)$/i.test(name))
     : [];
+const actualSet = new Set(actualImages);
 
-for (const name of referencedImages) {
-    if (!actualImages.includes(name)) {
-        fail(`ссылка на несуществующее изображение: assets/images/${name}`);
-    }
-}
+// Варианты не считаются отдельными картинками: photo.webp и photo-480.jpg
+// живут вместе с исходником photo.jpg и проверяются вместе с ним.
+const isWidthVariant = (name) => /-(480|960|1280)\.(?:jpe?g|webp|avif)$/i.test(name);
+const originName = (name) => name
+    .replace(/-(480|960|1280)\.(?:jpe?g|webp|avif)$/i, '')
+    .replace(/\.(?:webp|avif)$/i, '') + '.jpg';
+const isDerived = (name) => isWidthVariant(name)
+    || (/\.(?:webp|avif)$/i.test(name) && actualSet.has(originName(name)));
 
 // og-cover.jpg не выводится в разметке: он подставляется в og:image из nlb_seo.php.
 const seoHelper = read('local/php_interface/include/nlb_seo.php');
@@ -216,12 +220,31 @@ if (seoHelper && seoHelper.includes('og-cover.jpg') && seoHelper.includes('/asse
     referencedImages.add('og-cover.jpg');
 }
 
+for (const name of referencedImages) {
+    if (!actualSet.has(name)) {
+        fail(`ссылка на несуществующее изображение: assets/images/${name}`);
+    }
+}
+
+let originalCount = 0;
+for (const name of referencedImages) {
+    if (!/\.jpe?g$/i.test(name) || isDerived(name)) continue;
+    originalCount += 1;
+    const stem = name.replace(/\.jpe?g$/i, '');
+    for (const ext of ['webp', 'avif']) {
+        if (!actualSet.has(`${stem}.${ext}`)) {
+            fail(`нет варианта assets/images/${stem}.${ext} для ${name}; запустите php tools/build-image-variants.php`);
+        }
+    }
+}
+
 for (const name of actualImages) {
+    if (isDerived(name)) continue;
     if (!referencedImages.has(name)) {
         warn(`изображение не используется в разметке: assets/images/${name}`);
     }
 }
-ok(`изображений: ${actualImages.length}, ссылок: ${referencedImages.size}`);
+ok(`изображений: ${actualImages.length}, ссылок: ${referencedImages.size}, исходников с WebP/AVIF: ${originalCount}`);
 
 for (const rel of [`${tplRel}/assets/css/bootstrap.min.css`, `${tplRel}/assets/js/bootstrap.bundle.min.js`]) {
     const abs = path.join(root, rel);
@@ -229,6 +252,70 @@ for (const rel of [`${tplRel}/assets/css/bootstrap.min.css`, `${tplRel}/assets/j
         fail(`подозрительно маленький вендорный файл: ${rel}`);
     }
 }
+
+/* ------------------------------------------------------------------ */
+/* 2.1. Адаптивные изображения                                        */
+/* ------------------------------------------------------------------ */
+
+const mediaHelper = read('local/php_interface/include/nlb_media.php');
+if (mediaHelper) {
+    for (const part of ['function nlb_picture', 'image/avif', 'image/webp', 'srcset', 'fetchpriority']) {
+        if (!mediaHelper.includes(part)) {
+            fail(`nlb_media.php: нет фрагмента ${part}`);
+        }
+    }
+    const initPhp = read('local/php_interface/init.php') || '';
+    if (!initPhp.includes('include/nlb_media.php')) {
+        fail('init.php: не подключает nlb_media.php');
+    }
+    ok('nlb_media.php: <picture> с AVIF, WebP и srcset');
+}
+
+const variantTool = read('tools/build-image-variants.php');
+if (variantTool && (!variantTool.includes('imagewebp') || !variantTool.includes('imageavif'))) {
+    fail('tools/build-image-variants.php: нет вызовов imagewebp/imageavif');
+}
+
+const componentWithPictures = [
+    `${tplRel}/components/bitrix/news.list/nlb_cards/template.php`,
+    `${tplRel}/components/bitrix/news.detail/nlb_detail/template.php`,
+    `${tplRel}/components/bitrix/news.detail/nlb_service/template.php`,
+];
+for (const rel of componentWithPictures) {
+    const text = read(rel) || '';
+    if (!text.includes('nlb_picture(')) {
+        fail(`${rel}: картинки выводятся без nlb_picture()`);
+    }
+    if (/<img\b/.test(text)) {
+        fail(`${rel}: остался прямой <img> вместо nlb_picture()`);
+    }
+}
+
+const demoIndex = read('demo/index.php') || '';
+const demoPictures = (demoIndex.match(/nlb_picture\(/g) || []).length;
+if (demoPictures < 18) {
+    fail(`demo/index.php: nlb_picture ${demoPictures} раз, нужно 18`);
+}
+if (/<img\b/.test(demoIndex)) {
+    fail('demo/index.php: остался прямой <img> вместо nlb_picture()');
+}
+
+const homeHtml = read('preview/index.html') || '';
+const homePictures = (homeHtml.match(/<picture class="nlb-picture">/g) || []).length;
+if (homePictures < 18) {
+    fail(`preview/index.html: <picture> ${homePictures}, нужно 18 — пересоберите php tools/build-preview-pages.php`);
+}
+const homeWithoutPictures = homeHtml.replace(/<picture class="nlb-picture">[\s\S]*?<\/picture>/g, '');
+const bareHomeImages = (homeWithoutPictures.match(/<img\b[^>]*src="assets\/images\/[^"]+\.jpe?g"/g) || []).length;
+if (bareHomeImages > 0) {
+    fail(`preview/index.html: ${bareHomeImages} JPG-картинок без <picture>`);
+}
+
+const templateStyles = read(`${tplRel}/styles.css`) || '';
+if (!templateStyles.includes('.nlb-picture')) {
+    fail('styles.css: нет правила .nlb-picture');
+}
+ok(`адаптивные картинки: demo ${demoPictures}, главная ${homePictures}, компоненты ${componentWithPictures.length}`);
 
 /* ------------------------------------------------------------------ */
 /* 3. demo/index.php                                                  */
@@ -673,7 +760,15 @@ const menuStyles = read(`${tplRel}/styles.css`) || '';
 if (!menuStyles.includes('.dropdown-menu') || !menuStyles.includes('.dropdown-item')) {
     fail('styles.css: нет стилей выпадающего меню');
 }
-ok('preview: выпадающее меню в шапке');
+// Регрессия: если клик по .dropdown-toggle закрывает collapse, на телефоне
+// «Услуги» и «Печать» сворачивают всё меню вместо показа подпунктов.
+for (const rel of [`${tplRel}/script.js`, 'preview/script.js']) {
+    const text = read(rel) || '';
+    if (text && !text.includes('a.nav-link:not(.dropdown-toggle)')) {
+        fail(`${rel}: обработчик мобильного меню закрывает пункты с подменю — нужен a.nav-link:not(.dropdown-toggle)`);
+    }
+}
+ok('preview: выпадающее меню в шапке, мобильный обработчик не трогает подменю');
 
 const migrations = fs.existsSync(path.join(root, 'db/migrations'))
     ? fs.readdirSync(path.join(root, 'db/migrations')).filter((name) => name.endsWith('.php'))

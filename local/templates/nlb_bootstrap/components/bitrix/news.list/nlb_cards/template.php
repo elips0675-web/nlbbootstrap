@@ -183,7 +183,7 @@ if (!$items) {
                 ?>
                 <article class="print-card h-100">
                     <div class="print-media">
-                        <img src="<?= htmlspecialcharsbx($image) ?>" alt="<?= htmlspecialcharsbx($name) ?>" loading="lazy" decoding="async">
+                        <?= nlb_picture($image, $name, ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                         <span class="print-badge bg-grad-<?= htmlspecialcharsbx(nlb_grad_class(nlb_xml_id($arItem, 'COLOR'))) ?>">
                             <svg class="i" aria-hidden="true"><use href="#i-<?= htmlspecialcharsbx($icon) ?>"/></svg>
                         </span>
@@ -222,7 +222,7 @@ if (!$items) {
                 ?>
                 <article class="nlb-card h-100">
                     <div class="nlb-card__media">
-                        <img src="<?= htmlspecialcharsbx($image) ?>" alt="<?= htmlspecialcharsbx($name) ?>" loading="lazy" decoding="async">
+                        <?= nlb_picture($image, $name, ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 33vw']) ?>
                         <span class="event-cat <?= htmlspecialcharsbx(nlb_event_cat_class($category)) ?>">
                             <?= htmlspecialcharsbx($categoryName) ?>
                         </span>
@@ -330,7 +330,7 @@ if (!$items) {
                 <article class="nlb-card h-100">
                     <a class="d-block h-100" href="<?= htmlspecialcharsbx($link) ?>">
                         <div class="nlb-card__media">
-                            <img src="<?= htmlspecialcharsbx($image) ?>" alt="<?= htmlspecialcharsbx($name) ?>" loading="lazy" decoding="async">
+                            <?= nlb_picture($image, $name, ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 33vw']) ?>
                         </div>
                         <div class="nlb-card__body">
                             <p class="news-date"><?= (string)($arItem['DISPLAY_ACTIVE_FROM'] ?? '') ?></p>
