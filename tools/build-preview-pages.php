@@ -213,15 +213,47 @@ function rewrite_home_links(string $html): string
     return strtr($html, $pairs);
 }
 
+function sync_sprite(string $html, string $tplDir): string
+{
+    $header = @file_get_contents($tplDir . '/header.php');
+    if ($header === false) {
+        return $html;
+    }
+    if (!preg_match(
+        '~<svg xmlns="http://www\.w3\.org/2000/svg" width="0" height="0"[^>]*>(.*?)</svg>~s',
+        $header,
+        $source
+    )) {
+        return $html;
+    }
+
+    $replacement = '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" '
+        . 'style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">'
+        . $source[1] . '</svg>';
+
+    $count = 0;
+    $result = (string)preg_replace(
+        '~<svg xmlns="http://www\.w3\.org/2000/svg" width="0" height="0"[^>]*>.*?</svg>~s',
+        $replacement,
+        $html,
+        1,
+        $count
+    );
+
+    return $count > 0 ? $result : $html;
+}
+
 /**
  * Готовит главную: убирает внешние шрифты, переводит ссылки на разделы
  * и пути к ассетам. Идемпотентно: повторный запуск ничего не ломает.
  */
 function prepare_home(string $previewDir): void
 {
+    global $tplDir;
     $file = $previewDir . '/index.html';
     $html = (string)file_get_contents($file);
     $html = strip_fonts($html);
+    $html = sync_sprite($html, $tplDir);
     $html = rewrite_home_links($html);
     $html = replace_nav($html, 0, 'home');
     $html = str_replace('../local/templates/nlb_bootstrap/', '', $html);
