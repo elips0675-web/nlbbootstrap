@@ -134,11 +134,14 @@
     }
 
     /* ------------------------------------------------------------------
-     * 6. Мобильное меню: закрываем после клика по ссылке
+     * 6. Мобильное меню: закрываем после клика по ссылке.
+     *    Пункт с выпадающим списком не закрываем: иначе на телефоне
+     *    нажатие «Услуги»/«Печать» сворачивало всё меню вместо того,
+     *    чтобы показать подпункты.
      * ------------------------------------------------------------------ */
     const nav = doc.getElementById('nlbNav');
     if (nav && window.bootstrap) {
-        nav.querySelectorAll('a.nav-link').forEach(function (link) {
+        nav.querySelectorAll('a.nav-link:not(.dropdown-toggle)').forEach(function (link) {
             link.addEventListener('click', function () {
                 if (window.innerWidth >= 992) return;
                 window.bootstrap.Collapse.getOrCreateInstance(nav).hide();
