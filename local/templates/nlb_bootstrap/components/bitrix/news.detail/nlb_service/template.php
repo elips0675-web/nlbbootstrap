@@ -242,7 +242,8 @@ foreach ($tariffs as $tariff) {
                         <?php endif; ?>
                         <a class="btn btn-nlb w-100 mt-auto js-choose-tariff"
                            href="#booking"
-                           data-tariff="<?= htmlspecialcharsbx($tariff['title']) ?>">
+                           data-tariff="<?= htmlspecialcharsbx($tariff['title']) ?>"
+                           data-price="<?= htmlspecialcharsbx($tariff['price']) ?>">
                             Выбрать тариф
                         </a>
                     </article>

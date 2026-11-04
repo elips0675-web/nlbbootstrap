@@ -48,7 +48,7 @@ return static function (): array {
                             'VALUE' => $value['value'],
                             'XML_ID' => $value['xml_id'],
                             'SORT' => (int)($value['sort'] ?? 100),
-                            'DEF' => 'N',
+                            'DEF' => !empty($value['def']) ? 'Y' : 'N',
                         ];
                     }
                 }
@@ -81,7 +81,7 @@ return static function (): array {
                         'VALUE' => $value['value'],
                         'XML_ID' => $xmlId,
                         'SORT' => (int)($value['sort'] ?? 100),
-                        'DEF' => 'N',
+                        'DEF' => !empty($value['def']) ? 'Y' : 'N',
                     ]);
                     if ($enumId <= 0) {
                         $error = isset($enum->LAST_ERROR) ? (string)$enum->LAST_ERROR : '';

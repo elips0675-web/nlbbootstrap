@@ -2,8 +2,9 @@
 /**
  * Обратная связь.
  *
- * Бесплатный компонент bitrix:main.feedback: письмо по шаблону FEEDBACK_FORM
- * и запись в журнале почтовых событий. Настройка — docs/bitrix-integration.md, §8.
+ * Обращение сохраняется в инфоблок requests штатным
+ * bitrix:iblock.element.add.form; письмо NLB_NEW_REQUEST — только уведомление.
+ * Настройка — docs/bitrix-integration.md.
  */
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/header.php';
@@ -30,7 +31,7 @@ $APPLICATION->SetPageProperty(
     </div>
 </section>
 
-<section class="section pt-0">
+<section class="section pt-0" id="form">
     <div class="container">
         <div class="row g-4 g-lg-5">
             <div class="col-lg-7" data-reveal>
@@ -44,13 +45,23 @@ $APPLICATION->SetPageProperty(
                         </div>
                     <?php endif; ?>
 
-                    <?php $APPLICATION->IncludeComponent('bitrix:main.feedback', 'bootstrap', [
+                    <?php $APPLICATION->IncludeComponent('bitrix:iblock.element.add.form', 'bootstrap', [
+                        'IBLOCK_TYPE' => 'nlb_content',
+                        'IBLOCK_ID' => nlb_iblock_id('requests'),
+                        'PROPERTY_CODES' => nlb_form_property_codes('request'),
+                        'PROPERTY_CODES_REQUIRED' => nlb_form_required_codes('request'),
+                        'GROUPS' => [],
+                        'STATUS_NEW' => '',
+                        'ELEMENT_ASSOC' => 'NONE',
+                        'MAX_USER_ENTRIES' => 0,
                         'USE_CAPTCHA' => 'Y',
-                        'OK_TEXT' => 'Спасибо! Ваше сообщение отправлено, мы ответим в течение дня.',
-                        'EMAIL_TO' => 'info@example.by',
-                        'REQUIRED_FIELDS' => ['NAME', 'EMAIL', 'MESSAGE'],
-                        'EVENT_MESSAGE_ID' => [],
-                        'AJAX_MODE' => 'N',
+                        'SEF_MODE' => 'N',
+                        'LIST_URL' => nlb_form_success_url('request'),
+                        'SET_TITLE' => 'N',
+                        'NLB_FORM' => 'request',
+                        'NLB_VALUES' => [
+                            'PAGE' => $APPLICATION->GetCurPage(),
+                        ],
                     ], false, ['HIDE_ICONS' => 'Y']); ?>
 
                     <p class="form-hint mt-3 mb-0">

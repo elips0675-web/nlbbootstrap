@@ -3,8 +3,9 @@
  * Услуга — детальная страница.
  *
  * Верхняя часть и контент — компонент news.detail с шаблоном nlb_service.
- * Форма бронирования подключается отдельно: у main.feedback свой sessid,
- * и держать её внутри кэшируемого компонента нельзя.
+ * Форма бронирования подключается отдельно: у неё свой sessid и капча,
+ * и держать её внутри кэшируемого компонента нельзя. Заявка сохраняется
+ * в инфоблок bookings штатным bitrix:iblock.element.add.form.
  */
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/header.php';
@@ -76,19 +77,28 @@ $APPLICATION->SetPageProperty(
                     </p>
                 </div>
 
-                <?php $APPLICATION->IncludeComponent('bitrix:main.feedback', 'bootstrap', [
+                <?php $APPLICATION->IncludeComponent('bitrix:iblock.element.add.form', 'bootstrap', [
+                    'IBLOCK_TYPE' => 'nlb_content',
+                    'IBLOCK_ID' => nlb_iblock_id('bookings'),
+                    'PROPERTY_CODES' => nlb_form_property_codes('booking'),
+                    'PROPERTY_CODES_REQUIRED' => nlb_form_required_codes('booking'),
+                    'GROUPS' => [],
+                    'STATUS_NEW' => '',
+                    'ELEMENT_ASSOC' => 'NONE',
+                    'MAX_USER_ENTRIES' => 0,
                     'USE_CAPTCHA' => 'Y',
-                    'OK_TEXT' => 'Спасибо! Заявка на бронирование отправлена. Мы свяжемся с вами в течение часа.',
-                    'EMAIL_TO' => 'info@example.by',
-                    'REQUIRED_FIELDS' => ['NAME', 'EMAIL', 'MESSAGE'],
-                    'EVENT_MESSAGE_ID' => [],
-                    'AJAX_MODE' => 'N',
-                    'NLB_BOOKING' => 'Y',
-                    'NLB_SERVICE' => $name,
+                    'SEF_MODE' => 'N',
+                    'LIST_URL' => nlb_form_success_url('booking'),
+                    'SET_TITLE' => 'N',
+                    'NLB_FORM' => 'booking',
+                    'NLB_VALUES' => [
+                        'SERVICE' => $name,
+                        'SERVICE_CODE' => $code,
+                    ],
                 ], false, ['HIDE_ICONS' => 'Y']); ?>
 
                 <p class="form-hint mt-3 mb-0">
-                    * Обязательные поля. Отправляя форму, вы соглашаетесь с
+                    Отправляя форму, вы соглашаетесь с
                     <a href="<?= SITE_DIR ?>privacy/">политикой конфиденциальности</a>.
                 </p>
             </div>

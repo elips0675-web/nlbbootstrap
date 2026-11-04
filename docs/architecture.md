@@ -81,7 +81,7 @@ GET /news/
 | 105–112 | нижняя строка: копирайт, политика, условия, карта сайта |
 | 117–143 | FAB: Telegram, WhatsApp, звонок, e-mail, обратная связь |
 | 145–147 | кнопка «наверх» |
-| 149–188 | модалка обратной связи `#feedbackModal` (форма-заглушка) |
+| 149–188 | модалка обратной связи `#feedbackModal` (`nlb_form_render('request')`) |
 | 190–213 | модалка реквизитов `#requisitesModal` |
 | 215–216 | `bootstrap.bundle.min.js` + `script.js` |
 

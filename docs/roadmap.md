@@ -17,10 +17,11 @@
 ## 0.2 — страницы и данные (сделано 03.11.2026)
 
 - ✅ `php -l` всех PHP-файлов (64 файла, 0 ошибок);
-- ✅ слой БД: 6 инфоблоков, 39 свойств, 91 элемент, 7 миграций;
+- ✅ слой БД: 9 инфоблоков, 65 свойств, 91 элемент, 8 миграций;
 - ✅ `bitrix:news.list` → универсальный шаблон `nlb_cards`;
 - ✅ `bitrix:news.detail` → шаблон `nlb_detail`;
-- ✅ `bitrix:main.feedback`, `bitrix:subscribe.form`, `bitrix:search.page`,
+- ✅ `bitrix:iblock.element.add.form` (заявки в `requests`/`bookings`/`orders`),
+  `bitrix:subscribe.form`, `bitrix:search.page`,
   `bitrix:system.auth.*`, `bitrix:main.profile`;
 - ✅ страницы `/auth/`, `/personal/`, `/search/`, `404.php`, `/sitemap/`;
 - ✅ PWA, SEO-хелперы, заголовки безопасности;

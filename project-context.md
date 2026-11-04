@@ -130,7 +130,7 @@ Lovable-проекта `../src/` (React 18 + Tailwind 3 + shadcn/ui) на сер
 | Поиск | `header.php:190` | форма `GET /search/?q=` → `bitrix:search.page` |
 | Личный кабинет | `header.php:159–174` | `/personal/`, `/auth/` |
 | Подписка | `footer.php:92` | `/subscribe/` → `bitrix:subscribe.form` |
-| Обратная связь | `footer.php:209` | модалка → `bitrix:main.feedback` |
+| Обратная связь | `footer.php:201` | модалка → POST `/feedback/` → `requests` |
 | Реквизиты | `footer.php:246` | модалка, статика |
 | Скрипты | `footer.php:268–271` | bundle, `script.js`, `pwa.js`, `consent.js` |
 

@@ -160,13 +160,18 @@ bootstrap.Collapse.getOrCreateInstance(document.getElementById('nlbNav')).hide()
 ## 8. Формы
 
 ```html
-<form class="needs-validation" action="/feedback/" method="post" novalidate>
-    <label class="form-label" for="nlbFeedbackName">Ваше имя</label>
-    <input class="form-control" id="nlbFeedbackName" type="text" name="NAME" required>
-    <div class="invalid-feedback">Укажите имя.</div>
+<form class="feedback-form needs-validation" action="/feedback/" method="post" novalidate>
+    <label class="form-label" for="nlbFbEmail">E-mail</label>
+    <input class="form-control" id="nlbFbEmail" type="email" name="PROPERTY[EMAIL][0]" required>
+    <div class="invalid-feedback">Укажите корректный e-mail.</div>
     <button class="btn btn-nlb" type="submit">Отправить</button>
 </form>
 ```
+
+Имена полей заявок — `PROPERTY[<ID свойства>][0]`: их подставляет
+`nlb_form_render()` из `local/php_interface/include/nlb_forms.php`, а не
+контент-менеджер. Вручную такие формы не верстают — подключают
+`bitrix:iblock.element.add.form → bootstrap`.
 
 - `novalidate` + `needs-validation` — валидация берётся из `script.js`;
 - `invalid-feedback` должен идти **после** поля;

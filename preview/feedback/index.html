@@ -145,32 +145,44 @@
             <div class="col-lg-7" data-reveal>
                 <div class="info-card">
                     <h2 class="h4 mb-3">Форма сообщения</h2>
-                    <form class="needs-validation" action="./" method="post" novalidate>
-                        <div class="mb-3">
-                            <label class="form-label" for="nlbFbName">Имя</label>
-                            <input class="form-control" id="nlbFbName" type="text" name="NAME" required>
-                            <div class="invalid-feedback">Укажите имя.</div>
+                    <form class="needs-validation" action="./" method="post" novalidate data-nlb-form="request">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="nlbFbName">Имя *</label>
+                                <input class="form-control" id="nlbFbName" type="text" name="NAME" autocomplete="name" required>
+                                <div class="invalid-feedback">Укажите имя.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="nlbFbEmail">E-mail *</label>
+                                <input class="form-control" id="nlbFbEmail" type="email" name="PROPERTY[EMAIL][0]" autocomplete="email" required>
+                                <div class="invalid-feedback">Укажите корректный e-mail.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="nlbFbPhone">Телефон</label>
+                                <input class="form-control" id="nlbFbPhone" type="tel" name="PROPERTY[PHONE][0]" autocomplete="tel" placeholder="+375 (__) ___-__-__">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="nlbFbSubject">Тема</label>
+                                <input class="form-control" id="nlbFbSubject" type="text" name="PROPERTY[SUBJECT][0]" placeholder="Вопрос, предложение, отзыв">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="nlbFbMessage">Сообщение *</label>
+                                <textarea class="form-control" id="nlbFbMessage" name="PROPERTY[MESSAGE][0]" rows="5" required></textarea>
+                                <div class="invalid-feedback">Напишите сообщение.</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" id="nlbFbConsent" type="checkbox" name="CONSENT" value="Y" required>
+                                    <label class="form-check-label" for="nlbFbConsent">Согласен с
+                                        <a href="../privacy/">политикой конфиденциальности</a></label>
+                                    <div class="invalid-feedback">Нужно согласие.</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="nlbFbEmail">E-mail</label>
-                            <input class="form-control" id="nlbFbEmail" type="email" name="EMAIL" required>
-                            <div class="invalid-feedback">Укажите корректный e-mail.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="nlbFbMessage">Сообщение</label>
-                            <textarea class="form-control" id="nlbFbMessage" name="MESSAGE" rows="5" required></textarea>
-                            <div class="invalid-feedback">Напишите сообщение.</div>
-                        </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" id="nlbFbConsent" type="checkbox" name="CONSENT" value="Y" required>
-                            <label class="form-check-label" for="nlbFbConsent">Согласен с
-                                <a href="../privacy/">политикой конфиденциальности</a></label>
-                            <div class="invalid-feedback">Нужно согласие.</div>
-                        </div>
-                        <button class="btn btn-nlb" type="submit">Отправить</button>
+                        <button class="btn btn-nlb mt-3" type="submit" name="iblock_submit" value="Y">Отправить</button>
                         <p class="form-hint mt-3 mb-0">
-                            Демо-форма: в Битриксе подключается компонент
-                            <code>bitrix:main.feedback</code> с CAPTCHA и письмом администратору.
+                            Обращение сохраняется в инфоблоке <code>requests</code> (компонент
+                            <code>bitrix:iblock.element.add.form</code>) и дублируется письмом администратору.
                         </p>
                     </form>
                 </div>

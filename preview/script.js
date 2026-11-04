@@ -171,16 +171,32 @@
     });
 
     /* ------------------------------------------------------------------
-     * 8.1. Бронирование услуги: тариф + сборка сообщения
-     *      main.feedback отправляет только NAME/EMAIL/MESSAGE, поэтому
-     *      телефон, дату, время и тариф добавляем в MESSAGE перед отправкой.
+     * 8.1. Формы заявок: тариф, свободные слоты, имя элемента
+     *      Все данные уходят отдельными свойствами инфоблока, поэтому
+     *      никакой «сборки сообщения» больше нет.
      * ------------------------------------------------------------------ */
+    const setFormField = function (form, code, value) {
+        form.querySelectorAll('[data-nlb-field="' + code + '"]').forEach(function (input) {
+            input.value = value;
+        });
+    };
+
+    const bookingName = function (form) {
+        const value = function (code) {
+            const input = form.querySelector('[data-nlb-field="' + code + '"]');
+            return input ? String(input.value || '').trim() : '';
+        };
+        const service = value('SERVICE');
+        const date = value('DATE');
+        const time = value('TIME');
+        let name = service !== '' ? 'Бронь: ' + service : 'Заявка на услугу';
+        if (date !== '') name += ' — ' + date;
+        if (time !== '') name += ' ' + time;
+        setFormField(form, 'NAME', name);
+    };
+
     doc.querySelectorAll('.js-choose-tariff').forEach(function (link) {
         link.addEventListener('click', function () {
-            const form = doc.querySelector('#booking form[data-booking="Y"]');
-            if (!form) return;
-            const tariff = form.querySelector('input[name="NLB_TARIFF"]');
-            if (tariff) tariff.value = link.getAttribute('data-tariff') || '';
             const card = link.closest('.tariff-card');
             if (card) {
                 doc.querySelectorAll('.tariff-card.is-selected').forEach(function (one) {
@@ -188,30 +204,67 @@
                 });
                 card.classList.add('is-selected');
             }
+
+            const form = doc.querySelector('form[data-nlb-form="booking"]');
+            if (!form) return;
+            setFormField(form, 'TARIFF', link.getAttribute('data-tariff') || '');
+            setFormField(form, 'PRICE', link.getAttribute('data-price') || '');
+            bookingName(form);
         });
     });
 
-    doc.querySelectorAll('form[data-booking="Y"]').forEach(function (form) {
+    doc.querySelectorAll('form[data-nlb-form="booking"]').forEach(function (form) {
+        const date = form.querySelector('[data-nlb-field="DATE"]');
+        const time = form.querySelector('[data-nlb-field="TIME"]');
+        const hint = form.querySelector('[data-nlb-slots-hint]');
+        let slots = {};
+        try {
+            slots = JSON.parse(form.getAttribute('data-nlb-slots') || '{}') || {};
+        } catch (error) {
+            slots = {};
+        }
+
+        const syncSlots = function () {
+            if (!date || !time) return;
+            const taken = Array.isArray(slots[date.value]) ? slots[date.value] : [];
+            let available = 0;
+
+            Array.from(time.options).forEach(function (option) {
+                if (option.value === '') return;
+                const busy = taken.indexOf(option.value) !== -1;
+                option.disabled = busy;
+                if (!busy) available++;
+                if (busy && option.selected) time.value = '';
+            });
+
+            if (hint) {
+                if (date.value === '') {
+                    hint.textContent = '';
+                } else if (available === 0) {
+                    hint.textContent = 'На эту дату свободных слотов нет. Выберите другой день.';
+                } else {
+                    hint.textContent = 'Свободных слотов: ' + available + '.';
+                }
+            }
+        };
+
+        if (date) {
+            date.addEventListener('change', function () {
+                syncSlots();
+                bookingName(form);
+            });
+        }
+        if (time) {
+            time.addEventListener('change', function () {
+                bookingName(form);
+            });
+        }
         form.addEventListener('submit', function () {
-            const message = form.querySelector('input[name="MESSAGE"]');
-            if (!message) return;
+            bookingName(form);
+        });
 
-            const field = function (name) {
-                const input = form.querySelector('[name="' + name + '"]');
-                return input ? String(input.value || '').trim() : '';
-            };
-
-            const lines = [];
-            const service = String(form.getAttribute('data-service') || field('NLB_SERVICE')).trim();
-            if (service !== '') lines.push('Услуга: ' + service);
-            if (field('NLB_TARIFF') !== '') lines.push('Тариф: ' + field('NLB_TARIFF'));
-            if (field('NLB_PHONE') !== '') lines.push('Телефон: ' + field('NLB_PHONE'));
-            if (field('NLB_DATE') !== '') lines.push('Дата: ' + field('NLB_DATE'));
-            if (field('NLB_TIME') !== '') lines.push('Время: ' + field('NLB_TIME'));
-            if (field('NLB_COMMENT') !== '') lines.push('Комментарий: ' + field('NLB_COMMENT'));
-
-            message.value = lines.join('\n');
-        }, false);
+        syncSlots();
+        bookingName(form);
     });
 
     /* ------------------------------------------------------------------

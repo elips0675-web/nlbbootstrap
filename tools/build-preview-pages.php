@@ -621,7 +621,8 @@ function detail_page(string $previewDir, array $o): string
         . '<footer class="article-footer"><a class="btn btn-nlb-outline btn-icon" href="' . e($back) . '">'
         . '<svg class="i" aria-hidden="true"><use href="#i-chevron-left"/></svg>'
         . e($o['backText']) . '</a></footer>'
-        . '</article></div></section>';
+        . '</article></div></section>'
+        . (string)($o['after'] ?? '');
 
     return layout($previewDir, $o['name'] . ' — Библиотека 2026', (string)($o['preview'] ?? ''), $content, $depth, $o['active']);
 }
@@ -634,6 +635,7 @@ function service_page(string $previewDir, array $item, int $depth): string
 {
     $props = $item['properties'] ?? [];
     $name = e($item['name']);
+    $code = e((string)($item['code'] ?? ''));
     $color = (string)($props['COLOR'] ?? 'primary');
     $icon = (string)($props['ICON'] ?? 'sparkles');
     $subtitle = trim((string)($props['SUBTITLE'] ?? ''));
@@ -754,7 +756,7 @@ function service_page(string $previewDir, array $item, int $depth): string
             . '<p class="tariff-price">' . e($tariffPrice) . '</p>'
             . ($list !== '' ? '<ul class="tariff-list">' . $list . '</ul>' : '')
             . '<a class="btn btn-nlb w-100 mt-auto js-choose-tariff" href="#booking" data-tariff="'
-            . e($title) . '">Выбрать тариф</a>'
+            . e($title) . '" data-price="' . e($tariffPrice) . '">Выбрать тариф</a>'
             . '</article></div>';
     }
     if ($tariffCards !== '') {
@@ -765,6 +767,11 @@ function service_page(string $previewDir, array $item, int $depth): string
 
     $feedbackHref = link_to($depth, 'feedback/');
     $privacyHref = link_to($depth, 'privacy/');
+    $timeOptions = '<option value="">Выберите время</option>';
+    for ($hour = 10; $hour <= 21; $hour++) {
+        $time = sprintf('%02d:00', $hour);
+        $timeOptions .= '<option value="' . e($time) . '">' . e($time) . '</option>';
+    }
     $booking = '<section class="section section--booking" id="booking"><div class="container">'
         . '<div class="booking-card"><div class="booking-head">'
         . '<span class="booking-icon"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg></span>'
@@ -772,34 +779,39 @@ function service_page(string $previewDir, array $item, int $depth): string
         . '<p class="section-lead mb-0">Заполните форму, и мы свяжемся с вами для подтверждения брони.</p>'
         . '</div>'
         . '<form class="feedback-form needs-validation booking-form" action="' . e($feedbackHref)
-        . '" method="post" novalidate data-booking="Y" data-service="' . e($item['name']) . '">'
+        . '" method="post" novalidate data-nlb-form="booking" data-nlb-slots="{}">'
+        . '<input type="hidden" name="NAME" data-nlb-field="NAME" value="Бронь: ' . $name . '">'
+        . '<input type="hidden" name="PROPERTY[SERVICE][0]" data-nlb-field="SERVICE" value="' . $name . '">'
+        . '<input type="hidden" name="PROPERTY[SERVICE_CODE][0]" data-nlb-field="SERVICE_CODE" value="' . $code . '">'
+        . '<input type="hidden" name="PROPERTY[TARIFF][0]" data-nlb-field="TARIFF" value="">'
+        . '<input type="hidden" name="PROPERTY[PRICE][0]" data-nlb-field="PRICE" value="">'
+        . '<input type="hidden" name="PROPERTY[STATUS][0]" data-nlb-field="STATUS" value="new">'
         . '<div class="row g-3">'
-        . '<div class="col-md-6"><label class="form-label" for="nlbBookingName">Имя *</label>'
-        . '<input class="form-control" id="nlbBookingName" type="text" name="user_name" autocomplete="name" placeholder="Ваше имя" required>'
-        . '<div class="invalid-feedback">Укажите имя.</div></div>'
-        . '<div class="col-md-6"><label class="form-label" for="nlbBookingPhone">Телефон *</label>'
-        . '<input class="form-control" id="nlbBookingPhone" type="tel" name="NLB_PHONE" autocomplete="tel" placeholder="+375 (__) ___-__-__" required>'
-        . '<div class="invalid-feedback">Укажите телефон.</div></div>'
-        . '<div class="col-12"><label class="form-label" for="nlbBookingEmail">E-mail *</label>'
-        . '<input class="form-control" id="nlbBookingEmail" type="email" name="user_email" autocomplete="email" placeholder="you@example.by" required>'
-        . '<div class="invalid-feedback">Укажите корректный e-mail.</div></div>'
         . '<div class="col-sm-6"><label class="form-label" for="nlbBookingDate">Дата *</label>'
-        . '<input class="form-control" id="nlbBookingDate" type="date" name="NLB_DATE" required>'
+        . '<input class="form-control" id="nlbBookingDate" type="date" data-nlb-field="DATE" name="PROPERTY[DATE][0]" required>'
         . '<div class="invalid-feedback">Выберите дату.</div></div>'
         . '<div class="col-sm-6"><label class="form-label" for="nlbBookingTime">Время *</label>'
-        . '<input class="form-control" id="nlbBookingTime" type="time" name="NLB_TIME" required>'
+        . '<select class="form-select" id="nlbBookingTime" data-nlb-field="TIME" name="PROPERTY[TIME][0]" required>'
+        . $timeOptions . '</select>'
+        . '<div class="form-text" data-nlb-slots-hint></div>'
         . '<div class="invalid-feedback">Выберите время.</div></div>'
+        . '<div class="col-md-6"><label class="form-label" for="nlbBookingName">Имя *</label>'
+        . '<input class="form-control" id="nlbBookingName" type="text" data-nlb-field="PERSON" name="PROPERTY[PERSON][0]" autocomplete="name" placeholder="Ваше имя" required>'
+        . '<div class="invalid-feedback">Укажите имя.</div></div>'
+        . '<div class="col-md-6"><label class="form-label" for="nlbBookingPhone">Телефон *</label>'
+        . '<input class="form-control" id="nlbBookingPhone" type="tel" data-nlb-field="PHONE" name="PROPERTY[PHONE][0]" autocomplete="tel" placeholder="+375 (__) ___-__-__" required>'
+        . '<div class="invalid-feedback">Укажите телефон.</div></div>'
+        . '<div class="col-12"><label class="form-label" for="nlbBookingEmail">E-mail</label>'
+        . '<input class="form-control" id="nlbBookingEmail" type="email" data-nlb-field="EMAIL" name="PROPERTY[EMAIL][0]" autocomplete="email" placeholder="you@example.by">'
+        . '<div class="invalid-feedback">Укажите корректный e-mail.</div></div>'
         . '<div class="col-12"><label class="form-label" for="nlbBookingComment">Комментарий</label>'
-        . '<textarea class="form-control" id="nlbBookingComment" name="NLB_COMMENT" rows="4" placeholder="Дополнительная информация или пожелания…"></textarea>'
-        . '<input type="hidden" name="MESSAGE" value=""></div>'
-        . '<input type="hidden" name="NLB_SERVICE" value="' . e($item['name']) . '">'
-        . '<input type="hidden" name="NLB_TARIFF" value="">'
+        . '<textarea class="form-control" id="nlbBookingComment" data-nlb-field="COMMENT" name="PROPERTY[COMMENT][0]" rows="4" placeholder="Дополнительная информация или пожелания…"></textarea></div>'
         . '<div class="col-12"><div class="form-check">'
         . '<input class="form-check-input" id="nlbBookingConsent" type="checkbox" name="CONSENT" value="Y" required>'
         . '<label class="form-check-label small" for="nlbBookingConsent">Согласен на обработку персональных данных</label>'
         . '<div class="invalid-feedback">Нужно согласие.</div></div></div>'
         . '</div>'
-        . '<button class="btn btn-nlb w-100 mt-3 btn-icon" type="submit" name="submit" value="Y">Отправить заявку'
+        . '<button class="btn btn-nlb w-100 mt-3 btn-icon" type="submit" name="iblock_submit" value="Y">Отправить заявку'
         . '<svg class="i" aria-hidden="true"><use href="#i-send"/></svg></button>'
         . '</form>'
         . '<p class="form-hint mt-3 mb-0 text-center">* Обязательные поля. Мы свяжемся с вами в течение часа '
@@ -1380,32 +1392,44 @@ function build_feedback(string $previewDir): string
             <div class="col-lg-7" data-reveal>
                 <div class="info-card">
                     <h2 class="h4 mb-3">Форма сообщения</h2>
-                    <form class="needs-validation" action="./" method="post" novalidate>
-                        <div class="mb-3">
-                            <label class="form-label" for="nlbFbName">Имя</label>
-                            <input class="form-control" id="nlbFbName" type="text" name="NAME" required>
-                            <div class="invalid-feedback">Укажите имя.</div>
+                    <form class="needs-validation" action="./" method="post" novalidate data-nlb-form="request">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="nlbFbName">Имя *</label>
+                                <input class="form-control" id="nlbFbName" type="text" name="NAME" autocomplete="name" required>
+                                <div class="invalid-feedback">Укажите имя.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="nlbFbEmail">E-mail *</label>
+                                <input class="form-control" id="nlbFbEmail" type="email" name="PROPERTY[EMAIL][0]" autocomplete="email" required>
+                                <div class="invalid-feedback">Укажите корректный e-mail.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="nlbFbPhone">Телефон</label>
+                                <input class="form-control" id="nlbFbPhone" type="tel" name="PROPERTY[PHONE][0]" autocomplete="tel" placeholder="+375 (__) ___-__-__">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="nlbFbSubject">Тема</label>
+                                <input class="form-control" id="nlbFbSubject" type="text" name="PROPERTY[SUBJECT][0]" placeholder="Вопрос, предложение, отзыв">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="nlbFbMessage">Сообщение *</label>
+                                <textarea class="form-control" id="nlbFbMessage" name="PROPERTY[MESSAGE][0]" rows="5" required></textarea>
+                                <div class="invalid-feedback">Напишите сообщение.</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" id="nlbFbConsent" type="checkbox" name="CONSENT" value="Y" required>
+                                    <label class="form-check-label" for="nlbFbConsent">Согласен с
+                                        <a href="../privacy/">политикой конфиденциальности</a></label>
+                                    <div class="invalid-feedback">Нужно согласие.</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="nlbFbEmail">E-mail</label>
-                            <input class="form-control" id="nlbFbEmail" type="email" name="EMAIL" required>
-                            <div class="invalid-feedback">Укажите корректный e-mail.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="nlbFbMessage">Сообщение</label>
-                            <textarea class="form-control" id="nlbFbMessage" name="MESSAGE" rows="5" required></textarea>
-                            <div class="invalid-feedback">Напишите сообщение.</div>
-                        </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" id="nlbFbConsent" type="checkbox" name="CONSENT" value="Y" required>
-                            <label class="form-check-label" for="nlbFbConsent">Согласен с
-                                <a href="../privacy/">политикой конфиденциальности</a></label>
-                            <div class="invalid-feedback">Нужно согласие.</div>
-                        </div>
-                        <button class="btn btn-nlb" type="submit">Отправить</button>
+                        <button class="btn btn-nlb mt-3" type="submit" name="iblock_submit" value="Y">Отправить</button>
                         <p class="form-hint mt-3 mb-0">
-                            Демо-форма: в Битриксе подключается компонент
-                            <code>bitrix:main.feedback</code> с CAPTCHA и письмом администратору.
+                            Обращение сохраняется в инфоблоке <code>requests</code> (компонент
+                            <code>bitrix:iblock.element.add.form</code>) и дублируется письмом администратору.
                         </p>
                     </form>
                 </div>
@@ -1945,6 +1969,45 @@ foreach (($books['items'] ?? []) as $item) {
         $rows .= '<div><dt>Наличие</dt><dd>'
             . e($availableLabels[$props['AVAILABLE']] ?? $props['AVAILABLE']) . '</dd></div>';
     }
+    $article = (string)($props['ISBN'] ?? '');
+    $priceValue = (int)($props['PRICE'] ?? 0);
+    $order = '<section class="section section--booking" id="order"><div class="container">'
+        . '<div class="booking-card"><div class="booking-head">'
+        . '<span class="booking-icon"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg></span>'
+        . '<h2 class="section-title">Заказать «' . e($item['name']) . '»</h2>'
+        . '<p class="section-lead mb-0">Оставьте контакты — подтвердим наличие, способ оплаты и получения.</p>'
+        . '</div>'
+        . '<form class="feedback-form needs-validation" action="' . e(link_to(2, 'books/')) . '" method="post" novalidate data-nlb-form="order">'
+        . '<input type="hidden" name="NAME" value="Заказ: ' . e($item['name']) . '">'
+        . '<input type="hidden" name="PROPERTY[ITEM][0]" value="' . e($item['name']) . '">'
+        . '<input type="hidden" name="PROPERTY[ARTICLE][0]" value="' . e($article) . '">'
+        . '<input type="hidden" name="PROPERTY[PRICE][0]" value="' . ($priceValue > 0 ? $priceValue : '') . '">'
+        . '<input type="hidden" name="PROPERTY[STATUS][0]" value="new">'
+        . '<div class="row g-3">'
+        . '<div class="col-sm-6"><label class="form-label" for="nlbOrderQty">Количество *</label>'
+        . '<input class="form-control" id="nlbOrderQty" type="number" name="PROPERTY[QTY][0]" min="1" step="1" value="1" required>'
+        . '<div class="invalid-feedback">Укажите количество.</div></div>'
+        . '<div class="col-sm-6"><label class="form-label" for="nlbOrderName">Имя *</label>'
+        . '<input class="form-control" id="nlbOrderName" type="text" name="PROPERTY[PERSON][0]" autocomplete="name" placeholder="Ваше имя" required>'
+        . '<div class="invalid-feedback">Укажите имя.</div></div>'
+        . '<div class="col-md-6"><label class="form-label" for="nlbOrderPhone">Телефон *</label>'
+        . '<input class="form-control" id="nlbOrderPhone" type="tel" name="PROPERTY[PHONE][0]" autocomplete="tel" placeholder="+375 (__) ___-__-__" required>'
+        . '<div class="invalid-feedback">Укажите телефон.</div></div>'
+        . '<div class="col-md-6"><label class="form-label" for="nlbOrderEmail">E-mail</label>'
+        . '<input class="form-control" id="nlbOrderEmail" type="email" name="PROPERTY[EMAIL][0]" autocomplete="email" placeholder="you@example.by"></div>'
+        . '<div class="col-12"><label class="form-label" for="nlbOrderComment">Комментарий</label>'
+        . '<textarea class="form-control" id="nlbOrderComment" name="PROPERTY[COMMENT][0]" rows="3" placeholder="Размер, цвет, сроки…"></textarea></div>'
+        . '<div class="col-12"><div class="form-check">'
+        . '<input class="form-check-input" id="nlbOrderConsent" type="checkbox" name="CONSENT" value="Y" required>'
+        . '<label class="form-check-label small" for="nlbOrderConsent">Согласен на обработку персональных данных</label>'
+        . '<div class="invalid-feedback">Нужно согласие.</div></div></div>'
+        . '</div>'
+        . '<button class="btn btn-nlb w-100 mt-3 btn-icon" type="submit" name="iblock_submit" value="Y">Оформить заказ'
+        . '<svg class="i" aria-hidden="true"><use href="#i-send"/></svg></button>'
+        . '</form>'
+        . '<p class="form-hint mt-3 mb-0 text-center">Заказ сохраняется в инфоблоке <code>orders</code>. '
+        . 'Отправляя форму, вы соглашаетесь с <a href="' . e(link_to(2, 'privacy/')) . '">политикой конфиденциальности</a>.</p>'
+        . '</div></div></section>';
     $html = detail_page($previewDir, [
         'name' => $item['name'],
         'preview' => $item['preview_text'] ?? '',
@@ -1953,7 +2016,8 @@ foreach (($books['items'] ?? []) as $item) {
         'back' => 'books',
         'backText' => 'Сувениры и подарки',
         'active' => 'books',
-        'cta' => ['label' => 'Заказать', 'href' => 'feedback/'],
+        'cta' => ['label' => 'Заказать', 'href' => '#order', 'class' => 'btn-nlb-green'],
+        'after' => $order,
     ]);
     write_page($previewDir . '/books/' . $item['code'] . '/index.html', $html);
 }

@@ -1,6 +1,10 @@
 <?php
 /**
  * Сувенир — детальная страница.
+ *
+ * Заказ оформляется на этой же странице: bitrix:iblock.element.add.form
+ * пишет элемент в инфоблок orders, название, артикул и цена подставляются
+ * из свойств товара.
  */
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/header.php';
@@ -66,5 +70,52 @@ $APPLICATION->SetPageProperty(
         <?php endif; ?>
     </div>
 </section>
+
+<?php if ($found): ?>
+    <?php
+    $orderValues = nlb_element_values('books', $code, ['ISBN', 'PRICE']);
+    ?>
+    <section class="section section--booking" id="order">
+        <div class="container">
+            <div class="booking-card">
+                <div class="booking-head">
+                    <span class="booking-icon">
+                        <svg class="i" aria-hidden="true"><use href="#i-package"/></svg>
+                    </span>
+                    <h2 class="section-title">Заказать «<?= htmlspecialcharsbx($name) ?>»</h2>
+                    <p class="section-lead mb-0">
+                        Оставьте контакты — подтвердим наличие, способ оплаты и получения.
+                    </p>
+                </div>
+
+                <?php $APPLICATION->IncludeComponent('bitrix:iblock.element.add.form', 'bootstrap', [
+                    'IBLOCK_TYPE' => 'nlb_content',
+                    'IBLOCK_ID' => nlb_iblock_id('orders'),
+                    'PROPERTY_CODES' => nlb_form_property_codes('order'),
+                    'PROPERTY_CODES_REQUIRED' => nlb_form_required_codes('order'),
+                    'GROUPS' => [],
+                    'STATUS_NEW' => '',
+                    'ELEMENT_ASSOC' => 'NONE',
+                    'MAX_USER_ENTRIES' => 0,
+                    'USE_CAPTCHA' => 'Y',
+                    'SEF_MODE' => 'N',
+                    'LIST_URL' => nlb_form_success_url('order'),
+                    'SET_TITLE' => 'N',
+                    'NLB_FORM' => 'order',
+                    'NLB_VALUES' => [
+                        'ITEM' => $name,
+                        'ARTICLE' => (string)($orderValues['ISBN'] ?? ''),
+                        'PRICE' => (string)($orderValues['PRICE'] ?? ''),
+                    ],
+                ], false, ['HIDE_ICONS' => 'Y']); ?>
+
+                <p class="form-hint mt-3 mb-0">
+                    Отправляя форму, вы соглашаетесь с
+                    <a href="<?= SITE_DIR ?>privacy/">политикой конфиденциальности</a>.
+                </p>
+            </div>
+        </div>
+    </section>
+<?php endif; ?>
 
 <?php require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/footer.php'; ?>

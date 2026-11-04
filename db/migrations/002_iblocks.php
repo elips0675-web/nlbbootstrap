@@ -34,14 +34,14 @@ return static function (): array {
             'LIST_PAGE_URL' => $iblock['list_page_url'],
             'DETAIL_PAGE_URL' => $iblock['detail_page_url'],
             'SECTION_PAGE_URL' => $iblock['section_page_url'],
-            'INDEX_ELEMENT' => 'Y',
+            'INDEX_ELEMENT' => $iblock['index'] ?? 'Y',
             'INDEX_SECTION' => $iblock['sections'],
             'WORKFLOW' => 'N',
             'BIZPROC' => 'N',
             'SECTION_CHOOSER' => 'L',
             'LIST_MODE' => '',
             'VERSION' => 2,
-            'GROUP_ID' => ['2' => 'R'],
+            'GROUP_ID' => $iblock['groups'] ?? ['2' => 'R'],
             'FIELDS' => [
                 'CODE' => [
                     'IS_REQUIRED' => 'Y',

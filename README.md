@@ -57,7 +57,7 @@ bitrix/                        ← этот репозиторий = DOCUMENT_RO
 | Подарочный набор | `/collections/<код>/` | `collections/detail.php` | — |
 | О библиотеке | `/about/` | `about/index.php` | цифры из `nlb_counts()` |
 | Контакты | `/contacts/` | `contacts/index.php` | — |
-| Обратная связь | `/feedback/` | `feedback/index.php` | `bitrix:main.feedback` |
+| Обратная связь | `/feedback/` | `feedback/index.php` | `bitrix:iblock.element.add.form`, `requests` |
 | Подписка | `/subscribe/` | `subscribe/index.php` | `bitrix:subscribe.*` |
 | Поиск | `/search/` | `search/index.php` | `bitrix:search.page` |
 | Вход / регистрация / пароль | `/auth/…` | `auth/*/index.php` | `bitrix:system.auth.*` |
@@ -240,7 +240,8 @@ node tools/check-docs.mjs      # ссылки и карта документац
 
 - вывод страниц и компонентов в реальном Битриксе;
 - правила ЧПУ из `urlrewrite.php` в админке;
-- работа `bitrix:main.feedback`, `subscribe.*`, `search.page`, `system.auth.*`
+- работа `bitrix:iblock.element.add.form` (запись заявок, CAPTCHA, письмо),
+  `subscribe.*`, `search.page`, `system.auth.*`
   (нужны настройки почты, рассылок, индекса поиска);
 - CSP и заголовки безопасности на боевом сервере (nginx может переопределять);
 - Lighthouse/PSI на живом домене (локально метрики не снимались);

@@ -186,6 +186,130 @@ if (!function_exists('nlb_element_name')) {
     }
 }
 
+if (!function_exists('nlb_iblock_properties')) {
+    /**
+     * Свойства инфоблока по коду: CODE => строка CIBlockProperty::GetList.
+     *
+     * @return array<string,array>
+     */
+    function nlb_iblock_properties(string $iblockCode): array
+    {
+        static $cache = [];
+        if (isset($cache[$iblockCode])) {
+            return $cache[$iblockCode];
+        }
+
+        $iblockId = nlb_iblock_id($iblockCode);
+        if ($iblockId <= 0) {
+            return $cache[$iblockCode] = [];
+        }
+
+        $rows = [];
+        $res = CIBlockProperty::GetList(
+            ['SORT' => 'ASC', 'ID' => 'ASC'],
+            ['IBLOCK_ID' => $iblockId, 'ACTIVE' => 'Y']
+        );
+        while ($row = $res->Fetch()) {
+            $rows[(string)$row['CODE']] = $row;
+        }
+
+        return $cache[$iblockCode] = $rows;
+    }
+}
+
+if (!function_exists('nlb_property_enums')) {
+    /**
+     * Значения свойства-списка.
+     *
+     * @return array<int,array{ID:int,VALUE:string,XML_ID:string,DEF:string}>
+     */
+    function nlb_property_enums(int $propertyId): array
+    {
+        static $cache = [];
+        if (isset($cache[$propertyId])) {
+            return $cache[$propertyId];
+        }
+
+        $rows = [];
+        if ($propertyId > 0) {
+            $res = CIBlockPropertyEnum::GetList(
+                ['SORT' => 'ASC', 'ID' => 'ASC'],
+                ['PROPERTY_ID' => $propertyId]
+            );
+            while ($row = $res->Fetch()) {
+                $rows[] = [
+                    'ID' => (int)$row['ID'],
+                    'VALUE' => (string)$row['VALUE'],
+                    'XML_ID' => (string)$row['XML_ID'],
+                    'DEF' => (string)($row['DEF'] ?? 'N'),
+                ];
+            }
+        }
+
+        return $cache[$propertyId] = $rows;
+    }
+}
+
+if (!function_exists('nlb_element_values')) {
+    /**
+     * Значения свойств элемента по его символьному коду.
+     *
+     * @param string[] $codes пустой массив — все свойства
+     * @return array<string,string>
+     */
+    function nlb_element_values(string $iblockCode, string $elementCode, array $codes = []): array
+    {
+        if ($elementCode === '') {
+            return [];
+        }
+
+        $iblockId = nlb_iblock_id($iblockCode);
+        if ($iblockId <= 0) {
+            return [];
+        }
+
+        $res = CIBlockElement::GetList(
+            ['ID' => 'ASC'],
+            [
+                'IBLOCK_ID' => $iblockId,
+                'CODE' => $elementCode,
+                'ACTIVE' => 'Y',
+                'CHECK_PERMISSIONS' => 'N',
+            ],
+            false,
+            false,
+            ['ID']
+        );
+        $row = $res->Fetch();
+        if (!$row) {
+            return [];
+        }
+
+        $values = [];
+        $propertyRes = CIBlockElement::GetProperty(
+            $iblockId,
+            (int)$row['ID'],
+            ['sort' => 'asc'],
+            []
+        );
+        while ($property = $propertyRes->Fetch()) {
+            $code = (string)($property['CODE'] ?? '');
+            if ($code === '' || ($codes && !in_array($code, $codes, true))) {
+                continue;
+            }
+            $value = $property['VALUE'] ?? '';
+            if (is_array($value)) {
+                $value = implode(', ', array_filter($value, static function ($one) {
+                    return is_scalar($one) && (string)$one !== '';
+                }));
+            }
+            $values[$code] = trim((string)$value);
+        }
+
+        return $values;
+    }
+}
+
 if (!function_exists('nlb_color_class')) {
     /**
      * XML_ID цвета из свойства COLOR → суффикс класса `.icon-tile--*`.

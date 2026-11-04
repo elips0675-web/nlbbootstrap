@@ -106,7 +106,7 @@ foreach ($config['iblocks'] as $code => $iblock) {
                 nlb_check_fail("{$code}: нет элемента {$item['xml_id']}");
             }
         }
-    } else {
+    } elseif (empty($iblock['user_data'])) {
         nlb_check_warn("{$code}: нет файла демо-данных");
     }
 

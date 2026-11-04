@@ -164,6 +164,13 @@ if (is_array($tagProperty) && !empty($tagProperty['VALUE'])) {
                     <?php endforeach; ?>
                 </dl>
 
+                <?php if ($isProduct): ?>
+                    <a class="btn btn-nlb-green w-100 mt-3 btn-icon" href="#order">
+                        Заказать
+                        <svg class="i" aria-hidden="true"><use href="#i-package"/></svg>
+                    </a>
+                <?php endif; ?>
+
                 <?php if ($register !== ''): ?>
                     <a class="btn btn-nlb-green w-100 mt-3" href="<?= htmlspecialcharsbx($register) ?>">
                         Зарегистрироваться

@@ -430,5 +430,229 @@ return [
             ],
             'sections_data' => [],
         ],
+
+        /* ------------------------------------------------------------------
+         * Заявки с сайта. Это не контент, а рабочая база: элементы создают
+         * посетители через bitrix:iblock.element.add.form. Поэтому
+         *   - поисковый индекс выключен (персональные данные не должны
+         *     попадать в поиск по сайту);
+         *   - группа 2 («Все пользователи») получает право на запись,
+         *     иначе анонимная форма не сможет добавить элемент;
+         *   - user_data отключает предупреждение check.php об отсутствии
+         *     демо-данных.
+         * ------------------------------------------------------------------ */
+
+        'requests' => [
+            'type' => 'nlb_content',
+            'name' => 'Обращения',
+            'sort' => 400,
+            'list_page_url' => '/feedback/',
+            'detail_page_url' => '/feedback/',
+            'section_page_url' => '',
+            'sections' => 'N',
+            'index' => 'N',
+            'user_data' => true,
+            'groups' => ['2' => 'W'],
+            'properties' => [
+                'EMAIL' => [
+                    'name' => 'E-mail',
+                    'type' => 'S',
+                    'required' => 'Y',
+                    'sort' => 100,
+                ],
+                'PHONE' => [
+                    'name' => 'Телефон',
+                    'type' => 'S',
+                    'sort' => 110,
+                ],
+                'SUBJECT' => [
+                    'name' => 'Тема',
+                    'type' => 'S',
+                    'sort' => 120,
+                ],
+                'MESSAGE' => [
+                    'name' => 'Сообщение',
+                    'type' => 'S',
+                    'required' => 'Y',
+                    'sort' => 130,
+                ],
+                'PAGE' => [
+                    'name' => 'Страница-источник',
+                    'type' => 'S',
+                    'sort' => 140,
+                ],
+                'STATUS' => [
+                    'name' => 'Статус',
+                    'type' => 'L',
+                    'sort' => 150,
+                    'filtrable' => 'Y',
+                    'values' => [
+                        ['xml_id' => 'new', 'value' => 'Новое', 'sort' => 10, 'def' => true],
+                        ['xml_id' => 'in_progress', 'value' => 'В работе', 'sort' => 20],
+                        ['xml_id' => 'done', 'value' => 'Обработано', 'sort' => 30],
+                    ],
+                ],
+            ],
+            'sections_data' => [],
+        ],
+
+        'bookings' => [
+            'type' => 'nlb_content',
+            'name' => 'Заявки на услуги',
+            'sort' => 410,
+            'list_page_url' => '/services/',
+            'detail_page_url' => '/services/',
+            'section_page_url' => '',
+            'sections' => 'N',
+            'index' => 'N',
+            'user_data' => true,
+            'groups' => ['2' => 'W'],
+            'properties' => [
+                'SERVICE' => [
+                    'name' => 'Услуга',
+                    'type' => 'S',
+                    'required' => 'Y',
+                    'sort' => 100,
+                    'searchable' => 'Y',
+                ],
+                'SERVICE_CODE' => [
+                    'name' => 'Код услуги',
+                    'type' => 'S',
+                    'sort' => 110,
+                    'filtrable' => 'Y',
+                ],
+                'TARIFF' => [
+                    'name' => 'Тариф',
+                    'type' => 'S',
+                    'sort' => 120,
+                ],
+                'PRICE' => [
+                    'name' => 'Стоимость по тарифу',
+                    'type' => 'S',
+                    'sort' => 130,
+                ],
+                'DATE' => [
+                    'name' => 'Дата',
+                    'type' => 'S',
+                    'required' => 'Y',
+                    'sort' => 140,
+                    'filtrable' => 'Y',
+                ],
+                'TIME' => [
+                    'name' => 'Время',
+                    'type' => 'S',
+                    'required' => 'Y',
+                    'sort' => 150,
+                ],
+                'PERSON' => [
+                    'name' => 'Имя посетителя',
+                    'type' => 'S',
+                    'required' => 'Y',
+                    'sort' => 160,
+                ],
+                'PHONE' => [
+                    'name' => 'Телефон',
+                    'type' => 'S',
+                    'required' => 'Y',
+                    'sort' => 170,
+                ],
+                'EMAIL' => [
+                    'name' => 'E-mail',
+                    'type' => 'S',
+                    'sort' => 180,
+                ],
+                'COMMENT' => [
+                    'name' => 'Комментарий',
+                    'type' => 'S',
+                    'sort' => 190,
+                ],
+                'STATUS' => [
+                    'name' => 'Статус',
+                    'type' => 'L',
+                    'sort' => 200,
+                    'filtrable' => 'Y',
+                    'values' => [
+                        ['xml_id' => 'new', 'value' => 'Новая', 'sort' => 10, 'def' => true],
+                        ['xml_id' => 'confirmed', 'value' => 'Подтверждена', 'sort' => 20],
+                        ['xml_id' => 'cancelled', 'value' => 'Отменена', 'sort' => 30],
+                    ],
+                ],
+            ],
+            'sections_data' => [],
+        ],
+
+        'orders' => [
+            'type' => 'nlb_content',
+            'name' => 'Заказы сувениров',
+            'sort' => 420,
+            'list_page_url' => '/books/',
+            'detail_page_url' => '/books/',
+            'section_page_url' => '',
+            'sections' => 'N',
+            'index' => 'N',
+            'user_data' => true,
+            'groups' => ['2' => 'W'],
+            'properties' => [
+                'ITEM' => [
+                    'name' => 'Товар',
+                    'type' => 'S',
+                    'required' => 'Y',
+                    'sort' => 100,
+                    'searchable' => 'Y',
+                ],
+                'ARTICLE' => [
+                    'name' => 'Артикул',
+                    'type' => 'S',
+                    'sort' => 110,
+                    'filtrable' => 'Y',
+                ],
+                'PRICE' => [
+                    'name' => 'Цена, ₽',
+                    'type' => 'N',
+                    'sort' => 120,
+                ],
+                'QTY' => [
+                    'name' => 'Количество',
+                    'type' => 'N',
+                    'required' => 'Y',
+                    'sort' => 130,
+                ],
+                'PERSON' => [
+                    'name' => 'Имя заказчика',
+                    'type' => 'S',
+                    'required' => 'Y',
+                    'sort' => 140,
+                ],
+                'PHONE' => [
+                    'name' => 'Телефон',
+                    'type' => 'S',
+                    'required' => 'Y',
+                    'sort' => 150,
+                ],
+                'EMAIL' => [
+                    'name' => 'E-mail',
+                    'type' => 'S',
+                    'sort' => 160,
+                ],
+                'COMMENT' => [
+                    'name' => 'Комментарий',
+                    'type' => 'S',
+                    'sort' => 170,
+                ],
+                'STATUS' => [
+                    'name' => 'Статус',
+                    'type' => 'L',
+                    'sort' => 180,
+                    'filtrable' => 'Y',
+                    'values' => [
+                        ['xml_id' => 'new', 'value' => 'Новый', 'sort' => 10, 'def' => true],
+                        ['xml_id' => 'processing', 'value' => 'В работе', 'sort' => 20],
+                        ['xml_id' => 'done', 'value' => 'Выполнен', 'sort' => 30],
+                        ['xml_id' => 'cancelled', 'value' => 'Отменён', 'sort' => 40],
+                    ],
+                ],
+            ],
+            'sections_data' => [],
+        ],
     ],
 ];

@@ -206,34 +206,26 @@ $nlbTpl = SITE_TEMPLATE_PATH;
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-                <form class="needs-validation" action="<?= $nlbSiteDir ?>feedback/" method="post" novalidate>
-                    <div class="mb-3">
-                        <label class="form-label" for="nlbFeedbackName">Ваше имя</label>
-                        <input class="form-control" id="nlbFeedbackName" type="text" name="NAME" required>
-                        <div class="invalid-feedback">Укажите имя.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="nlbFeedbackEmail">E-mail</label>
-                        <input class="form-control" id="nlbFeedbackEmail" type="email" name="EMAIL" required>
-                        <div class="invalid-feedback">Укажите корректный e-mail.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="nlbFeedbackMessage">Сообщение</label>
-                        <textarea class="form-control" id="nlbFeedbackMessage" name="MESSAGE" rows="4" required></textarea>
-                        <div class="invalid-feedback">Напишите сообщение.</div>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" id="nlbFeedbackConsent" type="checkbox" name="CONSENT" value="Y" required>
-                        <label class="form-check-label" for="nlbFeedbackConsent">
-                            Согласен на обработку персональных данных
-                        </label>
-                        <div class="invalid-feedback">Нужно согласие.</div>
-                    </div>
-                    <button class="btn btn-nlb w-100" type="submit">Отправить</button>
-                </form>
-                <p class="form-hint mt-3 mb-0">
-                    Форма-заглушка. Подключите компонент <code>bitrix:main.feedback</code> — см. docs/bitrix-integration.md.
-                </p>
+                <?php if (function_exists('nlb_form_render')): ?>
+                    <?php
+                    nlb_form_render('request', [
+                        'action' => $nlbSiteDir . 'feedback/',
+                        'layout' => 'modal',
+                        'captcha' => true,
+                        'form_id' => 'nlbModalRequest',
+                        'values' => [
+                            'PAGE' => (string)($_SERVER['REQUEST_URI'] ?? ''),
+                        ],
+                        'show_hint' => false,
+                    ]);
+                    ?>
+                    <p class="form-hint mt-3 mb-0">
+                        Заявка сохраняется в базе сайта. Можно также открыть
+                        <a href="<?= $nlbSiteDir ?>feedback/">страницу обратной связи</a>.
+                    </p>
+                <?php else: ?>
+                    <p class="mb-0">Форма доступна на <a href="<?= $nlbSiteDir ?>feedback/">странице обратной связи</a>.</p>
+                <?php endif; ?>
             </div>
         </div>
     </div>
