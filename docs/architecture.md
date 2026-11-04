@@ -91,7 +91,7 @@ GET /news/
 
 ## 4. styles.css
 
-Файл разбит на 15 пронумерованных разделов:
+Файл разбит на 18 пронумерованных разделов:
 
 | № | Раздел | Примеры |
 |---|---|---|
@@ -110,6 +110,9 @@ GET /news/
 | 13 | Анимация появления | `.reveal`, `prefers-reduced-motion` |
 | 14 | Адаптив | `@media (max-width: …)` |
 | 15 | Печать | `@media print` |
+| 16 | Страницы разделов | `.page-hero`, `.book-card`, `.article` |
+| 17 | Уведомления | `.cookie-banner`, `.pwa-banner` |
+| 18 | Услуги и бронирование | `.service-tile`, `.tariff-card`, `.booking-card` |
 
 Порядок каскада: `bootstrap.min.css` → `styles.css`. Специфичность повышается
 точечно (`.site-footer .brand-tag`, `.collection-card .icon-tile`), без

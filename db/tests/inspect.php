@@ -72,8 +72,8 @@ if ($bookId <= 0) {
 }
 
 $elements = count(NlbStubStore::$elements);
-if ($elements !== 89) {
-    $errors[] = 'элементов в песочнице ' . $elements . ' вместо 89';
+if ($elements !== 91) {
+    $errors[] = 'элементов в песочнице ' . $elements . ' вместо 91';
 }
 
 $sections = count(NlbStubStore::$sections);
@@ -89,8 +89,8 @@ if (nlb_iblock_count('printing') !== 37) {
     $errors[] = 'nlb_iblock_count(printing) = ' . nlb_iblock_count('printing') . ' вместо 37';
 }
 $counts = nlb_counts();
-if (array_sum($counts) !== 89) {
-    $errors[] = 'сумма nlb_counts() = ' . array_sum($counts) . ' вместо 89';
+if (array_sum($counts) !== 91) {
+    $errors[] = 'сумма nlb_counts() = ' . array_sum($counts) . ' вместо 91';
 }
 
 if ($errors) {

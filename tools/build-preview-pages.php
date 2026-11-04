@@ -399,49 +399,55 @@ function event_cards(array $items, int $depth, array $config): string
     return $cards;
 }
 
-function service_features(array $items, int $depth): string
+function service_cards(array $items, int $depth): string
 {
-    $blocks = '';
-    foreach ($items as $index => $item) {
+    $cards = '';
+    foreach ($items as $item) {
         $props = $item['properties'] ?? [];
         $color = (string)($props['COLOR'] ?? 'primary');
+        $icon = (string)($props['ICON'] ?? 'sparkles');
         $name = e($item['name']);
         $href = link_to($depth, 'services/' . $item['code'] . '/');
+        $subtitle = trim((string)($props['SUBTITLE'] ?? ''));
+        $preview = (string)($item['preview_text'] ?? '');
+
+        $priceLabel = trim((string)($props['PRICE_LABEL'] ?? ''));
+        if ($priceLabel === '') {
+            $priceLabel = price($props['PRICE_FROM'] ?? 0);
+        }
+        if ($priceLabel === '') {
+            $priceLabel = 'Бесплатно для читателей';
+        }
+
         $features = '';
         foreach ((array)($props['FEATURES'] ?? []) as $feature) {
-            $features .= '<li><span class="service-feature-check bg-grad-' . e($color) . '">'
+            $parts = explode('|', (string)$feature, 2);
+            $title = trim($parts[0]);
+            if ($title === '') {
+                continue;
+            }
+            $features .= '<li><span class="service-tile-check bg-grad-' . e($color) . '">'
                 . '<svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>'
-                . e($feature) . '</li>';
+                . e($title) . '</li>';
         }
-        $priceText = price($props['PRICE_FROM'] ?? 0);
-        if ($priceText === '') {
-            $priceText = 'Бесплатно для читателей';
-        }
-        $duration = (string)($props['DURATION'] ?? '');
 
-        $blocks .= '<article class="service-feature' . ($index % 2 === 1 ? ' service-feature--reverse' : '') . '">'
-            . '<div class="service-feature-media">'
-            . '<img src="' . e(image_url($depth, (string)($item['image'] ?? 'assets/images/news-1.jpg')))
-            . '" alt="' . $name . '" loading="lazy" decoding="async">'
-            . '<span class="service-feature-icon bg-grad-' . e($color) . '">'
-            . '<svg class="i" aria-hidden="true"><use href="#i-' . e($props['ICON'] ?? 'book') . '"/></svg>'
-            . '</span></div><div class="service-feature-body">'
-            . ($duration !== ''
-                ? '<span class="service-feature-badge"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>'
-                    . e($duration) . '</span>'
-                : '')
-            . '<h2 class="service-feature-title">' . $name . '</h2>'
-            . '<p class="service-feature-lead">' . e($item['preview_text'] ?? '') . '</p>'
-            . '<span class="service-feature-price bg-grad-' . e($color) . '">' . e($priceText) . '</span>'
-            . '<ul class="service-feature-points">' . $features . '</ul>'
-            . '<div class="service-feature-actions">'
-            . '<a class="btn btn-nlb btn-lg-nlb" href="' . e(link_to($depth, 'feedback/')) . '">Забронировать'
+        $cards .= '<div class="col-md-6 col-xl-4"><article class="service-tile h-100">'
+            . '<span class="service-tile-icon bg-grad-' . e($color) . '">'
+            . '<svg class="i" aria-hidden="true"><use href="#i-' . e($icon) . '"/></svg></span>'
+            . ($subtitle !== '' ? '<p class="service-tile-eyebrow">' . e($subtitle) . '</p>' : '')
+            . '<h3 class="service-tile-title"><a class="text-reset" href="' . e($href) . '">'
+            . $name . '</a></h3>'
+            . ($preview !== '' ? '<p class="service-tile-text">' . e($preview) . '</p>' : '')
+            . '<span class="service-tile-price">' . e($priceLabel) . '</span>'
+            . ($features !== '' ? '<ul class="service-tile-points">' . $features . '</ul>' : '')
+            . '<div class="service-tile-actions">'
+            . '<a class="btn btn-nlb btn-icon" href="' . e($href) . '#booking">Забронировать'
             . '<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>'
-            . '<a class="btn btn-nlb-outline btn-lg-nlb" href="' . e($href) . '">Узнать подробнее</a>'
-            . '</div></div></article>';
+            . '<a class="btn btn-nlb-outline" href="' . e($href) . '">Узнать подробнее</a>'
+            . '</div></article></div>';
     }
 
-    return $blocks;
+    return $cards;
 }
 
 function printing_cards(array $items, int $depth, int $limit = 0): string
@@ -592,6 +598,219 @@ function detail_page(string $previewDir, array $o): string
 /* Страницы разделов                                                      */
 /* ---------------------------------------------------------------------- */
 
+function service_page(string $previewDir, array $item, int $depth): string
+{
+    $props = $item['properties'] ?? [];
+    $name = e($item['name']);
+    $color = (string)($props['COLOR'] ?? 'primary');
+    $icon = (string)($props['ICON'] ?? 'sparkles');
+    $subtitle = trim((string)($props['SUBTITLE'] ?? ''));
+    $detail = (string)($item['detail_text'] ?? '');
+    $preview = (string)($item['preview_text'] ?? '');
+    $schedule = (array)($props['SCHEDULE'] ?? []);
+    $phone = trim((string)($props['PHONE'] ?? ''));
+    $email = trim((string)($props['EMAIL'] ?? ''));
+    $picture = !empty($item['image']) ? image_url($depth, (string)$item['image']) : '';
+
+    $body = $detail !== '' ? $detail : '<p>' . e($preview) . '</p>';
+
+    $meta = '';
+    if ($schedule || $phone !== '' || $email !== '') {
+        $meta = '<div class="service-meta">';
+        if ($schedule) {
+            $lines = '';
+            foreach ($schedule as $line) {
+                $parts = explode(':', (string)$line, 2);
+                $day = trim($parts[0]);
+                $time = trim($parts[1] ?? '');
+                $lines .= '<div>' . ($time !== ''
+                    ? '<span class="service-meta-strong">' . e($day) . ':</span> ' . e($time)
+                    : e((string)$line)) . '</div>';
+            }
+            $meta .= '<div class="service-meta-card service-meta-card--' . e($color) . '">'
+                . '<div class="service-meta-head"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>'
+                . '<h2>Режим работы</h2></div>'
+                . '<div class="service-meta-lines">' . $lines . '</div></div>';
+        }
+        if ($phone !== '' || $email !== '') {
+            $links = '';
+            if ($phone !== '') {
+                $links .= '<div><a href="tel:' . e((string)preg_replace('/[^+\d]/', '', $phone)) . '">'
+                    . e($phone) . '</a></div>';
+            }
+            if ($email !== '') {
+                $links .= '<div><a href="mailto:' . e($email) . '">' . e($email) . '</a></div>';
+            }
+            $meta .= '<div class="service-meta-card service-meta-card--contacts">'
+                . '<div class="service-meta-head"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg>'
+                . '<h2>Контакты</h2></div>'
+                . '<div class="service-meta-lines">' . $links . '</div></div>';
+        }
+        $meta .= '</div>';
+    }
+
+    $gallery = '<div class="service-gallery">';
+    $emptyCount = 3;
+    if ($picture !== '') {
+        $gallery .= '<figure class="service-gallery-item"><img src="' . e($picture) . '" alt="' . $name
+            . '" loading="lazy" decoding="async"></figure>';
+        $emptyCount = 2;
+    }
+    for ($i = 0; $i < $emptyCount; $i++) {
+        $gallery .= '<div class="service-gallery-item service-gallery-empty" aria-hidden="true">'
+            . '<svg class="i" aria-hidden="true"><use href="#i-' . e($icon) . '"/></svg>'
+            . '<span>Фото скоро появится</span></div>';
+    }
+    $gallery .= '</div>';
+
+    $featuresHtml = '';
+    $featureCards = '';
+    foreach ((array)($props['FEATURES'] ?? []) as $feature) {
+        $parts = explode('|', (string)$feature, 2);
+        $title = trim($parts[0]);
+        if ($title === '') {
+            continue;
+        }
+        $text = trim($parts[1] ?? '');
+        $featureCards .= '<div class="col-sm-6 col-lg-4"><article class="service-feature-item h-100">'
+            . '<span class="service-feature-item-icon bg-grad-' . e($color) . '">'
+            . '<svg class="i" aria-hidden="true"><use href="#i-' . e($icon) . '"/></svg></span>'
+            . '<h3>' . e($title) . '</h3>'
+            . ($text !== '' ? '<p>' . e($text) . '</p>' : '')
+            . '</article></div>';
+    }
+    if ($featureCards !== '') {
+        $featuresHtml = '<section class="service-section"><div class="section-head">'
+            . '<h2 class="section-title">Что входит в услугу</h2></div>'
+            . '<div class="row g-4">' . $featureCards . '</div></section>';
+    }
+
+    $tariffsHtml = '';
+    $tariffCards = '';
+    foreach ((array)($props['TARIFFS'] ?? []) as $tariff) {
+        $parts = array_map('trim', explode('|', (string)$tariff));
+        $title = (string)($parts[0] ?? '');
+        if ($title === '') {
+            continue;
+        }
+        $tariffPrice = (string)($parts[1] ?? '');
+        $includes = [];
+        if (!empty($parts[3])) {
+            foreach (explode(';', $parts[3]) as $one) {
+                $one = trim($one);
+                if ($one !== '') {
+                    $includes[] = $one;
+                }
+            }
+        }
+        if (!empty($parts[2])) {
+            array_unshift($includes, (string)$parts[2]);
+        }
+        $includes = array_values(array_unique($includes));
+        $popular = trim((string)($parts[4] ?? '')) !== '';
+
+        $list = '';
+        foreach ($includes as $include) {
+            $list .= '<li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>'
+                . e($include) . '</li>';
+        }
+
+        $tariffCards .= '<div class="col-md-6 col-lg-4 d-flex">'
+            . '<article class="tariff-card h-100' . ($popular ? ' tariff-card--popular' : '') . '">'
+            . ($popular ? '<span class="tariff-badge">Популярный</span>' : '')
+            . '<h3>' . e($title) . '</h3>'
+            . '<p class="tariff-price">' . e($tariffPrice) . '</p>'
+            . ($list !== '' ? '<ul class="tariff-list">' . $list . '</ul>' : '')
+            . '<a class="btn btn-nlb w-100 mt-auto js-choose-tariff" href="#booking" data-tariff="'
+            . e($title) . '">Выбрать тариф</a>'
+            . '</article></div>';
+    }
+    if ($tariffCards !== '') {
+        $tariffsHtml = '<section class="service-section"><div class="section-head">'
+            . '<h2 class="section-title">Цены и тарифы</h2></div>'
+            . '<div class="row g-4 align-items-stretch">' . $tariffCards . '</div></section>';
+    }
+
+    $feedbackHref = link_to($depth, 'feedback/');
+    $privacyHref = link_to($depth, 'privacy/');
+    $booking = '<section class="section section--booking" id="booking"><div class="container">'
+        . '<div class="booking-card"><div class="booking-head">'
+        . '<span class="booking-icon"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg></span>'
+        . '<h2 class="section-title">Забронировать</h2>'
+        . '<p class="section-lead mb-0">Заполните форму, и мы свяжемся с вами для подтверждения брони.</p>'
+        . '</div>'
+        . '<form class="feedback-form needs-validation booking-form" action="' . e($feedbackHref)
+        . '" method="post" novalidate data-booking="Y" data-service="' . e($item['name']) . '">'
+        . '<div class="row g-3">'
+        . '<div class="col-md-6"><label class="form-label" for="nlbBookingName">Имя *</label>'
+        . '<input class="form-control" id="nlbBookingName" type="text" name="user_name" autocomplete="name" placeholder="Ваше имя" required>'
+        . '<div class="invalid-feedback">Укажите имя.</div></div>'
+        . '<div class="col-md-6"><label class="form-label" for="nlbBookingPhone">Телефон *</label>'
+        . '<input class="form-control" id="nlbBookingPhone" type="tel" name="NLB_PHONE" autocomplete="tel" placeholder="+375 (__) ___-__-__" required>'
+        . '<div class="invalid-feedback">Укажите телефон.</div></div>'
+        . '<div class="col-12"><label class="form-label" for="nlbBookingEmail">E-mail *</label>'
+        . '<input class="form-control" id="nlbBookingEmail" type="email" name="user_email" autocomplete="email" placeholder="you@example.by" required>'
+        . '<div class="invalid-feedback">Укажите корректный e-mail.</div></div>'
+        . '<div class="col-sm-6"><label class="form-label" for="nlbBookingDate">Дата *</label>'
+        . '<input class="form-control" id="nlbBookingDate" type="date" name="NLB_DATE" required>'
+        . '<div class="invalid-feedback">Выберите дату.</div></div>'
+        . '<div class="col-sm-6"><label class="form-label" for="nlbBookingTime">Время *</label>'
+        . '<input class="form-control" id="nlbBookingTime" type="time" name="NLB_TIME" required>'
+        . '<div class="invalid-feedback">Выберите время.</div></div>'
+        . '<div class="col-12"><label class="form-label" for="nlbBookingComment">Комментарий</label>'
+        . '<textarea class="form-control" id="nlbBookingComment" name="NLB_COMMENT" rows="4" placeholder="Дополнительная информация или пожелания…"></textarea>'
+        . '<input type="hidden" name="MESSAGE" value=""></div>'
+        . '<input type="hidden" name="NLB_SERVICE" value="' . e($item['name']) . '">'
+        . '<input type="hidden" name="NLB_TARIFF" value="">'
+        . '<div class="col-12"><div class="form-check">'
+        . '<input class="form-check-input" id="nlbBookingConsent" type="checkbox" name="CONSENT" value="Y" required>'
+        . '<label class="form-check-label small" for="nlbBookingConsent">Согласен на обработку персональных данных</label>'
+        . '<div class="invalid-feedback">Нужно согласие.</div></div></div>'
+        . '</div>'
+        . '<button class="btn btn-nlb w-100 mt-3 btn-icon" type="submit" name="submit" value="Y">Отправить заявку'
+        . '<svg class="i" aria-hidden="true"><use href="#i-send"/></svg></button>'
+        . '</form>'
+        . '<p class="form-hint mt-3 mb-0 text-center">* Обязательные поля. Мы свяжемся с вами в течение часа '
+        . 'для подтверждения брони. Отправляя форму, вы соглашаетесь с '
+        . '<a href="' . e($privacyHref) . '">политикой конфиденциальности</a>.</p>'
+        . '</div></div></section>';
+
+    $content = '<section class="section service-detail-section"><div class="container">'
+        . '<article class="service-detail">'
+        . '<a class="service-back" href="' . e(link_to($depth, 'services/')) . '">'
+        . '<svg class="i" aria-hidden="true"><use href="#i-chevron-left"/></svg>Назад к услугам</a>'
+        . '<header class="service-detail-head">'
+        . '<span class="service-detail-icon bg-grad-' . e($color) . '">'
+        . '<svg class="i" aria-hidden="true"><use href="#i-' . e($icon) . '"/></svg></span>'
+        . '<div><h1 class="page-title mb-1">' . $name . '</h1>'
+        . ($subtitle !== '' ? '<p class="service-detail-subtitle">' . e($subtitle) . '</p>' : '')
+        . '</div></header>'
+        . '<div class="service-detail-body bitrix-content">' . $body . '</div>'
+        . $meta
+        . '</article>'
+        . '<section class="service-section"><div class="section-head">'
+        . '<h2 class="section-title">Галерея</h2>'
+        . '<p class="section-lead">Фотографии пространства. Присылайте свои снимки — добавим в галерею.</p>'
+        . '</div>' . $gallery
+        . '<div class="service-gallery-actions">'
+        . '<a class="btn btn-nlb-outline btn-icon" href="' . e($feedbackHref) . '">'
+        . '<svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Предложить фото</a>'
+        . '</div></section>'
+        . $featuresHtml
+        . $tariffsHtml
+        . '</div></section>'
+        . $booking;
+
+    return layout(
+        $previewDir,
+        $item['name'] . ' — Библиотека 2026',
+        (string)($item['preview_text'] ?? ''),
+        $content,
+        $depth,
+        'services'
+    );
+}
+
 function build_news(string $root, string $previewDir, array $config): string
 {
     $data = load_data($root, 'news');
@@ -718,22 +937,23 @@ function build_services(string $root, string $previewDir): string
     <div class="container">
         <span class="eyebrow eyebrow--violet">
             <svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg>
-            Сервисы библиотеки
+            Премиальные услуги
         </span>
         <h1 class="page-title">Наши услуги</h1>
         <p class="page-lead">
-            Библиотека — это не только книги. Читальные залы, коворкинг, лектории,
-            детская комната и цифровые ресурсы — всё в одном месте.
+            Библиотека 2026 — это больше, чем просто книги. Мы создали уникальное
+            пространство для вашего комфорта и развития: от обзорной площадки
+            и сауны до лектория и коворкинга.
         </p>
     </div>
 </section>
 
-<section class="section pt-0">
+<section class="section pt-0" id="services-list">
     <div class="container">
-        <div class="service-feature-list">
+        <div class="row g-4 service-grid">
 
 HTML
-        . service_features($services['items'] ?? [], 1)
+        . service_cards($services['items'] ?? [], 1)
         . <<<'HTML'
 
         </div>
@@ -761,7 +981,7 @@ HTML
 
         <div class="text-center mt-5" data-reveal>
             <a class="btn btn-nlb-green btn-lg-nlb btn-icon" href="../printing/">
-                Весь каталог печатных услуг
+                Перейти в каталог
                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
             </a>
         </div>
@@ -770,14 +990,55 @@ HTML
 
 <section class="section">
     <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4" data-reveal>
+                <div class="info-card">
+                    <span class="icon-tile icon-tile--blue mb-3">
+                        <svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>
+                    </span>
+                    <h3>График работы</h3>
+                    <p class="text-muted mb-0">
+                        Ежедневно с 8:00 до 22:00.<br>Без выходных.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4" data-reveal>
+                <div class="info-card">
+                    <span class="icon-tile icon-tile--violet mb-3">
+                        <svg class="i" aria-hidden="true"><use href="#i-users"/></svg>
+                    </span>
+                    <h3>Для читателей</h3>
+                    <p class="text-muted mb-0">
+                        Специальные цены для держателей читательского билета.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4" data-reveal>
+                <div class="info-card">
+                    <span class="icon-tile icon-tile--green mb-3">
+                        <svg class="i" aria-hidden="true"><use href="#i-check"/></svg>
+                    </span>
+                    <h3>Бронирование</h3>
+                    <p class="text-muted mb-0">
+                        Онлайн-бронирование доступно 24/7 через сайт или приложение.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section section--soft">
+    <div class="container">
         <div class="cta-banner" data-reveal>
             <h2>Готовы начать?</h2>
             <p class="text-white-75 mb-4">
-                Запишитесь онлайн или задайте вопрос — ответим в течение дня.
+                Забронируйте любую услугу онлайн или свяжитесь с нами
+                для получения дополнительной информации.
             </p>
             <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                <a class="btn btn-nlb-white btn-lg-nlb" href="../feedback/">Записаться в библиотеку</a>
-                <a class="btn btn-nlb-outline btn-lg-nlb" href="../feedback/">Задать вопрос</a>
+                <a class="btn btn-nlb-white btn-lg-nlb" href="#services-list">Забронировать сейчас</a>
+                <a class="btn btn-nlb-outline btn-lg-nlb" href="../feedback/">Связаться с нами</a>
             </div>
         </div>
     </div>
@@ -787,7 +1048,7 @@ HTML;
     return layout(
         $previewDir,
         'Услуги — Библиотека 2026',
-        'Услуги библиотеки: читальные залы, коворкинг, компьютеры, экскурсии и обучение.',
+        'Премиальные услуги библиотеки: обзорная площадка, сауна, кафе, лекторий, концертный зал, детская комната, спортзал и коворкинг.',
         $content,
         1,
         'services'
@@ -1302,7 +1563,7 @@ function build_sitemap(string $previewDir): string
 {
     $sections = [
         ['/', 'Главная', 'hero-карусель, услуги, события, новости, коллекции'],
-        ['services/', 'Услуги', '6 услуг и превью каталога печати'],
+        ['services/', 'Услуги', '8 премиальных услуг и превью каталога печати'],
         ['news/', 'Новости', '10 новостей с рубриками'],
         ['events/', 'События', '6 событий с фильтром по рубрикам'],
         ['printing/', 'Печатные услуги', '37 позиций с ценами'],
@@ -1363,6 +1624,45 @@ HTML;
 /* ---------------------------------------------------------------------- */
 /* Запись и ассеты                                                        */
 /* ---------------------------------------------------------------------- */
+
+function remove_tree(string $dir): void
+{
+    if (!is_dir($dir)) {
+        return;
+    }
+    foreach (scandir($dir) ?: [] as $entry) {
+        if ($entry === '.' || $entry === '..') {
+            continue;
+        }
+        $path = $dir . '/' . $entry;
+        if (is_dir($path)) {
+            remove_tree($path);
+        } else {
+            unlink($path);
+        }
+    }
+    rmdir($dir);
+}
+
+/** Удаляет подкаталоги, которых больше нет в данных (например, старые услуги). */
+function prune_subdirs(string $dir, array $keep): void
+{
+    if (!is_dir($dir)) {
+        return;
+    }
+    foreach (scandir($dir) ?: [] as $entry) {
+        if ($entry === '.' || $entry === '..') {
+            continue;
+        }
+        $path = $dir . '/' . $entry;
+        if (!is_dir($path) || in_array($entry, $keep, true)) {
+            continue;
+        }
+        remove_tree($path);
+        echo '  - ' . str_replace('\\', '/', substr($path, strlen(dirname(__DIR__)) + 1))
+            . " (устаревшая страница)\n";
+    }
+}
 
 function copy_tree(string $from, string $to): int
 {
@@ -1548,32 +1848,13 @@ foreach (($events['items'] ?? []) as $item) {
 }
 
 $services = load_data($root, 'services');
+$serviceCodes = [];
 foreach (($services['items'] ?? []) as $item) {
-    $props = $item['properties'] ?? [];
-    $priceText = price($props['PRICE_FROM'] ?? 0);
-    if ($priceText === '') {
-        $priceText = 'Бесплатно для читателей';
-    }
-    $rows = '<div><dt>Стоимость</dt><dd>' . e($priceText) . '</dd></div>';
-    if (!empty($props['DURATION'])) {
-        $rows .= '<div><dt>Режим</dt><dd>' . e($props['DURATION']) . '</dd></div>';
-    }
-    if (!empty($props['FEATURES'])) {
-        $rows .= '<div><dt>Что входит</dt><dd>' . e(implode(', ', (array)$props['FEATURES'])) . '</dd></div>';
-    }
-    $html = detail_page($previewDir, [
-        'name' => $item['name'],
-        'preview' => $item['preview_text'] ?? '',
-        'html' => $item['detail_text'] ?? '',
-        'image' => $item['image'] ?? '',
-        'rows' => $rows,
-        'back' => 'services',
-        'backText' => 'Все услуги',
-        'active' => 'services',
-        'cta' => ['label' => 'Забронировать', 'href' => 'feedback/'],
-    ]);
+    $serviceCodes[] = (string)$item['code'];
+    $html = service_page($previewDir, $item, 2);
     write_page($previewDir . '/services/' . $item['code'] . '/index.html', $html);
 }
+prune_subdirs($previewDir . '/services', $serviceCodes);
 
 $printing = load_data($root, 'printing');
 foreach (($printing['items'] ?? []) as $item) {

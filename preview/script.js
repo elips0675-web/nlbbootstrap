@@ -163,6 +163,50 @@
     });
 
     /* ------------------------------------------------------------------
+     * 8.1. Бронирование услуги: тариф + сборка сообщения
+     *      main.feedback отправляет только NAME/EMAIL/MESSAGE, поэтому
+     *      телефон, дату, время и тариф добавляем в MESSAGE перед отправкой.
+     * ------------------------------------------------------------------ */
+    doc.querySelectorAll('.js-choose-tariff').forEach(function (link) {
+        link.addEventListener('click', function () {
+            const form = doc.querySelector('#booking form[data-booking="Y"]');
+            if (!form) return;
+            const tariff = form.querySelector('input[name="NLB_TARIFF"]');
+            if (tariff) tariff.value = link.getAttribute('data-tariff') || '';
+            const card = link.closest('.tariff-card');
+            if (card) {
+                doc.querySelectorAll('.tariff-card.is-selected').forEach(function (one) {
+                    one.classList.remove('is-selected');
+                });
+                card.classList.add('is-selected');
+            }
+        });
+    });
+
+    doc.querySelectorAll('form[data-booking="Y"]').forEach(function (form) {
+        form.addEventListener('submit', function () {
+            const message = form.querySelector('input[name="MESSAGE"]');
+            if (!message) return;
+
+            const field = function (name) {
+                const input = form.querySelector('[name="' + name + '"]');
+                return input ? String(input.value || '').trim() : '';
+            };
+
+            const lines = [];
+            const service = String(form.getAttribute('data-service') || field('NLB_SERVICE')).trim();
+            if (service !== '') lines.push('Услуга: ' + service);
+            if (field('NLB_TARIFF') !== '') lines.push('Тариф: ' + field('NLB_TARIFF'));
+            if (field('NLB_PHONE') !== '') lines.push('Телефон: ' + field('NLB_PHONE'));
+            if (field('NLB_DATE') !== '') lines.push('Дата: ' + field('NLB_DATE'));
+            if (field('NLB_TIME') !== '') lines.push('Время: ' + field('NLB_TIME'));
+            if (field('NLB_COMMENT') !== '') lines.push('Комментарий: ' + field('NLB_COMMENT'));
+
+            message.value = lines.join('\n');
+        }, false);
+    });
+
+    /* ------------------------------------------------------------------
      * 9. Подсказка «Ctrl + K» открывает поиск (как в исходном макете)
      * ------------------------------------------------------------------ */
     doc.addEventListener('keydown', function (event) {

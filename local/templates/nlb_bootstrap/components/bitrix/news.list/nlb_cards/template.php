@@ -67,69 +67,76 @@ if (!$items) {
     return;
 }
 ?>
-<?php if ($card === 'service-feature'): ?>
-    <div class="service-feature-list">
-        <?php foreach ($items as $index => $arItem):
+<?php if ($card === 'service-grid'): ?>
+    <div class="row g-4 service-grid">
+        <?php foreach ($items as $arItem):
             $editArea = nlb_card_edit($this, $arItem);
             $name = (string)($arItem['NAME'] ?? '');
             $link = (string)($arItem['DETAIL_PAGE_URL'] ?? '');
             $preview = (string)($arItem['PREVIEW_TEXT'] ?? '');
-            $image = nlb_card_picture($arItem, $fallbackImage);
-            $icon = nlb_value($arItem, 'ICON', 'book');
+            $icon = nlb_value($arItem, 'ICON', 'sparkles');
             $color = nlb_grad_class(nlb_xml_id($arItem, 'COLOR'));
-            $duration = nlb_value($arItem, 'DURATION');
+            $subtitle = nlb_value($arItem, 'SUBTITLE');
+            $priceLabel = nlb_value($arItem, 'PRICE_LABEL');
+            if ($priceLabel === '') {
+                $priceLabel = nlb_price(nlb_value($arItem, 'PRICE_FROM'));
+            }
+            if ($priceLabel === '') {
+                $priceLabel = 'Бесплатно для читателей';
+            }
             $features = nlb_values($arItem, 'FEATURES');
-            $price = nlb_price(nlb_value($arItem, 'PRICE_FROM'));
-            $reverse = $index % 2 === 1;
+            $bookingUrl = $link !== '' ? $link . '#booking' : SITE_DIR . 'feedback/';
             ?>
-            <article class="service-feature<?= $reverse ? ' service-feature--reverse' : '' ?>"
-                <?= $editArea !== '' ? ' id="' . $editArea . '"' : '' ?>>
-                <div class="service-feature-media">
-                    <img src="<?= htmlspecialcharsbx($image) ?>" alt="<?= htmlspecialcharsbx($name) ?>"
-                         loading="lazy" decoding="async">
-                    <span class="service-feature-icon bg-grad-<?= htmlspecialcharsbx($color) ?>">
+            <div class="col-md-6 col-xl-4"<?= $editArea !== '' ? ' id="' . $editArea . '"' : '' ?>>
+                <article class="service-tile h-100">
+                    <span class="service-tile-icon bg-grad-<?= htmlspecialcharsbx($color) ?>">
                         <svg class="i" aria-hidden="true"><use href="#i-<?= htmlspecialcharsbx($icon) ?>"/></svg>
                     </span>
-                </div>
-                <div class="service-feature-body">
-                    <?php if ($duration !== ''): ?>
-                        <span class="service-feature-badge">
-                            <svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>
-                            <?= htmlspecialcharsbx($duration) ?>
-                        </span>
+                    <?php if ($subtitle !== ''): ?>
+                        <p class="service-tile-eyebrow"><?= htmlspecialcharsbx($subtitle) ?></p>
                     <?php endif; ?>
-                    <h2 class="service-feature-title"><?= htmlspecialcharsbx($name) ?></h2>
+                    <h3 class="service-tile-title">
+                        <?php if ($link !== ''): ?>
+                            <a class="text-reset" href="<?= htmlspecialcharsbx($link) ?>"><?= htmlspecialcharsbx($name) ?></a>
+                        <?php else: ?>
+                            <?= htmlspecialcharsbx($name) ?>
+                        <?php endif; ?>
+                    </h3>
                     <?php if ($preview !== ''): ?>
-                        <p class="service-feature-lead"><?= htmlspecialcharsbx($preview) ?></p>
+                        <p class="service-tile-text"><?= htmlspecialcharsbx($preview) ?></p>
                     <?php endif; ?>
-                    <span class="service-feature-price bg-grad-<?= htmlspecialcharsbx($color) ?>">
-                        <?= $price !== '' ? htmlspecialcharsbx($price) : 'Бесплатно для читателей' ?>
-                    </span>
+                    <span class="service-tile-price"><?= htmlspecialcharsbx($priceLabel) ?></span>
                     <?php if ($features): ?>
-                        <ul class="service-feature-points">
-                            <?php foreach ($features as $feature): ?>
+                        <ul class="service-tile-points">
+                            <?php foreach ($features as $feature):
+                                $parts = explode('|', $feature, 2);
+                                $featureTitle = trim($parts[0]);
+                                if ($featureTitle === '') {
+                                    continue;
+                                }
+                                ?>
                                 <li>
-                                    <span class="service-feature-check bg-grad-<?= htmlspecialcharsbx($color) ?>">
+                                    <span class="service-tile-check bg-grad-<?= htmlspecialcharsbx($color) ?>">
                                         <svg class="i" aria-hidden="true"><use href="#i-check"/></svg>
                                     </span>
-                                    <?= htmlspecialcharsbx($feature) ?>
+                                    <?= htmlspecialcharsbx($featureTitle) ?>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
                     <?php endif; ?>
-                    <div class="service-feature-actions">
-                        <a class="btn btn-nlb btn-lg-nlb" href="<?= SITE_DIR ?>feedback/">
+                    <div class="service-tile-actions">
+                        <a class="btn btn-nlb btn-icon" href="<?= htmlspecialcharsbx($bookingUrl) ?>">
                             Забронировать
                             <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                         </a>
                         <?php if ($link !== ''): ?>
-                            <a class="btn btn-nlb-outline btn-lg-nlb" href="<?= htmlspecialcharsbx($link) ?>">
+                            <a class="btn btn-nlb-outline" href="<?= htmlspecialcharsbx($link) ?>">
                                 Узнать подробнее
                             </a>
                         <?php endif; ?>
                     </div>
-                </div>
-            </article>
+                </article>
+            </div>
         <?php endforeach; ?>
     </div>
     <?php return; ?>
