@@ -100,6 +100,14 @@
             });
         }
 
+        // Пункт открывает мессенджер, почту или модальное окно —
+        // после выбора меню не должно оставаться раскрытым
+        fab.querySelectorAll('.fab-item').forEach(function (item) {
+            item.addEventListener('click', function () {
+                setFab(false);
+            });
+        });
+
         doc.addEventListener('click', function (event) {
             if (!fab.contains(event.target)) setFab(false);
         });
