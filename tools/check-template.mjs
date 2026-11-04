@@ -409,6 +409,51 @@ for (const rel of publicPages) {
 }
 ok('страницы: header/footer/SetTitle');
 
+/* Один <h1> на страницу. У карусели главной заголовок остаётся только
+   у первого слайда, остальные — <p class="hero-title">; собранные
+   страницы preview/ должны иметь ровно один заголовок. */
+const h1Pages = [...publicPages, 'offline.html', 'demo/index.php'];
+(function walk(dir) {
+    for (const entry of fs.readdirSync(path.join(root, dir), { withFileTypes: true })) {
+        const rel = `${dir}/${entry.name}`;
+        if (entry.isDirectory()) {
+            walk(rel);
+        } else if (entry.name.endsWith('.html')) {
+            h1Pages.push(rel);
+        }
+    }
+})('preview');
+
+let h1Problem = false;
+for (const rel of h1Pages) {
+    const text = read(rel);
+    if (!text) continue;
+    const count = (text.match(/<h1[\s>]/gi) || []).length;
+    if (count > 1) {
+        h1Problem = true;
+        fail(`${rel}: ${count} тега <h1> — на странице должен быть один`);
+    }
+}
+for (const rel of h1Pages.filter((name) => name.startsWith('preview/'))) {
+    const count = ((read(rel) || '').match(/<h1[\s>]/gi) || []).length;
+    if (count !== 1) {
+        h1Problem = true;
+        fail(`${rel}: ${count} тега <h1> — в собранной странице нужен один`);
+    }
+}
+for (const rel of ['demo/index.php', 'preview/index.html']) {
+    const text = read(rel) || '';
+    const h1 = (text.match(/<h1[\s>]/gi) || []).length;
+    const titles = (text.match(/class="hero-title"/g) || []).length;
+    if (h1 !== 1 || titles !== 3) {
+        h1Problem = true;
+        fail(`${rel}: <h1> ${h1}, слайдов hero-title ${titles} (нужно 1 и 3)`);
+    }
+}
+if (!h1Problem) {
+    ok(`заголовки: один <h1> на страницу (${h1Pages.length} файлов)`);
+}
+
 /* ------------------------------------------------------------------ */
 /* 10. PWA                                                            */
 /* ------------------------------------------------------------------ */

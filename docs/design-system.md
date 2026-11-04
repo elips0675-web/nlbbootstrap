@@ -56,7 +56,7 @@ system-ui.
 
 | Класс | Размер | Вес | Где |
 |---|---|---|---|
-| `.hero-title` | `clamp(2.1rem, 5.2vw, 4.25rem)` | 800 | H1 героя |
+| `.hero-title` | `clamp(2.1rem, 5.2vw, 4.25rem)` | 800 | H1 первого слайда; остальные слайды — `<p class="hero-title">` |
 | `.section-title` | `clamp(1.9rem, 3.2vw, 3rem)` | 800 | H2 секции |
 | `.print-title` | 1.1rem | 800 | карточка печати |
 | `.event-title` | 1.15rem | 800 | событие |
