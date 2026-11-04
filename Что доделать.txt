@@ -265,6 +265,43 @@ CAPTCHA.
 расхождении с числом, указанным в документе. Ручная сверка не годится: она
 протухнет на следующей миграции молча.
 
+### P1-14. Production-деплой на Vercel не обновляется: корень скачивает `index.php`
+
+Корень `https://nlbbootstrap.vercel.app/` отдаёт `200 application/x-httpd-php`
+(16 350 байт, тело начинается с `<?php`) — браузер сохраняет файл вместо того,
+чтобы открыть страницу. При этом демо уже собрано и работает по другому адресу:
+`https://nlbbootstrap.vercel.app/preview/` → `200 text/html` 71 405 байт,
+`/preview/news/` 40 619, `/preview/events/` 38 657, `/preview/services/sauna/`
+37 902, `/preview/books/kruzhka-biblioteka/` 29 990, `/preview/printing/` 79 896,
+`/preview/assets/css/bootstrap.min.css` → `200 text/css`. Ссылки внутри
+`preview/` относительные (`news/`, `../../assets/…`), поэтому префикс `/preview/`
+ничего не ломает.
+
+Причина, по которой корень остался старым, — не код и не кеш:
+
+| Факт | Чем проверено |
+|---|---|
+| В `main` лежат `vercel.json` и `tools/vercel-build.mjs` | `raw.githubusercontent.com/…/main/vercel.json` → 200, 995 Б; `…/main/tools/vercel-build.mjs` → 200, 1 680 Б |
+| Vercel собрал коммит `416b037` | 2 статуса `success` «Deployment has completed» (11:15:06 и 11:15:41 UTC) на `commits/416b037/statuses` |
+| На проде этих файлов нет | `/tools/vercel-build.mjs` → 404, `/vercel.json` → 404 |
+| `/about/`, `/events/` на проде — исходники PHP | `200 application/x-httpd-php` 8 234 и 5 234 байт |
+| Деплой из `main` создаётся как **preview**, а не production | `nlbbootstrap-git-main-vadims-projects-74cb21aa.vercel.app` → `302` на `vercel.com/sso-api` (Vercel Authentication на preview) |
+
+Вывод: `main` не назначен production-веткой, поэтому `git push` порождает
+preview-деплой за логином, а production-домен продолжает раздавать снимок,
+сделанный до появления `vercel.json`. Код это не лечит: деплой неизменяем,
+production-указатель меняется только в панели.
+
+Приёмка: `Settings → Git → Production Branch` = `main` + `Deployments → ⋯ →
+Promote to Production` (или Redeploy). После этого `/` отдаёт `200 text/html`
+с главной, `/index.php` и `/db/config/iblocks.php` — 404, в заголовках есть
+`X-Content-Type-Options: nosniff` и `X-Frame-Options: SAMEORIGIN`, а
+`/preview/services/sauna/` редиректит на `/services/sauna/`.
+
+Пока production не переключён, показывать демо по ссылке
+`https://nlbbootstrap.vercel.app/preview/` — это тот же снимок `preview/`,
+только без заголовков безопасности и без коротких адресов.
+
 ---
 
 ## P2 — развитие
