@@ -9,6 +9,7 @@
  *  - проверка db/check.php проходит;
  *  - значения свойств сконвертированы (дата, списки, картинки);
  *  - привязка шаблона (шаг 007) записывается;
+ *  - на «книжной» базе шаги 009/010 дают сувениры и 0 изменений при повторе;
  *  - откат удаляет всё своё, после него check.php падает.
  *
  * Запуск: php db/tests/run.php
@@ -207,7 +208,53 @@ if ($code !== 0) {
 }
 
 /* ------------------------------------------------------------------ */
-/* 6. Откат                                                           */
+/* 6. Существующая «книжная» база: миграции 009 и 010                 */
+/* ------------------------------------------------------------------ */
+
+[$output, $code] = nlb_test_run($temp . '/db/tests/legacy.php', [], $temp);
+nlb_test_assert($code === 0, 'legacy.php: книжная база собрана');
+if ($code !== 0) {
+    echo "\n--- вывод legacy.php ---\n{$output}\n";
+}
+
+[$output, $code] = nlb_test_run($temp . '/db/run.php', ['--only=009'], $temp);
+nlb_test_assert($code === 0, '009 на книжной базе: exit 0');
+nlb_test_assert(
+    (bool)preg_match('/изменено: [1-9]\d*/', $output),
+    '009 на книжной базе: изменения есть'
+);
+
+[$output, $code] = nlb_test_run($temp . '/db/run.php', ['--only=010'], $temp);
+nlb_test_assert($code === 0, '010 на книжной базе: exit 0');
+nlb_test_assert(
+    (bool)preg_match('/изменено: [1-9]\d*/', $output),
+    '010 на книжной базе: изменения есть'
+);
+
+[$output, $code] = nlb_test_run($temp . '/db/tests/souvenirs.php', [], $temp);
+nlb_test_assert($code === 0, 'souvenirs.php: книги стали сувенирами');
+if ($code !== 0) {
+    echo "\n--- вывод souvenirs.php ---\n{$output}\n";
+}
+
+[$output, $code] = nlb_test_run($temp . '/db/run.php', ['--only=009,010'], $temp);
+nlb_test_assert($code === 0, 'повтор 009,010: exit 0');
+nlb_test_assert(
+    !preg_match('/создано: [1-9]/', $output) && !preg_match('/изменено: [1-9]/', $output),
+    'повтор 009,010: 0 изменений'
+);
+if (preg_match('/создано: [1-9]|изменено: [1-9]/', $output)) {
+    echo "\n--- вывод повтора ---\n{$output}\n";
+}
+
+[$output, $code] = nlb_test_run($temp . '/db/check.php', [], $temp);
+nlb_test_assert($code === 0, 'check.php после 009,010: exit 0');
+if ($code !== 0) {
+    echo "\n--- вывод check.php ---\n{$output}\n";
+}
+
+/* ------------------------------------------------------------------ */
+/* 7. Откат                                                           */
 /* ------------------------------------------------------------------ */
 
 [$output, $code] = nlb_test_run($temp . '/db/rollback.php', ['--yes', '--menus'], $temp);
@@ -219,7 +266,7 @@ nlb_test_assert(!is_file($temp . '/menu/top.menu.php'), 'откат: меню у
 nlb_test_assert($code === 1, 'check.php после отката: exit 1 (ожидаемо)');
 
 /* ------------------------------------------------------------------ */
-/* 7. Уборка                                                          */
+/* 8. Уборка                                                          */
 /* ------------------------------------------------------------------ */
 
 foreach ($linked as $name => $isLink) {

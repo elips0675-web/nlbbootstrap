@@ -195,6 +195,11 @@ class CIBlock
             'SORT' => (int)($fields['SORT'] ?? 500),
             'VERSION' => (int)($fields['VERSION'] ?? 1),
             'GROUP_ID' => $fields['GROUP_ID'] ?? [],
+            'LIST_PAGE_URL' => $fields['LIST_PAGE_URL'] ?? '',
+            'DETAIL_PAGE_URL' => $fields['DETAIL_PAGE_URL'] ?? '',
+            'SECTION_PAGE_URL' => $fields['SECTION_PAGE_URL'] ?? '',
+            'INDEX_ELEMENT' => $fields['INDEX_ELEMENT'] ?? 'Y',
+            'INDEX_SECTION' => $fields['INDEX_SECTION'] ?? 'Y',
         ];
         NlbStubStore::$sequences[$id] = 0;
         return $id;
@@ -209,6 +214,22 @@ class CIBlock
             }
         }
         return new NlbStubResult(nlb_stub_sort($rows, $order));
+    }
+
+    public function Update(int $id, array $fields): bool
+    {
+        if (!isset(NlbStubStore::$iblocks[$id])) {
+            $this->LAST_ERROR = 'нет инфоблока';
+            return false;
+        }
+        foreach (['NAME', 'SORT', 'LIST_PAGE_URL', 'DETAIL_PAGE_URL', 'SECTION_PAGE_URL', 'INDEX_ELEMENT', 'INDEX_SECTION', 'ACTIVE'] as $field) {
+            if (array_key_exists($field, $fields)) {
+                NlbStubStore::$iblocks[$id][$field] = $field === 'SORT'
+                    ? (int)$fields[$field]
+                    : (string)$fields[$field];
+            }
+        }
+        return true;
     }
 
     public static function Delete(int $id): bool
@@ -281,6 +302,8 @@ class CIBlockProperty
             'MULTIPLE' => $fields['MULTIPLE'] ?? 'N',
             'USER_TYPE' => $fields['USER_TYPE'] ?: '',
             'IS_REQUIRED' => $fields['IS_REQUIRED'] ?? 'N',
+            'SEARCHABLE' => $fields['SEARCHABLE'] ?? 'N',
+            'FILTRABLE' => $fields['FILTRABLE'] ?? 'N',
             'SORT' => (int)($fields['SORT'] ?? 500),
         ];
 
@@ -291,6 +314,7 @@ class CIBlockProperty
                 'VALUE' => $value['VALUE'] ?? '',
                 'XML_ID' => $value['XML_ID'] ?? '',
                 'SORT' => $value['SORT'] ?? 500,
+                'DEF' => $value['DEF'] ?? 'N',
             ]);
         }
 
@@ -306,6 +330,22 @@ class CIBlockProperty
             }
         }
         return new NlbStubResult(nlb_stub_sort($rows, $order));
+    }
+
+    public function Update(int $id, array $fields): bool
+    {
+        if (!isset(NlbStubStore::$properties[$id])) {
+            $this->LAST_ERROR = 'нет свойства';
+            return false;
+        }
+        foreach (['NAME', 'PROPERTY_TYPE', 'MULTIPLE', 'USER_TYPE', 'IS_REQUIRED', 'SEARCHABLE', 'FILTRABLE', 'SORT'] as $field) {
+            if (array_key_exists($field, $fields)) {
+                NlbStubStore::$properties[$id][$field] = $field === 'SORT'
+                    ? (int)$fields[$field]
+                    : (string)$fields[$field];
+            }
+        }
+        return true;
     }
 }
 
@@ -336,6 +376,7 @@ class CIBlockPropertyEnum
             'VALUE' => $fields['VALUE'] ?? '',
             'XML_ID' => $xmlId,
             'SORT' => (int)($fields['SORT'] ?? 500),
+            'DEF' => $fields['DEF'] ?? 'N',
         ];
         return $id;
     }
@@ -349,6 +390,22 @@ class CIBlockPropertyEnum
             }
         }
         return new NlbStubResult(nlb_stub_sort($rows, $order));
+    }
+
+    public function Update(int $id, array $fields): bool
+    {
+        if (!isset(NlbStubStore::$enums[$id])) {
+            $this->LAST_ERROR = 'нет значения списка';
+            return false;
+        }
+        foreach (['VALUE', 'XML_ID', 'SORT', 'DEF'] as $field) {
+            if (array_key_exists($field, $fields)) {
+                NlbStubStore::$enums[$id][$field] = $field === 'SORT'
+                    ? (int)$fields[$field]
+                    : (string)$fields[$field];
+            }
+        }
+        return true;
     }
 }
 
@@ -394,6 +451,22 @@ class CIBlockSection
         return new NlbStubResult(nlb_stub_sort($rows, $order));
     }
 
+    public function Update(int $id, array $fields): bool
+    {
+        if (!isset(NlbStubStore::$sections[$id])) {
+            $this->LAST_ERROR = 'нет раздела';
+            return false;
+        }
+        foreach (['CODE', 'XML_ID', 'NAME', 'ACTIVE', 'SORT'] as $field) {
+            if (array_key_exists($field, $fields)) {
+                NlbStubStore::$sections[$id][$field] = $field === 'SORT'
+                    ? (int)$fields[$field]
+                    : (string)$fields[$field];
+            }
+        }
+        return true;
+    }
+
     public static function Delete(int $id): bool
     {
         if (!isset(NlbStubStore::$sections[$id])) {
@@ -434,8 +507,14 @@ class CIBlockElement
             'XML_ID' => $xmlId,
             'ACTIVE' => $fields['ACTIVE'] ?? 'Y',
             'DATE_ACTIVE_FROM' => $fields['DATE_ACTIVE_FROM'] ?? '',
+            'PREVIEW_TEXT' => $fields['PREVIEW_TEXT'] ?? '',
+            'PREVIEW_TEXT_TYPE' => $fields['PREVIEW_TEXT_TYPE'] ?? 'text',
+            'DETAIL_TEXT' => $fields['DETAIL_TEXT'] ?? '',
+            'DETAIL_TEXT_TYPE' => $fields['DETAIL_TEXT_TYPE'] ?? 'html',
+            'SORT' => (int)($fields['SORT'] ?? 500),
             'PROPERTY_VALUES' => $fields['PROPERTY_VALUES'] ?? [],
             'PREVIEW_PICTURE' => isset($fields['PREVIEW_PICTURE']) ? (int)$fields['PREVIEW_PICTURE'] : 0,
+            'DETAIL_PICTURE' => isset($fields['DETAIL_PICTURE']) ? (int)$fields['DETAIL_PICTURE'] : 0,
         ];
         return $id;
     }
@@ -460,6 +539,101 @@ class CIBlockElement
     {
         unset(NlbStubStore::$elements[$id]);
         return true;
+    }
+
+    public function Update(int $id, array $fields): bool
+    {
+        if (!isset(NlbStubStore::$elements[$id])) {
+            $this->LAST_ERROR = 'нет элемента';
+            return false;
+        }
+
+        foreach (['NAME', 'CODE', 'XML_ID', 'ACTIVE', 'DATE_ACTIVE_FROM', 'PREVIEW_TEXT', 'PREVIEW_TEXT_TYPE', 'DETAIL_TEXT', 'DETAIL_TEXT_TYPE', 'SORT'] as $field) {
+            if (array_key_exists($field, $fields)) {
+                NlbStubStore::$elements[$id][$field] = $field === 'SORT'
+                    ? (int)$fields[$field]
+                    : (string)$fields[$field];
+            }
+        }
+
+        if (array_key_exists('IBLOCK_SECTION_ID', $fields)) {
+            NlbStubStore::$elements[$id]['IBLOCK_SECTION_ID'] = $fields['IBLOCK_SECTION_ID'] ?: null;
+        }
+
+        foreach (['PREVIEW_PICTURE', 'DETAIL_PICTURE'] as $field) {
+            if (!array_key_exists($field, $fields)) {
+                continue;
+            }
+            $value = $fields[$field];
+            if (is_array($value) && !empty($value['del'])) {
+                NlbStubStore::$elements[$id][$field] = 0;
+            } elseif (is_array($value) && !empty($value['tmp_name'])) {
+                NlbStubStore::$elements[$id][$field] = 1;
+            } else {
+                NlbStubStore::$elements[$id][$field] = (int)$value;
+            }
+        }
+
+        if (isset($fields['PROPERTY_VALUES']) && is_array($fields['PROPERTY_VALUES'])) {
+            foreach ($fields['PROPERTY_VALUES'] as $code => $value) {
+                $values = is_array($value) ? $value : [$value];
+                $values = array_values(array_filter($values, static function ($one) {
+                    return is_scalar($one) && trim((string)$one) !== '';
+                }));
+                if (!$values) {
+                    unset(NlbStubStore::$elements[$id]['PROPERTY_VALUES'][$code]);
+                    continue;
+                }
+                NlbStubStore::$elements[$id]['PROPERTY_VALUES'][$code] = is_array($value) ? $values : $values[0];
+            }
+        }
+
+        return true;
+    }
+
+    public static function GetProperty($iblockId, $elementId, array $order = [], array $filter = [], array $select = []): NlbStubResult
+    {
+        $elementId = (int)$elementId;
+        $element = NlbStubStore::$elements[$elementId] ?? null;
+        if (!$element || (int)$element['IBLOCK_ID'] !== (int)$iblockId) {
+            return new NlbStubResult([]);
+        }
+
+        $rows = [];
+        foreach (($element['PROPERTY_VALUES'] ?? []) as $code => $value) {
+            $propertyId = 0;
+            $type = 'S';
+            foreach (NlbStubStore::$properties as $property) {
+                if ((int)$property['IBLOCK_ID'] === (int)$iblockId && $property['CODE'] === $code) {
+                    $propertyId = (int)$property['ID'];
+                    $type = (string)$property['PROPERTY_TYPE'];
+                    break;
+                }
+            }
+
+            $values = is_array($value) ? $value : [$value];
+            foreach ($values as $one) {
+                if (is_array($one)) {
+                    $one = $one['VALUE'] ?? '';
+                }
+                $one = trim((string)$one);
+                if ($one === '') {
+                    continue;
+                }
+                $rows[] = [
+                    'ID' => 0,
+                    'IBLOCK_ELEMENT_ID' => $elementId,
+                    'IBLOCK_PROPERTY_ID' => $propertyId,
+                    'PROPERTY_ID' => $propertyId,
+                    'CODE' => (string)$code,
+                    'PROPERTY_TYPE' => $type,
+                    'VALUE' => $one,
+                    'VALUE_ENUM' => $one,
+                ];
+            }
+        }
+
+        return new NlbStubResult($rows);
     }
 }
 

@@ -111,6 +111,7 @@ $started = microtime(true);
 $failed = false;
 $ran = 0;
 $createdTotal = 0;
+$updatedTotal = 0;
 $skippedTotal = 0;
 
 foreach ($files as $file) {
@@ -142,13 +143,16 @@ foreach ($files as $file) {
     }
 
     $created = (int)($result['created'] ?? 0);
+    $updated = (int)($result['updated'] ?? 0);
     $skipped = (int)($result['skipped'] ?? 0);
     $createdTotal += $created;
+    $updatedTotal += $updated;
     $skippedTotal += $skipped;
 
     nlb_say(sprintf(
-        '  создано: %d, пропущено: %d (%.2f с)',
+        '  создано: %d, изменено: %d, пропущено: %d (%.2f с)',
         $created,
+        $updated,
         $skipped,
         microtime(true) - $stepStarted
     ));
@@ -177,9 +181,10 @@ if ($failed) {
 nlb_clear_cache();
 
 nlb_say(sprintf(
-    'Готово: шагов %d, создано объектов %d, пропущено %d, время %.2f с.',
+    'Готово: шагов %d, создано объектов %d, изменено %d, пропущено %d, время %.2f с.',
     $ran,
     $createdTotal,
+    $updatedTotal,
     $skippedTotal,
     microtime(true) - $started
 ));
