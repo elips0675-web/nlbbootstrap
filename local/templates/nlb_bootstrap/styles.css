@@ -2041,6 +2041,11 @@ img {
     color: var(--nlb-primary-dark);
 }
 
+.nlb-chat__hint-sep {
+    margin: 0 0.2rem;
+    color: var(--nlb-line);
+}
+
 @media (max-width: 575.98px) {
     .nlb-chat {
         right: 0.75rem;

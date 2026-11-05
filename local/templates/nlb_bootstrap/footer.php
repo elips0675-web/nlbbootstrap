@@ -226,6 +226,8 @@ $nlbTpl = SITE_TEMPLATE_PATH;
     <p class="nlb-chat__hint">
         Не нашли ответ?
         <button class="nlb-chat__link" type="button" data-chat-question>Отправить вопрос библиотекарю</button>
+        <span class="nlb-chat__hint-sep" aria-hidden="true">·</span>
+        <button class="nlb-chat__link" type="button" data-chat-copy>Скопировать диалог</button>
     </p>
 </div>
 

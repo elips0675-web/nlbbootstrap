@@ -631,6 +631,64 @@
             window.location.href = form ? form.getAttribute('action') : 'feedback/';
         }
 
+        const chatTranscript = function () {
+            const lines = [];
+            chatLog.querySelectorAll('.nlb-chat__msg').forEach(function (node) {
+                if (node.classList.contains('nlb-chat__typing')) return;
+                const bubble = node.querySelector('.nlb-chat__bubble');
+                if (!bubble) return;
+                const who = node.classList.contains('nlb-chat__msg--user') ? 'Вы' : 'ИИ-помощник';
+                lines.push(who + ': ' + bubble.textContent);
+            });
+            return lines.join('\n\n');
+        };
+
+        const chatCopyStatus = function (ok) {
+            const message = ok ? 'диалог скопирован' : 'не удалось скопировать';
+            const previous = chatStatus.textContent;
+            chatStatus.textContent = message;
+            window.setTimeout(function () {
+                if (chatStatus.textContent === message) chatStatus.textContent = previous;
+            }, 1800);
+        };
+
+        function copyChat() {
+            const text = chatTranscript();
+            if (!text) {
+                chatCopyStatus(false);
+                return;
+            }
+
+            const fallback = function () {
+                const area = doc.createElement('textarea');
+                area.value = text;
+                area.setAttribute('readonly', 'readonly');
+                area.style.position = 'fixed';
+                area.style.top = '-1000px';
+                doc.body.appendChild(area);
+                area.select();
+
+                let ok = false;
+                try {
+                    ok = doc.execCommand('copy');
+                } catch (error) {
+                    ok = false;
+                }
+
+                area.remove();
+                chatCopyStatus(ok);
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function () {
+                    chatCopyStatus(true);
+                }).catch(fallback);
+                return;
+            }
+
+            fallback();
+        }
+
         function switchToHuman() {
             if (chatMode === 'human') return;
             chatMode = 'human';
@@ -972,6 +1030,10 @@
 
         chat.querySelectorAll('[data-chat-question]').forEach(function (button) {
             button.addEventListener('click', askQuestion);
+        });
+
+        chat.querySelectorAll('[data-chat-copy]').forEach(function (button) {
+            button.addEventListener('click', copyChat);
         });
 
         if (chatBack) {
