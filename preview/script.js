@@ -250,7 +250,23 @@
             return new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
         };
 
-        const scrollChat = function () {
+        const chatNearBottom = function () {
+            return chatLog.scrollHeight - chatLog.scrollTop - chatLog.clientHeight < 48;
+        };
+
+        const scrollChat = function (options) {
+            const opts = options || {};
+            if (!opts.force && !opts.stick) return;
+
+            const row = opts.row;
+            if (row && row.offsetHeight > chatLog.clientHeight) {
+                const logRect = chatLog.getBoundingClientRect();
+                const rowRect = row.getBoundingClientRect();
+                const target = chatLog.scrollTop + (rowRect.top - logRect.top) - 8;
+                chatLog.scrollTop = Math.max(0, target);
+                return;
+            }
+
             chatLog.scrollTop = chatLog.scrollHeight;
         };
 
@@ -328,6 +344,7 @@
 
         const addChatMessage = function (text, who, opts) {
             const options = opts || {};
+            const stick = chatNearBottom();
             const row = doc.createElement('div');
             row.className = 'nlb-chat__msg nlb-chat__msg--' + who;
 
@@ -361,7 +378,7 @@
             row.appendChild(time);
 
             chatLog.appendChild(row);
-            scrollChat();
+            scrollChat({ row: row, force: who === 'user', stick: stick });
             return row;
         };
 
@@ -374,12 +391,13 @@
 
         const showChatTyping = function () {
             hideChatTyping();
+            const stick = chatNearBottom();
             const row = doc.createElement('div');
             row.className = 'nlb-chat__msg nlb-chat__msg--bot nlb-chat__typing';
             row.innerHTML = '<div class="nlb-chat__bubble"><span></span><span></span><span></span></div>';
             chatLog.appendChild(row);
             chatTyping = row;
-            scrollChat();
+            scrollChat({ stick: stick });
         };
 
         const chatLater = function (fn, delay) {
@@ -399,6 +417,7 @@
         };
 
         const addChatChips = function (items) {
+            const stick = chatNearBottom();
             const wrap = doc.createElement('div');
             wrap.className = 'nlb-chat__chips';
             items.forEach(function (item) {
@@ -414,7 +433,7 @@
                 wrap.appendChild(chip);
             });
             chatLog.appendChild(wrap);
-            scrollChat();
+            scrollChat({ stick: stick });
         };
 
         const clearChatChips = function () {
@@ -829,6 +848,7 @@
             hideChatError();
             clearChatChips();
             chatLog.innerHTML = '';
+            chatLog.scrollTop = 0;
             chatInput.value = '';
             chatInput.placeholder = 'Напишите сообщение…';
             greetChat();
