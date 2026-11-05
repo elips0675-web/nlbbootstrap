@@ -130,6 +130,7 @@
         const chatStatus = doc.getElementById('nlbChatStatus');
         const chatTitle = doc.getElementById('nlbChatTitle');
         const chatAvatar = chat.querySelector('.nlb-chat__avatar');
+        const chatBack = chat.querySelector('[data-chat-back]');
         const chatOpeners = doc.querySelectorAll('[data-chat-open]');
         const chatClosers = chat.querySelectorAll('[data-chat-close]');
 
@@ -419,6 +420,12 @@
             chatTitle.textContent = 'Анна';
             chatStatus.textContent = 'оператор · печатает…';
             if (chatAvatar) chatAvatar.classList.add('is-human');
+            if (chatBack) chatBack.hidden = false;
+
+            clearChatChips();
+            chatLog.querySelectorAll('.nlb-chat__msg--greeting').forEach(function (node) {
+                node.remove();
+            });
 
             addChatMessage('⏳ Соединяю вас с оператором…', 'bot');
 
@@ -426,8 +433,23 @@
             window.setTimeout(function () {
                 hideChatTyping();
                 chatStatus.textContent = 'онлайн';
-                addChatMessage('Здравствуйте! Меня зовут Анна, я администратор библиотеки. Вижу вашу переписку. Чем могу помочь?', 'bot');
+                addChatMessage('Здравствуйте! Меня зовут Анна, я администратор библиотеки. Чем могу помочь?', 'bot');
             }, 2000);
+        }
+
+        function switchToBot() {
+            if (chatMode === 'bot') return;
+            chatMode = 'bot';
+
+            chatTitle.textContent = 'Татьяна Петровна';
+            chatStatus.textContent = 'ИИ-помощник ТП НББ · онлайн';
+            if (chatAvatar) chatAvatar.classList.remove('is-human');
+            if (chatBack) chatBack.hidden = true;
+
+            clearChatChips();
+            chatReply('Снова на связи ИИ-помощник библиотеки. Чем помочь?', 400, function () {
+                addChatChips(startChips());
+            });
         }
 
         const operatorReplies = [
@@ -489,7 +511,8 @@
         }
 
         const greetChat = function () {
-            addChatMessage('Здравствуйте! Меня зовут Татьяна Петровна, я ИИ-помощник ТП НББ. Чем могу помочь?', 'bot');
+            const row = addChatMessage('Здравствуйте! Меня зовут Татьяна Петровна, я ИИ-помощник ТП НББ. Чем могу помочь?', 'bot');
+            row.classList.add('nlb-chat__msg--greeting');
             addChatChips(startChips());
         };
 
@@ -527,6 +550,8 @@
         chat.querySelectorAll('[data-chat-question]').forEach(function (button) {
             button.addEventListener('click', askQuestion);
         });
+
+        if (chatBack) chatBack.addEventListener('click', switchToBot);
 
         chatForm.addEventListener('submit', function (event) {
             event.preventDefault();

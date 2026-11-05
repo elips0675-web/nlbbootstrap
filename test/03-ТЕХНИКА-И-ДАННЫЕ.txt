@@ -11,8 +11,8 @@
     Язык шаблона    PHP 8.0+ (проверялось на 8.3)            —
     CSS-фреймворк   Bootstrap 5.3.3, локально                assets/css
     JS              Bootstrap bundle + vanilla, IIFE         assets/js
-    Свой CSS        CSS3 + custom properties, 3 397 строк    styles.css
-    Свой JS         ES5-совместимый, 731 строка               script.js
+    Свой CSS        CSS3 + custom properties, 3 431 строк    styles.css
+    Свой JS         ES5-совместимый, 756 строк               script.js
     Шрифты          системный стек, внешних запросов нет     styles.css:53
     Иконки          inline SVG <symbol>, спрайт в header     header.php
     Изображения     JPG + WebP + AVIF, ширины 480/960/1280    assets/images
@@ -73,7 +73,7 @@ CODE/XML_ID, поэтому повторный запуск ничего не д
     php db/run.php --only=007 --set-template   привязать шаблон к сайту
     php db/check.php           что реально в базе (нужно ядро)
     php db/rollback.php        откат демо-контента
-    php db/tests/run.php       автотест на заглушках ядра (26 проверок)
+    php db/tests/run.php       автотест на заглушках ядра (27 проверок)
 
 Отдельно про существующие установки: 003 и 005 пропускают уже созданные
 свойства и элементы, поэтому для базы, залитой старой версией, добавлены

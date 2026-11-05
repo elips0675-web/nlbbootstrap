@@ -1713,6 +1713,40 @@ img {
     flex: none;
 }
 
+.nlb-chat__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    flex: none;
+    padding: 0.3rem 0.55rem;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.nlb-chat__back:hover {
+    background: rgba(255, 255, 255, 0.32);
+}
+
+.nlb-chat__back:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+.nlb-chat__back .i {
+    width: 14px;
+    height: 14px;
+}
+
+.nlb-chat__back[hidden] {
+    display: none;
+}
+
 .nlb-chat__log {
     flex: 1;
     overflow-y: auto;

@@ -200,6 +200,10 @@ $nlbTpl = SITE_TEMPLATE_PATH;
 
 <div class="nlb-chat" id="nlbChat" role="dialog" aria-labelledby="nlbChatTitle" aria-hidden="true">
     <div class="nlb-chat__head">
+        <button class="nlb-chat__back" type="button" data-chat-back hidden>
+            <svg class="i" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+            Назад
+        </button>
         <span class="nlb-chat__titles">
             <span class="nlb-chat__title" id="nlbChatTitle">Татьяна Петровна</span>
             <span class="nlb-chat__status" id="nlbChatStatus">ИИ-помощник ТП НББ · онлайн</span>

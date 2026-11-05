@@ -119,7 +119,7 @@
     Элементов демо-контента                   91
     Миграций                                  11 (001–011)
     Шаблонов компонентов                      7
-    Строк styles.css                          3 397
+    Строк styles.css                          3 431
     Строк script.js                           610 (+ pwa.js, consent.js)
     Изображений                               163 файла, 8 252 КБ
                                               (20 исходников: JPG 3 885 КБ,
@@ -268,8 +268,8 @@ services/detail.php:13-16. Несуществующий код отдаёт 404 
 local/templates/nlb_bootstrap/
     header.php          <head>, мета, SEO, JSON-LD, топбар, меню, поиск, крошки
     footer.php          подвал, подписка, модалки (обратная связь, реквизиты), FAB, чат ИИ-помощника
-    styles.css          3 397 строк, токены в :root (styles.css:12)
-    script.js           731 строка, 10 модулей + формы и слоты (8.1) + чат (4.1)
+    styles.css          3 431 строк, токены в :root (styles.css:12)
+    script.js           756 строк, 10 модулей + формы и слоты (8.1) + чат (4.1)
     assets/css/bootstrap.min.css        5.3.3, локально
     assets/js/bootstrap.bundle.min.js   5.3.3, локально
     assets/js/pwa.js, consent.js
@@ -310,7 +310,7 @@ local/templates/nlb_bootstrap/
     db/lib/boot.php             загрузка конфигов без ядра
     db/lib/helpers.php          создание типов, инфоблоков, свойств, элементов
     db/sql/checks.sql           проверки схемы для check.php
-    db/tests/run.php            26 проверок на заглушках ядра
+    db/tests/run.php            27 проверок на заглушках ядра
     db/tests/stub/bitrix.php    заглушка ядра (26 КБ)
     db/run.php                  накат миграций (--only, --set-template)
     db/check.php                что реально в базе (нужно ядро)
@@ -367,8 +367,8 @@ local/templates/nlb_bootstrap/
     Язык шаблона    PHP 8.0+ (проверено 8.3.30 и 8.5.12)       —
     CSS-фреймворк   Bootstrap 5.3.3, локально                assets/css
     JS              Bootstrap bundle + vanilla, IIFE         assets/js
-    Свой CSS        CSS3 + custom properties, 3 397 строк    styles.css
-    Свой JS         ES5-совместимый, 731 строка               script.js
+    Свой CSS        CSS3 + custom properties, 3 431 строк    styles.css
+    Свой JS         ES5-совместимый, 756 строк               script.js
     Шрифты          системный стек, внешних запросов нет     styles.css:53
     Иконки          inline SVG <symbol>, спрайт в header     header.php
     Изображения     JPG + WebP + AVIF, ширины 480/960/1280    assets/images
@@ -429,7 +429,7 @@ CODE/XML_ID, поэтому повторный запуск ничего не д
     php db/run.php --only=007 --set-template   привязать шаблон к сайту
     php db/check.php           что реально в базе (нужно ядро)
     php db/rollback.php        откат демо-контента
-    php db/tests/run.php       автотест на заглушках ядра (26 проверок)
+    php db/tests/run.php       автотест на заглушках ядра (27 проверок)
 
 Отдельно про существующие установки: 003 и 005 пропускают уже созданные
 свойства и элементы, поэтому для базы, залитой старой версией, добавлены
@@ -710,7 +710,7 @@ P1 — качество и полнота
           свойство GALLERY (тип F).
     P1-12 Заказ сувенира: запись элемента, письмо, CAPTCHA.
     P1-13 Сводные числа в README.md и project-context.md расходятся с кодом
-          (6/33/89 против 9/65/91, «~1800 строк» против 3 397, «64 PHP-файла»
+          (6/33/89 против 9/65/91, «~1800 строк» против 3 431, «64 PHP-файла»
           против 83). Приёмка: числа совпадают и сверяются гейтом, а не
           глазами.
     P1-14 Production-деплой на Vercel: корень отдаёт index.php вместо
@@ -801,12 +801,10 @@ P2 — развитие
                                89 элементов        91 элемент
     README.md:31               «28 страниц»        28 — совпадает
     README.md:35               «14 документов»     14 .md — совпадает
-    project-context.md:23      styles.css          styles.css 3 397 строк
+    project-context.md:22      styles.css          styles.css 3 431 строк
                                «~1800 строк»
     project-context.md:141     «64 PHP-файла»      83 PHP-файла
                                проверено php -l
-    README.md:93               «26 проверок»       27 проверок
-                                                   (db/tests/run.php)
     CHANGELOG.md:24            «32 свойства,       историческая запись
                                48 элементов»       версии 0.2.0, не текущее
                                                    состояние
