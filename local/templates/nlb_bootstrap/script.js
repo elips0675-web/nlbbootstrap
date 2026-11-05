@@ -392,6 +392,109 @@
             ];
         };
 
+        const pageSection = function () {
+            const path = String(window.location.pathname || '/').toLowerCase();
+            const sections = ['services', 'printing', 'events', 'news', 'books', 'collections', 'contacts', 'feedback'];
+            for (let i = 0; i < sections.length; i++) {
+                if (path.indexOf('/' + sections[i] + '/') !== -1) return sections[i];
+            }
+            return 'home';
+        };
+
+        const sectionGreeting = function () {
+            const section = pageSection();
+
+            if (section === 'services') {
+                return {
+                    text: 'Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Вижу, вы смотрите услуги и пространства, — подскажу тарифы, график и бронирование. Чем помочь?',
+                    chips: [
+                        { label: 'Услуги и пространства' },
+                        { label: 'Часы работы' },
+                        { label: 'Забронировать зал' },
+                        { label: 'Задать свой вопрос', accent: true, action: focusQuestion },
+                        { label: 'Позвать оператора', action: switchToHuman }
+                    ]
+                };
+            }
+
+            if (section === 'printing') {
+                return {
+                    text: 'Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Вижу, вы в разделе «Печать», — подскажу цены, форматы и как передать файл. Чем помочь?',
+                    chips: [
+                        { label: 'Печать и копирование' },
+                        { label: 'Визитки' },
+                        { label: 'Часы работы' },
+                        { label: 'Задать свой вопрос', accent: true, action: focusQuestion },
+                        { label: 'Позвать оператора', action: switchToHuman }
+                    ]
+                };
+            }
+
+            if (section === 'events') {
+                return {
+                    text: 'Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Вижу, вы смотрите афишу, — подскажу ближайшие события и как на них записаться. Чем помочь?',
+                    chips: [
+                        { label: 'Ближайшие события' },
+                        { label: 'Как записаться на событие' },
+                        { label: 'Часы работы' },
+                        { label: 'Задать свой вопрос', accent: true, action: focusQuestion },
+                        { label: 'Позвать оператора', action: switchToHuman }
+                    ]
+                };
+            }
+
+            if (section === 'news') {
+                return {
+                    text: 'Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Вижу, вы читаете новости, — подскажу, что нового в библиотеке и куда прийти. Чем помочь?',
+                    chips: [
+                        { label: 'Афиша событий' },
+                        { label: 'Услуги и пространства' },
+                        { label: 'Часы работы' },
+                        { label: 'Задать свой вопрос', accent: true, action: focusQuestion }
+                    ]
+                };
+            }
+
+            if (section === 'books' || section === 'collections') {
+                return {
+                    text: 'Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Вижу, вы выбираете книги, — подскажу, как искать по каталогу и где выдают. Чем помочь?',
+                    chips: [
+                        { label: 'Поиск по каталогу' },
+                        { label: 'Как записаться в библиотеку' },
+                        { label: 'Электронные ресурсы и Wi-Fi' },
+                        { label: 'Задать свой вопрос', accent: true, action: focusQuestion }
+                    ]
+                };
+            }
+
+            if (section === 'contacts') {
+                return {
+                    text: 'Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Вижу, вы на странице контактов, — подскажу телефон, адрес и часы работы. Чем помочь?',
+                    chips: [
+                        { label: 'Часы работы' },
+                        { label: 'Адрес и как добраться' },
+                        { label: 'Позвать оператора', action: switchToHuman }
+                    ]
+                };
+            }
+
+            if (section === 'feedback') {
+                return {
+                    text: 'Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Помогу сформулировать вопрос или соединю с оператором. Чем помочь?',
+                    chips: [
+                        { label: 'Задать свой вопрос', accent: true, action: focusQuestion },
+                        { label: 'Позвать оператора', action: switchToHuman },
+                        { label: 'Часы работы' }
+                    ]
+                };
+            }
+
+            return {
+                text: 'Здравствуйте! Меня зовут Татьяна Петровна, я ИИ-помощник ТП НББ. Чем могу помочь?',
+                chips: startChips()
+            };
+        };
+
         const answerLocally = function (value) {
             if (GREETING.test(value)) {
                 chatReply('Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Подскажу часы работы, как записаться, услуги и пространства, печать, бронирование, афишу, книги, Wi-Fi и контакты. Чем помочь?', 500, function () {
@@ -772,9 +875,10 @@
         }
 
         const greetChat = function () {
-            const row = addChatMessage('Здравствуйте! Меня зовут Татьяна Петровна, я ИИ-помощник ТП НББ. Чем могу помочь?', 'bot');
+            const greeting = sectionGreeting();
+            const row = addChatMessage(greeting.text, 'bot');
             row.classList.add('nlb-chat__msg--greeting');
-            addChatChips(startChips());
+            addChatChips(greeting.chips);
         };
 
         const openChat = function () {
