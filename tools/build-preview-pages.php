@@ -956,6 +956,7 @@ function service_page(string $previewDir, array $item, int $depth): string
         . '<select class="form-select" id="nlbBookingTime" data-nlb-field="TIME" name="PROPERTY[TIME][0]" required>'
         . $timeOptions . '</select>'
         . '<div class="form-text" data-nlb-slots-hint></div>'
+        . '<div class="form-text">Демо: часть слотов занята — они отмечены и недоступны.</div>'
         . '<div class="invalid-feedback">Выберите время.</div></div>'
         . '<div class="col-md-6"><label class="form-label" for="nlbBookingName">Имя *</label>'
         . '<input class="form-control" id="nlbBookingName" type="text" data-nlb-field="PERSON" name="PROPERTY[PERSON][0]" autocomplete="name" placeholder="Ваше имя" required>'
@@ -980,6 +981,36 @@ function service_page(string $previewDir, array $item, int $depth): string
         . 'для подтверждения брони. Отправляя форму, вы соглашаетесь с '
         . '<a href="' . e($privacyHref) . '">политикой конфиденциальности</a>.</p>'
         . '</div></div></section>';
+
+    $demoBooking = <<<'HTML'
+    <script>
+    (function () {
+        var form = document.querySelector('form[data-nlb-form="booking"]');
+        if (!form) return;
+        var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+        var iso = function (days) {
+            var d = new Date();
+            d.setDate(d.getDate() + days);
+            return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+        };
+        var all = [];
+        for (var h = 10; h <= 21; h++) {
+            all.push(pad(h) + ':00');
+        }
+        var slots = {};
+        slots[iso(1)] = ['10:00', '11:00', '14:00', '18:00', '19:00'];
+        slots[iso(2)] = all;
+        slots[iso(4)] = ['12:00', '13:00', '20:00', '21:00'];
+        slots[iso(7)] = ['10:00', '16:00', '17:00'];
+        form.setAttribute('data-nlb-slots', JSON.stringify(slots));
+        var date = form.querySelector('[data-nlb-field="DATE"]');
+        if (date) {
+            date.min = iso(0);
+        }
+    })();
+    </script>
+    HTML;
+    $booking .= $demoBooking;
 
     $content = '<section class="section service-detail-section"><div class="container">'
         . '<article class="service-detail">'
