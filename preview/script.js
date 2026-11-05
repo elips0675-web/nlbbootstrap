@@ -118,6 +118,307 @@
     }
 
     /* ------------------------------------------------------------------
+     * 4.1. Чат ИИ-помощника
+     *      Разметка — footer.php (.nlb-chat), стили — styles.css.
+     *      Ответы — локальные правила; USE_REAL_AI переключает на бэкенд.
+     * ------------------------------------------------------------------ */
+    const chat = doc.getElementById('nlbChat');
+    if (chat) {
+        const chatLog = doc.getElementById('nlbChatLog');
+        const chatForm = doc.getElementById('nlbChatForm');
+        const chatInput = doc.getElementById('nlbChatInput');
+        const chatStatus = doc.getElementById('nlbChatStatus');
+        const chatTitle = doc.getElementById('nlbChatTitle');
+        const chatAvatar = chat.querySelector('.nlb-chat__avatar');
+        const chatOpeners = doc.querySelectorAll('[data-chat-open]');
+        const chatClosers = chat.querySelectorAll('[data-chat-close]');
+
+        const USE_REAL_AI = false;
+        const API_URL = '/api/chat';
+
+        let chatStarted = false;
+        let chatMode = 'bot';
+        let chatTyping = null;
+
+        const RULES = [
+            {
+                re: /запис|регистрац|участи|билет|место|свободн/,
+                a: 'Запись занимает минуту 📝 Напишите название события и своё имя — подскажу, куда нажать, чтобы оформить заявку.'
+            },
+            {
+                re: /событи|мероприят|афиш|расписан|лекци|встреч/,
+                a: 'Ближайшие события:\n• 06.11 — Лекция «Современная проза»\n• 08.11 — Детский клуб «Совёнок»\n• 12.11 — Встреча с писателем\n\nПолная афиша — в разделе «События».'
+            },
+            {
+                re: /адрес|находит|добрат|метро|куда/,
+                a: 'Мы находимся по адресу: пр-т Независимости, 116. Вход для посетителей со стороны парка.'
+            },
+            {
+                re: /спасибо|благодар|понятно|окей/,
+                a: 'Всегда рад помочь 😊 Если появятся вопросы — пишите.'
+            }
+        ];
+
+        const HUMAN_TRIGGER = /оператор|человек|менеджер|живой|позов|позват|соедин|жалоб|не понял/;
+        const GREETING = /привет|здравств|добрый|хай|hello|hi\b/;
+
+        const chatTime = function () {
+            return new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        };
+
+        const scrollChat = function () {
+            chatLog.scrollTop = chatLog.scrollHeight;
+        };
+
+        const addChatMessage = function (text, who) {
+            const row = doc.createElement('div');
+            row.className = 'nlb-chat__msg nlb-chat__msg--' + who;
+
+            const bubble = doc.createElement('div');
+            bubble.className = 'nlb-chat__bubble';
+            bubble.textContent = text;
+            row.appendChild(bubble);
+
+            const time = doc.createElement('div');
+            time.className = 'nlb-chat__time';
+            time.textContent = chatTime();
+            row.appendChild(time);
+
+            chatLog.appendChild(row);
+            scrollChat();
+            return row;
+        };
+
+        const hideChatTyping = function () {
+            if (chatTyping) {
+                chatTyping.remove();
+                chatTyping = null;
+            }
+        };
+
+        const showChatTyping = function () {
+            hideChatTyping();
+            const row = doc.createElement('div');
+            row.className = 'nlb-chat__msg nlb-chat__msg--bot nlb-chat__typing';
+            row.innerHTML = '<div class="nlb-chat__bubble"><span></span><span></span><span></span></div>';
+            chatLog.appendChild(row);
+            chatTyping = row;
+            scrollChat();
+        };
+
+        const chatReply = function (text, delay, done) {
+            showChatTyping();
+            window.setTimeout(function () {
+                hideChatTyping();
+                addChatMessage(text, 'bot');
+                if (done) done();
+            }, delay);
+        };
+
+        const addChatChips = function (items) {
+            const wrap = doc.createElement('div');
+            wrap.className = 'nlb-chat__chips';
+            items.forEach(function (item) {
+                const chip = doc.createElement('button');
+                chip.type = 'button';
+                chip.className = 'nlb-chat__chip' + (item.accent ? ' nlb-chat__chip--accent' : '');
+                chip.textContent = item.label;
+                chip.addEventListener('click', function () {
+                    wrap.remove();
+                    if (item.action) item.action();
+                    else sendChat(item.label);
+                });
+                wrap.appendChild(chip);
+            });
+            chatLog.appendChild(wrap);
+            scrollChat();
+        };
+
+        const clearChatChips = function () {
+            chatLog.querySelectorAll('.nlb-chat__chips').forEach(function (node) {
+                node.remove();
+            });
+        };
+
+        const askBackend = function (text) {
+            if (!USE_REAL_AI) return Promise.resolve(null);
+            return fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: 'nlb_chat', message: text, history: [] })
+            }).then(function (response) {
+                return response.ok ? response.json() : null;
+            }).then(function (data) {
+                return data && data.reply ? String(data.reply) : null;
+            }).catch(function () {
+                return null;
+            });
+        };
+
+        const answerLocally = function (value) {
+            if (GREETING.test(value)) {
+                chatReply('Здравствуйте! 👋 Я ИИ-помощник библиотеки. Подскажу афишу, запись на событие и адрес. Что вас интересует?', 500, function () {
+                    addChatChips([
+                        { label: 'Какие события скоро?' },
+                        { label: 'Адрес и время работы' },
+                        { label: 'Позвать оператора', accent: true, action: switchToHuman }
+                    ]);
+                });
+                return;
+            }
+
+            const rule = RULES.find(function (item) {
+                return item.re.test(value);
+            });
+
+            if (rule) {
+                chatReply(rule.a, 700, function () {
+                    if (/событи|мероприят|афиш|запис/.test(value)) {
+                        addChatChips([
+                            { label: 'Оформить запись' },
+                            { label: 'Позвать оператора', accent: true, action: switchToHuman }
+                        ]);
+                    }
+                });
+                return;
+            }
+
+            chatReply('Хм, не уверен, что понял 🤔 Я помогаю с афишей, записью на события и адресом. Хотите, позову живого оператора?', 900, function () {
+                addChatChips([
+                    { label: 'Да, позовите оператора', accent: true, action: switchToHuman },
+                    { label: 'Нет, спасибо' }
+                ]);
+            });
+        };
+
+        function switchToHuman() {
+            if (chatMode === 'human') return;
+            chatMode = 'human';
+
+            chatTitle.textContent = 'Анна';
+            chatStatus.textContent = 'оператор · печатает…';
+            if (chatAvatar) chatAvatar.textContent = 'А';
+            chatAvatar.classList.add('is-human');
+
+            addChatMessage('⏳ Соединяю вас с оператором…', 'bot');
+
+            showChatTyping();
+            window.setTimeout(function () {
+                hideChatTyping();
+                chatStatus.textContent = 'онлайн';
+                addChatMessage('Здравствуйте! Меня зовут Анна, я администратор библиотеки. Вижу вашу переписку. Чем могу помочь?', 'bot');
+            }, 2000);
+        }
+
+        const operatorReplies = [
+            'Секунду, уточню информацию и вернусь к вам.',
+            'Да, конечно! Сейчас всё проверю в расписании.',
+            'Поняла вас, сейчас оформлю.'
+        ];
+
+        const operatorReply = function (text) {
+            const value = text.toLowerCase();
+            let answer;
+
+            if (/запис|регистрац|билет|место/.test(value)) {
+                answer = 'Конечно, запишу вас! Напишите, пожалуйста, имя и номер телефона, и я забронирую место.';
+            } else if (/цен|стоим|сколько|руб/.test(value)) {
+                answer = 'Секунду, уточню стоимость именно по вашему событию…';
+            } else {
+                answer = operatorReplies[Math.floor(Math.random() * operatorReplies.length)];
+            }
+
+            showChatTyping();
+            window.setTimeout(function () {
+                hideChatTyping();
+                addChatMessage(answer, 'bot');
+            }, 1500 + Math.random() * 1000);
+        };
+
+        const handleChat = function (text) {
+            const value = text.toLowerCase().replace(/ё/g, 'е');
+
+            if (chatMode === 'human') {
+                operatorReply(text);
+                return;
+            }
+
+            if (HUMAN_TRIGGER.test(value)) {
+                switchToHuman();
+                return;
+            }
+
+            askBackend(text).then(function (answer) {
+                if (answer) {
+                    chatReply(answer, 800);
+                    return;
+                }
+                answerLocally(value);
+            });
+        };
+
+        function sendChat(text) {
+            const value = String(text || '').trim();
+            if (!value) return;
+
+            clearChatChips();
+            addChatMessage(value, 'user');
+            chatInput.value = '';
+            handleChat(value);
+        }
+
+        const greetChat = function () {
+            addChatMessage('Здравствуйте! 👋 Я ИИ-помощник библиотеки. Помогу найти событие или записаться на него.', 'bot');
+            addChatChips([
+                { label: 'Какие события скоро?' },
+                { label: 'Как записаться?' },
+                { label: 'Адрес и время работы' },
+                { label: 'Позвать оператора', accent: true, action: switchToHuman }
+            ]);
+        };
+
+        const openChat = function () {
+            chat.classList.add('is-open');
+            chat.setAttribute('aria-hidden', 'false');
+            chatOpeners.forEach(function (opener) {
+                opener.setAttribute('aria-expanded', 'true');
+            });
+            if (!chatStarted) {
+                chatStarted = true;
+                greetChat();
+            }
+            window.setTimeout(function () {
+                chatInput.focus();
+            }, 220);
+        };
+
+        const closeChat = function () {
+            chat.classList.remove('is-open');
+            chat.setAttribute('aria-hidden', 'true');
+            chatOpeners.forEach(function (opener) {
+                opener.setAttribute('aria-expanded', 'false');
+            });
+        };
+
+        chatOpeners.forEach(function (opener) {
+            opener.addEventListener('click', openChat);
+        });
+
+        chatClosers.forEach(function (closer) {
+            closer.addEventListener('click', closeChat);
+        });
+
+        chatForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            sendChat(chatInput.value);
+        });
+
+        doc.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && chat.classList.contains('is-open')) closeChat();
+        });
+    }
+
+    /* ------------------------------------------------------------------
      * 5. Кнопка «Наверх»
      * ------------------------------------------------------------------ */
     const toTop = doc.querySelector('.to-top');

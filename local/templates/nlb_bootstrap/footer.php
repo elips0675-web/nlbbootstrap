@@ -188,10 +188,33 @@ $nlbTpl = SITE_TEMPLATE_PATH;
             <span>Обратная связь</span>
             <span class="fab-ico fab-ico--chat"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg></span>
         </button>
+        <button class="fab-item border-0 bg-white" type="button" data-chat-open aria-controls="nlbChat" aria-expanded="false">
+            <span>ИИ-помощник</span>
+            <span class="fab-ico fab-ico--bot"><svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg></span>
+        </button>
     </div>
     <button class="fab-toggle" type="button" aria-label="Открыть меню связи" aria-expanded="false" aria-controls="nlbFab">
         <svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>
     </button>
+</div>
+
+<div class="nlb-chat" id="nlbChat" role="dialog" aria-labelledby="nlbChatTitle" aria-hidden="true">
+    <div class="nlb-chat__head">
+        <span class="nlb-chat__avatar" aria-hidden="true">N</span>
+        <span class="nlb-chat__titles">
+            <span class="nlb-chat__title" id="nlbChatTitle">ИИ-помощник</span>
+            <span class="nlb-chat__status" id="nlbChatStatus">онлайн · отвечает сразу</span>
+        </span>
+        <button class="btn-close btn-close-white nlb-chat__close" type="button" aria-label="Закрыть чат" data-chat-close></button>
+    </div>
+    <div class="nlb-chat__log" id="nlbChatLog" role="log" aria-live="polite" aria-relevant="additions"></div>
+    <form class="nlb-chat__form" id="nlbChatForm" autocomplete="off">
+        <label class="visually-hidden" for="nlbChatInput">Сообщение</label>
+        <input class="nlb-chat__input" id="nlbChatInput" type="text" maxlength="500" placeholder="Напишите сообщение…">
+        <button class="nlb-chat__send" type="submit" aria-label="Отправить">
+            <svg class="i" aria-hidden="true"><use href="#i-send"/></svg>
+        </button>
+    </form>
 </div>
 
 <button class="to-top" type="button" aria-label="Наверх">

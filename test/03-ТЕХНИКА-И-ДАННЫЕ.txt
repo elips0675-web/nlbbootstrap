@@ -11,8 +11,8 @@
     Язык шаблона    PHP 8.0+ (проверялось на 8.3)            —
     CSS-фреймворк   Bootstrap 5.3.3, локально                assets/css
     JS              Bootstrap bundle + vanilla, IIFE         assets/js
-    Свой CSS        CSS3 + custom properties, 2 607 строк    styles.css
-    Свой JS         ES5-совместимый, 270 строк               script.js
+    Свой CSS        CSS3 + custom properties, 3 347 строк    styles.css
+    Свой JS         ES5-совместимый, 610 строк               script.js
     Шрифты          системный стек, внешних запросов нет     styles.css:53
     Иконки          inline SVG <symbol>, спрайт в header     header.php
     Изображения     JPG + WebP + AVIF, ширины 480/960/1280    assets/images

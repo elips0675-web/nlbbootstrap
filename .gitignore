@@ -29,3 +29,6 @@ npm-debug.log*
 *.zip
 *.7z
 *.sql.gz
+
+# Vercel build output (tools/vercel-build.mjs)
+public/

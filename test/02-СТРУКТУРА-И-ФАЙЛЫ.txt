@@ -92,9 +92,9 @@ services/detail.php:13-16. Несуществующий код отдаёт 404 
 
 local/templates/nlb_bootstrap/
     header.php          <head>, мета, SEO, JSON-LD, топбар, меню, поиск, крошки
-    footer.php          подвал, подписка, модалки (обратная связь, реквизиты), FAB
-    styles.css          2 607 строк, токены в :root (styles.css:12)
-    script.js           270 строк, 10 модулей + формы и слоты (раздел 8.1)
+    footer.php          подвал, подписка, модалки (обратная связь, реквизиты), FAB, чат ИИ-помощника
+    styles.css          3 347 строк, токены в :root (styles.css:12)
+    script.js           610 строк, 10 модулей + формы и слоты (8.1) + чат (4.1)
     assets/css/bootstrap.min.css        5.3.3, локально
     assets/js/bootstrap.bundle.min.js   5.3.3, локально
     assets/js/pwa.js, consent.js

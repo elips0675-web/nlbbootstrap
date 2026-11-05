@@ -1587,6 +1587,7 @@ img {
 .fab.is-open .fab-item:nth-child(3) { transition-delay: 0.09s; }
 .fab.is-open .fab-item:nth-child(4) { transition-delay: 0.12s; }
 .fab.is-open .fab-item:nth-child(5) { transition-delay: 0.15s; }
+.fab.is-open .fab-item:nth-child(6) { transition-delay: 0.18s; }
 
 .fab-item:hover {
     color: var(--nlb-primary-dark);
@@ -1607,6 +1608,269 @@ img {
 .fab-ico--phone { background-image: var(--nlb-grad); }
 .fab-ico--mail { background: #f59e0b; }
 .fab-ico--chat { background: #6366f1; }
+.fab-ico--bot { background: var(--nlb-violet); }
+
+/* ==========================================================================
+   Чат ИИ-помощника: открывается пунктом меню связи, живёт над кнопкой «+»
+   ========================================================================== */
+
+.nlb-chat {
+    position: fixed;
+    right: 1.25rem;
+    bottom: calc(1.25rem + 58px + 0.9rem + var(--nlb-notice-h, 0px));
+    z-index: 1044;
+    display: flex;
+    flex-direction: column;
+    width: min(380px, calc(100vw - 2.5rem));
+    height: min(560px, calc(100dvh - 12rem));
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--nlb-line);
+    border-radius: var(--nlb-radius);
+    box-shadow: var(--nlb-shadow);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(14px) scale(0.98);
+    transform-origin: bottom right;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.24s ease, visibility 0.2s;
+}
+
+.nlb-chat.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
+}
+
+.nlb-chat__head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: none;
+    padding: 0.85rem 1rem;
+    background-image: var(--nlb-grad);
+    color: #fff;
+}
+
+.nlb-chat__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex: none;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.22);
+    font-weight: 700;
+}
+
+.nlb-chat__avatar.is-human {
+    background: #ff6b6b;
+}
+
+.nlb-chat__titles {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.nlb-chat__title {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.nlb-chat__status {
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+.nlb-chat__close {
+    margin-left: auto;
+    flex: none;
+}
+
+.nlb-chat__log {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 1rem;
+    background: var(--nlb-soft);
+    scroll-behavior: smooth;
+}
+
+.nlb-chat__log::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nlb-chat__log::-webkit-scrollbar-thumb {
+    background: #d4dbe6;
+    border-radius: 3px;
+}
+
+.nlb-chat__msg {
+    display: flex;
+    flex-direction: column;
+    max-width: 84%;
+    animation: nlb-chat-pop 0.18s ease;
+}
+
+.nlb-chat__msg--bot { align-self: flex-start; }
+.nlb-chat__msg--user { align-self: flex-end; align-items: flex-end; }
+
+@keyframes nlb-chat-pop {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+
+.nlb-chat__bubble {
+    padding: 0.6rem 0.85rem;
+    border-radius: 0.9rem;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.nlb-chat__msg--bot .nlb-chat__bubble {
+    background: #fff;
+    border: 1px solid var(--nlb-line);
+    border-bottom-left-radius: 0.35rem;
+}
+
+.nlb-chat__msg--user .nlb-chat__bubble {
+    background-image: var(--nlb-grad);
+    color: #fff;
+    border-bottom-right-radius: 0.35rem;
+}
+
+.nlb-chat__time {
+    margin-top: 0.25rem;
+    padding: 0 0.25rem;
+    font-size: 0.7rem;
+    color: var(--nlb-muted);
+}
+
+.nlb-chat__typing .nlb-chat__bubble {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.85rem;
+}
+
+.nlb-chat__typing .nlb-chat__bubble span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #b9c4d4;
+    animation: nlb-chat-bounce 1.2s infinite;
+}
+
+.nlb-chat__typing .nlb-chat__bubble span:nth-child(2) { animation-delay: 0.15s; }
+.nlb-chat__typing .nlb-chat__bubble span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes nlb-chat-bounce {
+    0%, 60%, 100% { transform: none; opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+}
+
+.nlb-chat__chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-self: flex-start;
+    gap: 0.4rem;
+    max-width: 100%;
+}
+
+.nlb-chat__chip {
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--nlb-line);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--nlb-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: left;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.nlb-chat__chip:hover {
+    background: var(--nlb-soft-2);
+    border-color: #c7d2fe;
+}
+
+.nlb-chat__chip--accent {
+    background-image: var(--nlb-grad);
+    border-color: transparent;
+    color: #fff;
+}
+
+.nlb-chat__chip--accent:hover {
+    background-image: var(--nlb-grad);
+    filter: brightness(1.06);
+}
+
+.nlb-chat__form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: none;
+    padding: 0.75rem;
+    border-top: 1px solid var(--nlb-line);
+    background: #fff;
+}
+
+.nlb-chat__input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--nlb-line);
+    border-radius: 999px;
+    background: var(--nlb-soft);
+    color: var(--nlb-ink);
+    font-size: 0.875rem;
+}
+
+.nlb-chat__input:focus {
+    outline: 0;
+    border-color: #93c5fd;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.nlb-chat__send {
+    width: 40px;
+    height: 40px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background-image: var(--nlb-grad);
+    color: #fff;
+}
+
+.nlb-chat__send:hover {
+    filter: brightness(1.06);
+}
+
+.nlb-chat__send .i {
+    width: 18px;
+    height: 18px;
+}
+
+@media (max-width: 575.98px) {
+    .nlb-chat {
+        right: 0.75rem;
+        left: 0.75rem;
+        width: auto;
+        bottom: calc(0.75rem + 58px + 0.75rem + var(--nlb-notice-h, 0px));
+        height: min(520px, calc(100dvh - 9rem));
+    }
+}
 
 /* Компактный режим — узкий телефон (≤575.98px) или телефон в альбомной
    ориентации (низкий экран). Пункты меню показываем только круглыми
@@ -1801,6 +2065,13 @@ img {
 
     .fab-item,
     .fab-toggle .i {
+        transition: none;
+    }
+
+    .nlb-chat,
+    .nlb-chat__msg,
+    .nlb-chat__typing .nlb-chat__bubble span {
+        animation: none;
         transition: none;
     }
 }

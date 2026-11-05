@@ -74,15 +74,23 @@ Bootstrap 5.3.3. Это **не** React-приложение и **не** отде
 
 ## 5. Локальные ограничения
 
-На машине разработки **нет PHP, MySQL и Битрикса**. Поэтому:
+На машине разработки есть **PHP** (Laragon: `php-8.3.30-Win32-vs16-x64` и
+`php-8.5.12-Win32-vs17-x64`, оба ZTS) и **MySQL 8.4.3**, но **нет ядра
+Битрикса и лицензии**. Поэтому:
 
-- `php -l` и живая установка здесь **не выполняются** — это не «проверено», а
-  «не проверено»; так и писать;
-- синтаксис PHP проверяется глазами + структурным чекером
-  `node tools/check-template.mjs`;
-- поведение в браузере проверяется по `preview/index.html`;
-- всё, что требует ядра (меню, крошки, формы, кеш), проверяется только на
-  сервере — пункт остаётся в бэклоге до живого прогона.
+- `php -l` по всем 83 PHP-файлам и `php db/lint.php` **выполняются** и дают
+  0 ошибок на 8.3.30 и на 8.5.12 — это проверено, так и писать;
+- `php db/check.php` завершается кодом 2 (`не найдено ядро Битрикса`) —
+  это ожидаемо, а не ошибка шаблона;
+- всё, что требует ядра (меню, крошки, формы, кеш, ЧПУ), по-прежнему
+  «не проверено» до живого прогона;
+- поведение вёрстки проверяется по `preview/` (`php -S 127.0.0.1:8791 -t preview`
+  или `запуск-превью.bat`);
+- `db/tests/run.php` гоняет миграции на заглушках ядра — это проверка логики,
+  а не установка.
+
+Путь к PHP в Laragon не прописан в `PATH`: вызывать полным путём
+(`C:\laragon\bin\php\php-8.5.12-Win32-vs17-x64\php.exe`).
 
 ## 6. Гейты
 
@@ -93,13 +101,14 @@ node tools/check-template.mjs      # структура, ассеты, спра�
 node tools/check-docs.mjs          # битые ссылки между документами
 ```
 
-Дополнительно, если на машине есть PHP:
+Дополнительно — PHP есть, линт обязателен:
 
 ```powershell
-php -l local/templates/nlb_bootstrap/header.php
-php -l local/templates/nlb_bootstrap/footer.php
-php -l local/templates/nlb_bootstrap/components/bitrix/menu/top_bootstrap/template.php
-php -l local/templates/nlb_bootstrap/components/bitrix/breadcrumb/bootstrap/template.php
+$php = "C:\laragon\bin\php\php-8.5.12-Win32-vs17-x64\php.exe"
+Get-ChildItem -Recurse -Filter *.php -File |
+  Where-Object { $_.FullName -notmatch '\\preview\\' } |
+  ForEach-Object { & $php -l $_.FullName }
+& $php db/lint.php
 ```
 
 Ручная приёмка — `docs/qa-checklist.md`. Гейт не заменяет живую установку.
