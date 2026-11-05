@@ -198,6 +198,13 @@ $nlbTpl = SITE_TEMPLATE_PATH;
     </button>
 </div>
 
+<div class="nlb-chat__prompt" id="nlbChatPrompt" hidden>
+    <button class="nlb-chat__prompt-main" type="button" data-chat-open aria-controls="nlbChat" aria-expanded="false">
+        Нужна помощь? Спросите ИИ-помощника
+    </button>
+    <button class="nlb-chat__prompt-close" type="button" aria-label="Скрыть подсказку" data-chat-prompt-close></button>
+</div>
+
 <div class="nlb-chat" id="nlbChat" role="dialog" aria-labelledby="nlbChatTitle" aria-hidden="true">
     <div class="nlb-chat__head">
         <button class="nlb-chat__back" type="button" data-chat-back aria-label="Вернуться в начало диалога" hidden>

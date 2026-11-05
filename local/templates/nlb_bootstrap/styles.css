@@ -1616,6 +1616,75 @@ img {
 .fab-ico--chat { background: #6366f1; }
 .fab-ico--bot { background: var(--nlb-violet); }
 
+.nlb-chat__prompt {
+    position: fixed;
+    right: 1.25rem;
+    bottom: calc(1.25rem + 58px + 0.9rem + var(--nlb-notice-h, 0px));
+    z-index: 1043;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: min(300px, calc(100vw - 2.5rem));
+    padding: 0.55rem 0.55rem 0.55rem 0.9rem;
+    background: #fff;
+    border: 1px solid var(--nlb-line);
+    border-radius: 1rem;
+    box-shadow: var(--nlb-shadow);
+}
+
+.nlb-chat__prompt[hidden] {
+    display: none;
+}
+
+.nlb-chat__prompt-main {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--nlb-ink);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: left;
+}
+
+.nlb-chat__prompt-main:hover {
+    color: var(--nlb-primary);
+}
+
+.nlb-chat__prompt-main:focus-visible {
+    outline: 2px solid var(--nlb-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.nlb-chat__prompt-close {
+    width: 24px;
+    height: 24px;
+    flex: none;
+    border: 0;
+    border-radius: 50%;
+    background: var(--nlb-soft);
+    color: var(--nlb-muted);
+    font-size: 0.9rem;
+    line-height: 1;
+}
+
+.nlb-chat__prompt-close::before {
+    content: '×';
+}
+
+.nlb-chat__prompt-close:hover {
+    background: var(--nlb-soft-2);
+    color: var(--nlb-ink);
+}
+
+@media (max-width: 575.98px) {
+    .nlb-chat__prompt {
+        right: 1rem;
+        max-width: calc(100vw - 2rem);
+    }
+}
+
 /* ==========================================================================
    Чат ИИ-помощника: открывается пунктом меню связи, живёт над кнопкой «+»
    ========================================================================== */

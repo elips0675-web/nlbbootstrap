@@ -135,6 +135,7 @@
         const chatError = doc.getElementById('nlbChatError');
         const chatOpeners = doc.querySelectorAll('[data-chat-open]');
         const chatClosers = chat.querySelectorAll('[data-chat-close]');
+        const chatPrompt = doc.getElementById('nlbChatPrompt');
 
         const USE_REAL_AI = false;
         const API_URL = '/api/chat';
@@ -1133,7 +1134,34 @@
             addChatChips(greeting.chips);
         };
 
+        const CHAT_PROMPT_KEY = 'nlbChatPrompt';
+
+        const hideChatPrompt = function () {
+            if (!chatPrompt || chatPrompt.hidden) return;
+            chatPrompt.hidden = true;
+        };
+
+        const showChatPrompt = function () {
+            if (!chatPrompt || !chatPrompt.hidden || chatStarted) return;
+
+            let seen = false;
+            try {
+                seen = window.sessionStorage.getItem(CHAT_PROMPT_KEY) === '1';
+            } catch (error) {
+                seen = false;
+            }
+            if (seen) return;
+
+            chatPrompt.hidden = false;
+            try {
+                window.sessionStorage.setItem(CHAT_PROMPT_KEY, '1');
+            } catch (error) {
+                return;
+            }
+        };
+
         const openChat = function () {
+            hideChatPrompt();
             chat.classList.add('is-open');
             chat.setAttribute('aria-hidden', 'false');
             chatOpeners.forEach(function (opener) {
@@ -1171,6 +1199,13 @@
         chatOpeners.forEach(function (opener) {
             opener.addEventListener('click', openChat);
         });
+
+        if (chatPrompt) {
+            chatPrompt.querySelectorAll('[data-chat-prompt-close]').forEach(function (button) {
+                button.addEventListener('click', hideChatPrompt);
+            });
+            window.setTimeout(showChatPrompt, 8000);
+        }
 
         chatClosers.forEach(function (closer) {
             closer.addEventListener('click', closeChat);
