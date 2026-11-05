@@ -1835,6 +1835,59 @@ img {
     color: var(--nlb-primary-dark);
 }
 
+.nlb-chat__rate {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.3rem;
+    padding: 0 0.25rem;
+}
+
+.nlb-chat__rate-btn {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--nlb-line);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--nlb-muted);
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.nlb-chat__rate-btn:hover:not(:disabled) {
+    color: var(--nlb-primary);
+    border-color: #c7d2fe;
+    background: var(--nlb-soft-2);
+}
+
+.nlb-chat__rate-btn:focus-visible {
+    outline: 2px solid var(--nlb-primary);
+    outline-offset: 2px;
+}
+
+.nlb-chat__rate-btn .i {
+    width: 14px;
+    height: 14px;
+}
+
+.nlb-chat__rate.is-rated .nlb-chat__rate-btn {
+    opacity: 0.45;
+}
+
+.nlb-chat__rate.is-rated .nlb-chat__rate-btn.is-active {
+    opacity: 1;
+    border-color: transparent;
+    background-image: var(--nlb-grad);
+    color: #fff;
+}
+
+.nlb-chat__rate-thanks {
+    font-size: 0.72rem;
+    color: var(--nlb-muted);
+}
+
 .nlb-chat__typing .nlb-chat__bubble {
     display: flex;
     align-items: center;

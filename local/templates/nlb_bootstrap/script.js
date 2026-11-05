@@ -273,6 +273,59 @@
             return href;
         };
 
+        const chatSaveRating = function (answer, value) {
+            try {
+                const raw = window.localStorage.getItem('nlbChatRating');
+                const parsed = raw ? JSON.parse(raw) : [];
+                const items = Array.isArray(parsed) ? parsed : [];
+                items.push({
+                    q: lastUserQuestion,
+                    a: String(answer).slice(0, 120),
+                    v: value,
+                    t: Date.now()
+                });
+                window.localStorage.setItem('nlbChatRating', JSON.stringify(items.slice(-50)));
+            } catch (error) {
+                return;
+            }
+        };
+
+        const chatRate = function (text) {
+            const wrap = doc.createElement('div');
+            wrap.className = 'nlb-chat__rate';
+            wrap.setAttribute('role', 'group');
+            wrap.setAttribute('aria-label', 'Оценить ответ');
+
+            [
+                { value: 1, icon: '#i-thumb-up', label: 'Ответ полезен', thanks: 'Спасибо, учту' },
+                { value: -1, icon: '#i-thumb-down', label: 'Ответ не полезен', thanks: 'Спасибо, попробую иначе' }
+            ].forEach(function (item) {
+                const button = doc.createElement('button');
+                button.type = 'button';
+                button.className = 'nlb-chat__rate-btn';
+                button.setAttribute('aria-label', item.label);
+                button.setAttribute('aria-pressed', 'false');
+                button.innerHTML = '<svg class="i" aria-hidden="true"><use href="' + item.icon + '"/></svg>';
+                button.addEventListener('click', function () {
+                    if (wrap.classList.contains('is-rated')) return;
+                    wrap.classList.add('is-rated');
+                    wrap.querySelectorAll('.nlb-chat__rate-btn').forEach(function (node) {
+                        node.disabled = true;
+                        node.classList.toggle('is-active', node === button);
+                        node.setAttribute('aria-pressed', node === button ? 'true' : 'false');
+                    });
+                    const thanks = doc.createElement('span');
+                    thanks.className = 'nlb-chat__rate-thanks';
+                    thanks.textContent = item.thanks;
+                    wrap.appendChild(thanks);
+                    chatSaveRating(text, item.value);
+                });
+                wrap.appendChild(button);
+            });
+
+            return wrap;
+        };
+
         const addChatMessage = function (text, who, opts) {
             const options = opts || {};
             const row = doc.createElement('div');
@@ -296,6 +349,10 @@
                     src.appendChild(link);
                 });
                 row.appendChild(src);
+            }
+
+            if (options.rate && who === 'bot') {
+                row.appendChild(chatRate(text));
             }
 
             const time = doc.createElement('div');
@@ -332,11 +389,11 @@
             }, delay);
         };
 
-        const chatReply = function (text, delay, done, links) {
+        const chatReply = function (text, delay, done, links, rate) {
             showChatTyping();
             chatLater(function () {
                 hideChatTyping();
-                addChatMessage(text, 'bot', { links: links });
+                addChatMessage(text, 'bot', { links: links, rate: rate });
                 if (done) done();
             }, delay);
         };
@@ -520,7 +577,7 @@
             if (rule) {
                 chatReply(rule.a, 700, function () {
                     if (rule.chips) addChatChips(rule.chips);
-                }, rule.links);
+                }, rule.links, true);
                 return;
             }
 
@@ -530,7 +587,7 @@
                     { label: 'Позвать оператора', action: switchToHuman },
                     { label: 'Задать другой вопрос', action: focusQuestion }
                 ]);
-            }, [{ path: 'contacts/', label: 'Контакты' }]);
+            }, [{ path: 'contacts/', label: 'Контакты' }], true);
         };
 
         function focusQuestion() {
@@ -719,7 +776,7 @@
             chatLater(function () {
                 hideChatTyping();
                 chatStatus.textContent = 'онлайн';
-                addChatMessage(answer, 'bot');
+                addChatMessage(answer, 'bot', { rate: true });
             }, 700 + Math.min(value.length * 12, 900));
         };
 
