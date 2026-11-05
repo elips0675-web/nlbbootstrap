@@ -218,6 +218,10 @@ $nlbTpl = SITE_TEMPLATE_PATH;
             <svg class="i" aria-hidden="true"><use href="#i-send"/></svg>
         </button>
     </form>
+    <p class="nlb-chat__hint">
+        Не нашли ответ?
+        <button class="nlb-chat__link" type="button" data-chat-question>Отправить вопрос библиотекарю</button>
+    </p>
 </div>
 
 <button class="to-top" type="button" aria-label="Наверх">

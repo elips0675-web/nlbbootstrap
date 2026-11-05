@@ -1885,6 +1885,32 @@ img {
     height: 18px;
 }
 
+.nlb-chat__hint {
+    flex: none;
+    margin: 0;
+    padding: 0 0.9rem 0.7rem;
+    background: #fff;
+    color: var(--nlb-muted);
+    font-size: 0.75rem;
+    line-height: 1.35;
+    text-align: center;
+}
+
+.nlb-chat__link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--nlb-primary);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.nlb-chat__link:hover {
+    color: var(--nlb-primary-dark);
+}
+
 @media (max-width: 575.98px) {
     .nlb-chat {
         right: 0.75rem;
