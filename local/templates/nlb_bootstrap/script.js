@@ -131,6 +131,7 @@
         const chatTitle = doc.getElementById('nlbChatTitle');
         const chatAvatar = chat.querySelector('.nlb-chat__avatar');
         const chatBack = chat.querySelector('[data-chat-back]');
+        const chatExpand = chat.querySelector('[data-chat-expand]');
         const chatError = doc.getElementById('nlbChatError');
         const chatOpeners = doc.querySelectorAll('[data-chat-open]');
         const chatClosers = chat.querySelectorAll('[data-chat-close]');
@@ -1112,8 +1113,18 @@
             }, 220);
         };
 
+        const setChatExpanded = function (expanded) {
+            chat.classList.toggle('is-expanded', expanded);
+            if (!chatExpand) return;
+            chatExpand.setAttribute('aria-pressed', expanded ? 'true' : 'false');
+            chatExpand.setAttribute('aria-label', expanded ? 'Свернуть чат' : 'Развернуть чат');
+            const icon = chatExpand.querySelector('use');
+            if (icon) icon.setAttribute('href', expanded ? '#i-collapse' : '#i-expand');
+        };
+
         const closeChat = function () {
             stopChatMic();
+            setChatExpanded(false);
             chat.classList.remove('is-open');
             chat.setAttribute('aria-hidden', 'true');
             chatOpeners.forEach(function (opener) {
@@ -1141,6 +1152,12 @@
             chatBack.addEventListener('click', function () {
                 if (chatMode === 'human') switchToBot();
                 else resetChat();
+            });
+        }
+
+        if (chatExpand) {
+            chatExpand.addEventListener('click', function () {
+                setChatExpanded(!chat.classList.contains('is-expanded'));
             });
         }
 

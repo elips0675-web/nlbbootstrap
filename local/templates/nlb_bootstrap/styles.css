@@ -1649,6 +1649,26 @@ img {
     pointer-events: auto;
 }
 
+.nlb-chat.is-expanded {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    z-index: 1055;
+}
+
+.nlb-chat.is-expanded .nlb-chat__log {
+    padding: 1.25rem max(1rem, calc((100vw - 900px) / 2));
+}
+
+.nlb-chat.is-expanded .nlb-chat__form,
+.nlb-chat.is-expanded .nlb-chat__hint,
+.nlb-chat.is-expanded .nlb-chat__error {
+    padding-left: max(1rem, calc((100vw - 900px) / 2));
+    padding-right: max(1rem, calc((100vw - 900px) / 2));
+}
+
 .nlb-chat__head {
     display: flex;
     align-items: center;
@@ -1717,6 +1737,32 @@ img {
 .nlb-chat__close {
     margin-left: 0.1rem;
     flex: none;
+}
+
+.nlb-chat__expand {
+    width: 32px;
+    height: 32px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.nlb-chat__expand:hover {
+    background: rgba(255, 255, 255, 0.32);
+}
+
+.nlb-chat__expand:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+.nlb-chat__expand .i {
+    width: 16px;
+    height: 16px;
 }
 
 .nlb-chat__back {

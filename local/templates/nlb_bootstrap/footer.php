@@ -212,6 +212,9 @@ $nlbTpl = SITE_TEMPLATE_PATH;
             <img class="nlb-chat__avatar-img" src="<?= $nlbTpl ?>/assets/images/avatar-tatyana.svg" width="48" height="48" alt="" decoding="async">
             <svg class="nlb-chat__avatar-icon"><use href="#i-user"/></svg>
         </span>
+        <button class="nlb-chat__expand" type="button" aria-label="Развернуть чат" aria-pressed="false" data-chat-expand>
+            <svg class="i" aria-hidden="true"><use href="#i-expand"/></svg>
+        </button>
         <button class="btn-close btn-close-white nlb-chat__close" type="button" aria-label="Закрыть чат" data-chat-close></button>
     </div>
     <div class="nlb-chat__log" id="nlbChatLog" role="log" aria-live="polite" aria-relevant="additions"></div>
