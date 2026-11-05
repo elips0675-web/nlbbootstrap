@@ -1505,6 +1505,9 @@ img {
     align-items: flex-end;
     gap: 0.7rem;
     transition: bottom 0.25s ease;
+    /* Контейнер растянут по размеру меню и лежит поверх панели чата.
+       Без этого он перехватывает клики по кнопке отправки. */
+    pointer-events: none;
 }
 
 .fab-toggle {
@@ -1518,6 +1521,7 @@ img {
     place-items: center;
     box-shadow: 0 20px 40px -16px rgba(37, 99, 235, 0.85);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
+    pointer-events: auto;
 }
 
 .fab-toggle:hover {
@@ -1550,6 +1554,8 @@ img {
     /* Место под тени пунктов, обрезаемые прокруткой */
     padding: 0.5rem;
     margin: -0.5rem;
+    /* Клики получают только видимые пункты (.fab.is-open .fab-item) */
+    pointer-events: none;
 }
 
 .fab-menu::-webkit-scrollbar {
