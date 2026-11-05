@@ -1855,6 +1855,43 @@ img {
     border-bottom-right-radius: 0.35rem;
 }
 
+.nlb-chat__more {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--nlb-line);
+}
+
+.nlb-chat__more[hidden] {
+    display: none;
+}
+
+.nlb-chat__more-toggle {
+    margin-top: 0.35rem;
+}
+
+.nlb-chat__more-btn {
+    display: inline-block;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--nlb-primary);
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.nlb-chat__more-btn:hover {
+    color: var(--nlb-primary-dark);
+}
+
+.nlb-chat__more-btn:focus-visible {
+    outline: 2px solid var(--nlb-primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
 .nlb-chat__time {
     margin-top: 0.25rem;
     padding: 0 0.25rem;
