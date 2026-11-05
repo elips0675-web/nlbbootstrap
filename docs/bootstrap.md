@@ -123,9 +123,9 @@ Bootstrap 5 сам инициализирует всё по `data-bs-*`. Сво�
 | Плагин | Инициализация | Наш код |
 |---|---|---|
 | Carousel | `data-bs-ride="carousel"` на `.carousel` | не нужен |
-| Collapse (navbar) | `data-bs-toggle="collapse" data-bs-target="#nlbNav"` | закрытие после клика (`script.js:649`) |
-| Modal | `data-bs-toggle="modal" data-bs-target="#searchModal"` | автофокус (`script.js:659`), Ctrl+K (`script.js:779`) |
-| Validation | класс `needs-validation` | обработчик submit (`script.js:668`) |
+| Collapse (navbar) | `data-bs-toggle="collapse" data-bs-target="#nlbNav"` | закрытие после клика (`script.js:770`) |
+| Modal | `data-bs-toggle="modal" data-bs-target="#searchModal"` | автофокус (`script.js:780`), Ctrl+K (`script.js:900`) |
+| Validation | класс `needs-validation` | обработчик submit (`script.js:789`) |
 
 Программный вызов — только через `getOrCreateInstance`, не `new bootstrap.Modal(...)`:
 

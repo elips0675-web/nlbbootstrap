@@ -217,11 +217,12 @@ $nlbTpl = SITE_TEMPLATE_PATH;
     <div class="nlb-chat__log" id="nlbChatLog" role="log" aria-live="polite" aria-relevant="additions"></div>
     <form class="nlb-chat__form" id="nlbChatForm" autocomplete="off">
         <label class="visually-hidden" for="nlbChatInput">Сообщение</label>
-        <input class="nlb-chat__input" id="nlbChatInput" type="text" maxlength="500" placeholder="Напишите сообщение…">
+        <input class="nlb-chat__input" id="nlbChatInput" type="text" maxlength="500" placeholder="Напишите сообщение…" aria-describedby="nlbChatError">
         <button class="nlb-chat__send" type="submit" aria-label="Отправить">
             <svg class="i" aria-hidden="true"><use href="#i-send"/></svg>
         </button>
     </form>
+    <p class="nlb-chat__error" id="nlbChatError" role="alert" hidden></p>
     <p class="nlb-chat__hint">
         Не нашли ответ?
         <button class="nlb-chat__link" type="button" data-chat-question>Отправить вопрос библиотекарю</button>

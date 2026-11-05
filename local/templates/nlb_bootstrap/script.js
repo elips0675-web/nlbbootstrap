@@ -131,6 +131,7 @@
         const chatTitle = doc.getElementById('nlbChatTitle');
         const chatAvatar = chat.querySelector('.nlb-chat__avatar');
         const chatBack = chat.querySelector('[data-chat-back]');
+        const chatError = doc.getElementById('nlbChatError');
         const chatOpeners = doc.querySelectorAll('[data-chat-open]');
         const chatClosers = chat.querySelectorAll('[data-chat-close]');
 
@@ -423,6 +424,7 @@
             if (chatBack) chatBack.hidden = false;
 
             clearChatChips();
+            hideChatError();
             chatLog.querySelectorAll('.nlb-chat__msg--greeting').forEach(function (node) {
                 node.remove();
             });
@@ -446,6 +448,7 @@
             if (chatBack) chatBack.hidden = true;
 
             clearChatChips();
+            hideChatError();
             chatReply('Снова на связи ИИ-помощник библиотеки. Чем помочь?', 400, function () {
                 addChatChips(startChips());
             });
@@ -533,6 +536,115 @@
             }, 700 + Math.min(value.length * 12, 900));
         };
 
+        const CHAT_BLOCKED = [
+            'хуй', 'хуи', 'хуе', 'хуя', 'хую', 'пизд', 'ебан', 'ебал', 'ебл', 'бля',
+            'сука', 'залуп', 'уеб', 'пидор', 'гандон', 'шлюх', 'мраз', 'дебил',
+            'кретин', 'идиот', 'дурак', 'дура', 'чмо', 'урод', 'говн', 'дерьм',
+            'жоп', 'сран', 'срак', 'жидок', 'жиды', 'жидов',
+            'fuck', 'shit', 'bitch', 'cunt', 'asshole', 'dick', 'bastard', 'slut',
+            'whore', 'nigger'
+        ];
+
+        const CHAT_SENSITIVE = [
+            'убий', 'убить', 'убил', 'убью', 'убива', 'насил', 'террор', 'экстрем',
+            'взорв', 'взрыв', 'расправ', 'оружи', 'нарко', 'порно', 'секс',
+            'проститут', 'kill', 'murder', 'terror', 'violen', 'weapon', 'drug', 'porn'
+        ];
+
+        const CHAT_SPAM = [
+            'казино', 'бинарн', 'пирамид', 'опцион', 'мошенн', 'спам',
+            'криптовалют', 'casino', 'crypto', 'pyramid'
+        ];
+
+        const CHAT_STUDY = /книг|литератур|роман|повест|учебник|пособ|истор|биограф|энциклопед|автор|издани|почита|найти|фонд|каталог|реферат|курсов|диплом|исследован|стать/;
+        const CHAT_LINK = /(https?:\/\/|www\.|t\.me\/|vk\.com\/)/;
+        const CHAT_MASH = [
+            'asdf', 'sdfg', 'dfgh', 'fghj', 'ghjk', 'hjkl', 'zxcv', 'xcvb',
+            'йцук', 'цуке', 'укен', 'фыва', 'ывап', 'вапр', 'апро', 'олдж', 'ячсм', 'чсми'
+        ];
+
+        const chatHit = function (value, roots) {
+            for (let i = 0; i < roots.length; i++) {
+                if (value.indexOf(roots[i]) !== -1) return true;
+            }
+            return false;
+        };
+
+        const chatGibberish = function (value) {
+            if (!value) return false;
+            if (/(.)\1{4,}/.test(value)) return true;
+
+            const letters = value.replace(/[^a-zа-я]/g, '');
+            if (letters.length >= 6) {
+                const unique = {};
+                let count = 0;
+                for (let i = 0; i < letters.length; i++) {
+                    const letter = letters.charAt(i);
+                    if (!unique[letter]) {
+                        unique[letter] = true;
+                        count++;
+                    }
+                }
+                if (count / letters.length < 0.35) return true;
+
+                const triples = {};
+                for (let i = 0; i <= letters.length - 3; i++) {
+                    const triple = letters.slice(i, i + 3);
+                    triples[triple] = (triples[triple] || 0) + 1;
+                    if (triples[triple] >= 3) return true;
+                }
+            }
+
+            const words = value.split(/\s+/);
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i].replace(/[^a-zа-я]/g, '');
+                if (word.length < 3) continue;
+                if (!/[aeiouyаеиоуыэюя]/.test(word)) return true;
+                if (/[bcdfghjklmnpqrstvwxzбвгджзйклмнпрстфхцчшщ]{6,}/.test(word)) return true;
+                for (let j = 0; j < CHAT_MASH.length; j++) {
+                    if (word.indexOf(CHAT_MASH[j]) !== -1) return true;
+                }
+            }
+
+            return false;
+        };
+
+        const chatProblem = function (text) {
+            const value = String(text || '').toLowerCase().replace(/ё/g, 'е');
+            const study = CHAT_STUDY.test(value);
+
+            if (chatHit(value, CHAT_BLOCKED) || chatHit(value, CHAT_SPAM)) return 'rude';
+            if (!study && chatHit(value, CHAT_SENSITIVE)) return 'rude';
+
+            const links = value.split('nlb.by').join('').split('example.by').join('');
+            if (CHAT_LINK.test(links)) return 'spam';
+
+            if (chatGibberish(value)) return 'gibberish';
+            return '';
+        };
+
+        const CHAT_ERRORS = {
+            rude: 'Давайте без грубостей, рекламы и подозрительных предложений. Напишите вопрос спокойно — помогу с книгами, залами, печатью и афишей.',
+            spam: 'Ссылки в чате не принимаются. Напишите вопрос словами или оставьте его в форме обратной связи.',
+            gibberish: 'Не разобрал сообщение. Напишите вопрос словами — например: «часы работы» или «как записаться».'
+        };
+
+        const showChatError = function (kind) {
+            if (!chatError) return;
+            chatError.textContent = CHAT_ERRORS[kind] || CHAT_ERRORS.gibberish;
+            chatError.hidden = false;
+            chatInput.setAttribute('aria-invalid', 'true');
+            chatInput.classList.add('is-invalid');
+            if (chat.classList.contains('is-open')) chatInput.focus();
+        };
+
+        const hideChatError = function () {
+            if (!chatError) return;
+            chatError.hidden = true;
+            chatInput.removeAttribute('aria-invalid');
+            chatInput.classList.remove('is-invalid');
+        };
+
         const handleChat = function (text) {
             const value = text.toLowerCase().replace(/ё/g, 'е');
 
@@ -559,6 +671,13 @@
             const value = String(text || '').trim();
             if (!value) return;
 
+            const problem = chatProblem(value);
+            if (problem) {
+                showChatError(problem);
+                return;
+            }
+
+            hideChatError();
             clearChatChips();
             lastUserQuestion = value;
             addChatMessage(value, 'user');
@@ -613,6 +732,8 @@
             event.preventDefault();
             sendChat(chatInput.value);
         });
+
+        chatInput.addEventListener('input', hideChatError);
 
         doc.addEventListener('keydown', function (event) {
             if (event.key === 'Escape' && chat.classList.contains('is-open')) closeChat();

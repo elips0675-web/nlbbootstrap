@@ -1898,6 +1898,24 @@ img {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
+.nlb-chat__input.is-invalid {
+    border-color: #f0a9a3;
+    background: #fff5f5;
+}
+
+.nlb-chat__error {
+    flex: none;
+    margin: 0;
+    padding: 0 0.9rem 0.65rem;
+    color: #b42318;
+    font-size: 0.75rem;
+    line-height: 1.35;
+}
+
+.nlb-chat__error[hidden] {
+    display: none;
+}
+
 .nlb-chat__send {
     width: 40px;
     height: 40px;

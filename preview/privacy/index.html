@@ -7,7 +7,7 @@
     <title>Политика конфиденциальности — Библиотека 2026</title>
     <meta name="description" content="Как библиотека обрабатывает персональные данные посетителей сайта.">
     <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../styles.css?v=54ae53d6">
+    <link rel="stylesheet" href="../styles.css?v=7cd060bc">
 </head>
 <body>
 
@@ -353,11 +353,12 @@
     <div class="nlb-chat__log" id="nlbChatLog" role="log" aria-live="polite" aria-relevant="additions"></div>
     <form class="nlb-chat__form" id="nlbChatForm" autocomplete="off">
         <label class="visually-hidden" for="nlbChatInput">Сообщение</label>
-        <input class="nlb-chat__input" id="nlbChatInput" type="text" maxlength="500" placeholder="Напишите сообщение…">
+        <input class="nlb-chat__input" id="nlbChatInput" type="text" maxlength="500" placeholder="Напишите сообщение…" aria-describedby="nlbChatError">
         <button class="nlb-chat__send" type="submit" aria-label="Отправить">
             <svg class="i" aria-hidden="true"><use href="#i-send"/></svg>
         </button>
     </form>
+    <p class="nlb-chat__error" id="nlbChatError" role="alert" hidden></p>
     <p class="nlb-chat__hint">
         Не нашли ответ?
         <button class="nlb-chat__link" type="button" data-chat-question>Отправить вопрос библиотекарю</button>
@@ -437,6 +438,6 @@
 </div>
 
 <script src="../assets/js/bootstrap.bundle.min.js"></script>
-<script src="../script.js?v=d9623e5b"></script>
+<script src="../script.js?v=13d9bca1"></script>
 </body>
 </html>
