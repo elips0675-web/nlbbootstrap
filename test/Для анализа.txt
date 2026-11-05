@@ -269,7 +269,7 @@ local/templates/nlb_bootstrap/
     header.php          <head>, мета, SEO, JSON-LD, топбар, меню, поиск, крошки
     footer.php          подвал, подписка, модалки (обратная связь, реквизиты), FAB, чат ИИ-помощника
     styles.css          3 431 строк, токены в :root (styles.css:12)
-    script.js           756 строк, 10 модулей + формы и слоты (8.1) + чат (4.1)
+    script.js           812 строк, 10 модулей + формы и слоты (8.1) + чат (4.1)
     assets/css/bootstrap.min.css        5.3.3, локально
     assets/js/bootstrap.bundle.min.js   5.3.3, локально
     assets/js/pwa.js, consent.js
@@ -368,7 +368,7 @@ local/templates/nlb_bootstrap/
     CSS-фреймворк   Bootstrap 5.3.3, локально                assets/css
     JS              Bootstrap bundle + vanilla, IIFE         assets/js
     Свой CSS        CSS3 + custom properties, 3 431 строк    styles.css
-    Свой JS         ES5-совместимый, 756 строк               script.js
+    Свой JS         ES5-совместимый, 812 строк               script.js
     Шрифты          системный стек, внешних запросов нет     styles.css:53
     Иконки          inline SVG <symbol>, спрайт в header     header.php
     Изображения     JPG + WebP + AVIF, ширины 480/960/1280    assets/images
@@ -485,7 +485,7 @@ books/detail.php:91-110.
     занятость       элементы bookings с тем же SERVICE_CODE, не отменённые,
                     с датой не в прошлом (nlb_form_slots, :427-479)
     передача в JS   JSON в data-nlb-slots; script.js гасит занятые <option>
-                    и пишет «Свободных слотов: N» (script.js:519-571)
+                    и пишет «Свободных слотов: N» (script.js:721-773)
     серверная защита  nlb_form_slot_taken() (:482-520) — двойная проверка
     отмена брони   смена STATUS на «Отменена» в админке освобождает слот
 
