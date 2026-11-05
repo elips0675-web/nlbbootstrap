@@ -737,7 +737,87 @@
             chatBack.setAttribute('aria-label', chatMode === 'human' ? 'Вернуться к ИИ-помощнику' : 'Вернуться в начало диалога');
         };
 
+        const chatMic = doc.getElementById('nlbChatMic');
+        const ChatRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let chatRecognition = null;
+
+        const showMicError = function (message) {
+            if (!chatError) return;
+            chatError.textContent = message;
+            chatError.hidden = false;
+        };
+
+        const setChatMicState = function (listening) {
+            if (!chatMic) return;
+            chatMic.classList.toggle('is-listening', listening);
+            chatMic.setAttribute('aria-pressed', listening ? 'true' : 'false');
+            chatMic.setAttribute('aria-label', listening ? 'Остановить голосовой ввод' : 'Голосовой ввод');
+        };
+
+        const stopChatMic = function () {
+            if (!chatRecognition) return;
+            try {
+                chatRecognition.stop();
+            } catch (error) {
+                setChatMicState(false);
+            }
+            setChatMicState(false);
+        };
+
+        if (chatMic && ChatRecognition) {
+            chatMic.hidden = false;
+            chatRecognition = new ChatRecognition();
+            chatRecognition.lang = 'ru-RU';
+            chatRecognition.interimResults = false;
+            chatRecognition.maxAlternatives = 1;
+            chatRecognition.continuous = false;
+
+            chatRecognition.addEventListener('start', function () {
+                setChatMicState(true);
+            });
+
+            chatRecognition.addEventListener('result', function (event) {
+                const result = event.results && event.results[0] && event.results[0][0];
+                const text = result ? String(result.transcript || '').trim() : '';
+                if (!text) return;
+                const current = chatInput.value.trim();
+                chatInput.value = current ? current + ' ' + text : text;
+                chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+                chatInput.focus();
+            });
+
+            chatRecognition.addEventListener('end', function () {
+                setChatMicState(false);
+            });
+
+            chatRecognition.addEventListener('error', function (event) {
+                setChatMicState(false);
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    showMicError('Нет доступа к микрофону: разрешите его в настройках браузера или наберите вопрос текстом.');
+                } else if (event.error === 'no-speech') {
+                    showMicError('Не расслышал — попробуйте ещё раз или наберите вопрос текстом.');
+                } else {
+                    showMicError('Голосовой ввод не сработал — наберите вопрос текстом.');
+                }
+            });
+
+            chatMic.addEventListener('click', function () {
+                if (chatMic.classList.contains('is-listening')) {
+                    stopChatMic();
+                    return;
+                }
+                hideChatError();
+                try {
+                    chatRecognition.start();
+                } catch (error) {
+                    setChatMicState(false);
+                    showMicError('Голосовой ввод сейчас недоступен — наберите вопрос текстом.');
+                }
+            });
+        }
+
         function resetChat() {
+            stopChatMic();
             chatRun++;
             chatMode = 'bot';
             chatAtStart = true;
@@ -1013,6 +1093,7 @@
         };
 
         const closeChat = function () {
+            stopChatMic();
             chat.classList.remove('is-open');
             chat.setAttribute('aria-hidden', 'true');
             chatOpeners.forEach(function (opener) {

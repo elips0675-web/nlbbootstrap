@@ -218,6 +218,9 @@ $nlbTpl = SITE_TEMPLATE_PATH;
     <form class="nlb-chat__form" id="nlbChatForm" autocomplete="off">
         <label class="visually-hidden" for="nlbChatInput">Сообщение</label>
         <input class="nlb-chat__input" id="nlbChatInput" type="text" maxlength="500" placeholder="Напишите сообщение…" aria-describedby="nlbChatError">
+        <button class="nlb-chat__mic" id="nlbChatMic" type="button" aria-label="Голосовой ввод" aria-pressed="false" hidden>
+            <svg class="i" aria-hidden="true"><use href="#i-mic"/></svg>
+        </button>
         <button class="nlb-chat__send" type="submit" aria-label="Отправить">
             <svg class="i" aria-hidden="true"><use href="#i-send"/></svg>
         </button>

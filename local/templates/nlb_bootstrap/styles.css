@@ -1981,6 +1981,51 @@ img {
     background: #fff5f5;
 }
 
+.nlb-chat__mic {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--nlb-line);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--nlb-muted);
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.nlb-chat__mic[hidden] {
+    display: none;
+}
+
+.nlb-chat__mic:hover {
+    color: var(--nlb-primary);
+    border-color: #c7d2fe;
+    background: var(--nlb-soft-2);
+}
+
+.nlb-chat__mic:focus-visible {
+    outline: 2px solid var(--nlb-primary);
+    outline-offset: 2px;
+}
+
+.nlb-chat__mic .i {
+    width: 16px;
+    height: 16px;
+}
+
+.nlb-chat__mic.is-listening {
+    border-color: transparent;
+    background: #dc2626;
+    color: #fff;
+    animation: nlb-mic-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes nlb-mic-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45); }
+    50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+}
+
 .nlb-chat__error {
     flex: none;
     margin: 0;
