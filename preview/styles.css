@@ -1654,23 +1654,46 @@ img {
 }
 
 .nlb-chat__avatar {
-    width: 40px;
-    height: 40px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     flex: none;
     display: grid;
     place-items: center;
-    background: rgba(255, 255, 255, 0.22);
-    font-weight: 700;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+}
+
+.nlb-chat__avatar-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.nlb-chat__avatar-icon {
+    display: none;
+    width: 22px;
+    height: 22px;
 }
 
 .nlb-chat__avatar.is-human {
     background: #ff6b6b;
 }
 
+.nlb-chat__avatar.is-human .nlb-chat__avatar-img {
+    display: none;
+}
+
+.nlb-chat__avatar.is-human .nlb-chat__avatar-icon {
+    display: block;
+}
+
 .nlb-chat__titles {
     display: flex;
     flex-direction: column;
+    flex: 1;
     min-width: 0;
     line-height: 1.2;
 }
@@ -1686,7 +1709,7 @@ img {
 }
 
 .nlb-chat__close {
-    margin-left: auto;
+    margin-left: 0.1rem;
     flex: none;
 }
 

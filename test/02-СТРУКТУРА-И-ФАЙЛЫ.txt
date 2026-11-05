@@ -99,7 +99,7 @@ local/templates/nlb_bootstrap/
     assets/js/bootstrap.bundle.min.js   5.3.3, локально
     assets/js/pwa.js, consent.js
     assets/icons/       6 иконок
-    assets/images/      162 файла (JPG/WebP/AVIF, ширины 480/960/1280)
+    assets/images/      163 файла (162 JPG/WebP/AVIF + аватар чата SVG)
 
 Шаблоны компонентов (7):
     menu/top_bootstrap                  верхнее меню

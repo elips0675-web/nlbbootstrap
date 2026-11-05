@@ -257,7 +257,7 @@
 
         const answerLocally = function (value) {
             if (GREETING.test(value)) {
-                chatReply('Здравствуйте! 👋 Я ИИ-помощник библиотеки. Подскажу афишу, запись на событие и адрес. Что вас интересует?', 500, function () {
+                chatReply('Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Подскажу афишу, запись на событие и адрес. Что вас интересует?', 500, function () {
                     addChatChips([
                         { label: 'Какие события скоро?' },
                         { label: 'Адрес и время работы' },
@@ -297,8 +297,7 @@
 
             chatTitle.textContent = 'Анна';
             chatStatus.textContent = 'оператор · печатает…';
-            if (chatAvatar) chatAvatar.textContent = 'А';
-            chatAvatar.classList.add('is-human');
+            if (chatAvatar) chatAvatar.classList.add('is-human');
 
             addChatMessage('⏳ Соединяю вас с оператором…', 'bot');
 
@@ -368,7 +367,7 @@
         }
 
         const greetChat = function () {
-            addChatMessage('Здравствуйте! 👋 Я ИИ-помощник библиотеки. Помогу найти событие или записаться на него.', 'bot');
+            addChatMessage('Здравствуйте! Меня зовут Татьяна Петровна, я ИИ-помощник ТП НББ. Чем могу помочь?', 'bot');
             addChatChips([
                 { label: 'Какие события скоро?' },
                 { label: 'Как записаться?' },

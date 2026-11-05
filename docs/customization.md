@@ -109,7 +109,7 @@ font-family: "Manrope", "Inter", "Segoe UI", system-ui, -apple-system, "Helvetic
 |---|---|
 | Топбар | `header.php:80–102` |
 | Подвал | `footer.php:75–90` |
-| FAB | `footer.php:117–143` |
+| FAB | `footer.php:169–199` |
 
 Замените:
 
@@ -125,7 +125,7 @@ font-family: "Manrope", "Inter", "Segoe UI", system-ui, -apple-system, "Helvetic
 ## 5. Соцсети
 
 `footer.php:30–43`: Telegram, VK, Instagram, YouTube.
-`footer.php:119–126`: Telegram и WhatsApp в FAB.
+`footer.php:171–178`: Telegram и WhatsApp в FAB.
 
 Замените `https://t.me/example`, `https://vk.com/example` и т.д. на реальные
 аккаунты. Ссылки открываются в новой вкладке и имеют
@@ -165,7 +165,7 @@ font-family: "Manrope", "Inter", "Segoe UI", system-ui, -apple-system, "Helvetic
 - Колонки «Читателям» и «Услуги» — `footer.php:45–67`;
 - блок контактов и подписка — `footer.php:69–108`;
 - нижняя строка — `footer.php:105–112`;
-- реквизиты — модалка `footer.php:190`.
+- реквизиты — модалка `footer.php:260`.
 
 Ссылки ведут на разделы; если раздела нет — 404. Создайте страницу или
 уберите пункт.
@@ -173,7 +173,7 @@ font-family: "Manrope", "Inter", "Segoe UI", system-ui, -apple-system, "Helvetic
 ## 8. Подписка и обратная связь
 
 Демо-форма подписки (`footer.php:92`) отправляет `EMAIL` на `/subscribe/`.
-Модалка обратной связи (`footer.php:201`) отправляет POST на `/feedback/`;
+Модалка обратной связи (`footer.php:227`) отправляет POST на `/feedback/`;
 там её обрабатывает `bitrix:iblock.element.add.form` и пишет в `requests`.
 Формы брони и заказа — на детальных страницах услуги и товара.
 Рабочая интеграция — `bitrix-integration.md`, п. 8.

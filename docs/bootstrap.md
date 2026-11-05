@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/local/templates/nlb_bootstrap/styles.css">
 ```
 
-Скрипты — в `footer.php:215`:
+Скрипты — в `footer.php:285`:
 
 ```html
 <script src="/local/templates/nlb_bootstrap/assets/js/bootstrap.bundle.min.js"></script>
@@ -123,9 +123,9 @@ Bootstrap 5 сам инициализирует всё по `data-bs-*`. Сво�
 | Плагин | Инициализация | Наш код |
 |---|---|---|
 | Carousel | `data-bs-ride="carousel"` на `.carousel` | не нужен |
-| Collapse (navbar) | `data-bs-toggle="collapse" data-bs-target="#nlbNav"` | закрытие после клика (`script.js:129`) |
-| Modal | `data-bs-toggle="modal" data-bs-target="#searchModal"` | автофокус (`script.js:142`), Ctrl+K (`script.js:166`) |
-| Validation | класс `needs-validation` | обработчик submit (`script.js:153`) |
+| Collapse (navbar) | `data-bs-toggle="collapse" data-bs-target="#nlbNav"` | закрытие после клика (`script.js:442`) |
+| Modal | `data-bs-toggle="modal" data-bs-target="#searchModal"` | автофокус (`script.js:455`), Ctrl+K (`script.js:578`) |
+| Validation | класс `needs-validation` | обработчик submit (`script.js:466`) |
 
 Программный вызов — только через `getOrCreateInstance`, не `new bootstrap.Modal(...)`:
 
@@ -189,7 +189,7 @@ bootstrap.Collapse.getOrCreateInstance(document.getElementById('nlbNav')).hide()
   (подписи слайдов);
 - `:focus-visible` задан глобально (`styles.css:82`), не убирайте его;
 - `prefers-reduced-motion` отключает reveal и плавный скролл
-  (`styles.css:1620`).
+  (`styles.css:2070`).
 
 ## 10. Обновление Bootstrap
 
