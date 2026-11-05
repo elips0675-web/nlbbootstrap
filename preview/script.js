@@ -142,6 +142,8 @@
         let chatMode = 'bot';
         let chatTyping = null;
         let lastUserQuestion = '';
+        let chatAtStart = true;
+        let chatRun = 0;
 
         const RULES = [
             {
@@ -275,9 +277,16 @@
             scrollChat();
         };
 
+        const chatLater = function (fn, delay) {
+            const run = chatRun;
+            window.setTimeout(function () {
+                if (run === chatRun) fn();
+            }, delay);
+        };
+
         const chatReply = function (text, delay, done) {
             showChatTyping();
-            window.setTimeout(function () {
+            chatLater(function () {
                 hideChatTyping();
                 addChatMessage(text, 'bot');
                 if (done) done();
@@ -421,7 +430,8 @@
             chatTitle.textContent = 'Анна';
             chatStatus.textContent = 'оператор · печатает…';
             if (chatAvatar) chatAvatar.classList.add('is-human');
-            if (chatBack) chatBack.hidden = false;
+            chatAtStart = false;
+            updateChatBack();
 
             clearChatChips();
             hideChatError();
@@ -431,7 +441,7 @@
 
             addChatMessage('⏳ Соединяю вас с оператором…', 'bot');
 
-            window.setTimeout(function () {
+            chatLater(function () {
                 if (!chatTyping) chatStatus.textContent = 'онлайн';
                 addChatMessage('Здравствуйте! Меня зовут Анна, я администратор библиотеки. Чем могу помочь?', 'bot');
                 if (chat.classList.contains('is-open')) chatInput.focus();
@@ -445,13 +455,39 @@
             chatTitle.textContent = 'Татьяна Петровна';
             chatStatus.textContent = 'ИИ-помощник ТП НББ · онлайн';
             if (chatAvatar) chatAvatar.classList.remove('is-human');
-            if (chatBack) chatBack.hidden = true;
+            chatAtStart = false;
+            updateChatBack();
 
             clearChatChips();
             hideChatError();
             chatReply('Снова на связи ИИ-помощник библиотеки. Чем помочь?', 400, function () {
                 addChatChips(startChips());
             });
+        }
+
+        const updateChatBack = function () {
+            if (!chatBack) return;
+            chatBack.hidden = chatMode === 'bot' && chatAtStart;
+            chatBack.setAttribute('aria-label', chatMode === 'human' ? 'Вернуться к ИИ-помощнику' : 'Вернуться в начало диалога');
+        };
+
+        function resetChat() {
+            chatRun++;
+            chatMode = 'bot';
+            chatAtStart = true;
+            lastUserQuestion = '';
+            chatTitle.textContent = 'Татьяна Петровна';
+            chatStatus.textContent = 'ИИ-помощник ТП НББ · онлайн';
+            if (chatAvatar) chatAvatar.classList.remove('is-human');
+            hideChatTyping();
+            hideChatError();
+            clearChatChips();
+            chatLog.innerHTML = '';
+            chatInput.value = '';
+            chatInput.placeholder = 'Напишите сообщение…';
+            greetChat();
+            updateChatBack();
+            if (chat.classList.contains('is-open')) chatInput.focus();
         }
 
         const operatorAnswers = [
@@ -529,7 +565,7 @@
 
             chatStatus.textContent = 'оператор · печатает…';
             showChatTyping();
-            window.setTimeout(function () {
+            chatLater(function () {
                 hideChatTyping();
                 chatStatus.textContent = 'онлайн';
                 addChatMessage(answer, 'bot');
@@ -682,6 +718,8 @@
             lastUserQuestion = value;
             addChatMessage(value, 'user');
             chatInput.value = '';
+            chatAtStart = false;
+            updateChatBack();
             handleChat(value);
         }
 
@@ -701,6 +739,7 @@
                 chatStarted = true;
                 greetChat();
             }
+            updateChatBack();
             window.setTimeout(function () {
                 chatInput.focus();
             }, 220);
@@ -726,7 +765,12 @@
             button.addEventListener('click', askQuestion);
         });
 
-        if (chatBack) chatBack.addEventListener('click', switchToBot);
+        if (chatBack) {
+            chatBack.addEventListener('click', function () {
+                if (chatMode === 'human') switchToBot();
+                else resetChat();
+            });
+        }
 
         chatForm.addEventListener('submit', function (event) {
             event.preventDefault();
