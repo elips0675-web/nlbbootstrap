@@ -196,6 +196,12 @@ $APPLICATION->IncludeComponent('bitrix:menu', 'top_bootstrap', [
 Запуск: `php -S 127.0.0.1:8791 -t preview`, меню ведёт на `/services/`,
 `/news/`, `/events/` и остальные разделы.
 
+Ссылки на `styles.css` и `script.js` получают `?v=<8 символов sha256>`:
+ни `php -S`, ни `python -m http.server` не отдают `Cache-Control`, и после
+пересборки браузер держал старые файлы — виджет выглядел «сломанным».
+Версия считается от содержимого, поэтому повторная сборка остаётся
+побайтово той же.
+
 `demo/index.php` собран из `<main>` превью: пути к картинкам заменены на
 `<?= SITE_TEMPLATE_PATH ?>/assets/images/…`, ссылки — на абсолютные адреса
 разделов (`/services/`, `/news/`, `/events/`, `/printing/`, `/books/`,

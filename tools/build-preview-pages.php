@@ -348,7 +348,34 @@ function prepare_home(string $previewDir): void
     $html = replace_nav($html, 0, 'home');
     $html = str_replace('../local/templates/nlb_bootstrap/', '', $html);
     $html = upgrade_home_pictures($html);
+    $html = version_assets($html, $tplDir);
     file_put_contents($file, $html);
+}
+
+/**
+ * Версия у styles.css и script.js: ?v=<8 символов sha256>.
+ *
+ * Без неё браузер держит старый файл после пересборки превью: сервер
+ * (python -m http.server, php -S) не отдаёт Cache-Control, и правка
+ * стилей выглядит как «сломанный» виджет. Хеш зависит от содержимого,
+ * а не от времени, поэтому повторная сборка остаётся побайтово той же.
+ */
+function version_assets(string $html, string $tplDir): string
+{
+    foreach (['styles.css', 'script.js'] as $file) {
+        $path = $tplDir . '/' . $file;
+        if (!is_file($path)) {
+            continue;
+        }
+        $version = substr((string)hash_file('sha256', $path), 0, 8);
+        $html = (string)preg_replace(
+            '~((?:href|src)="(?:\.\./)*)' . preg_quote($file, '~') . '(?:\?v=[0-9a-f]+)?"~',
+            '$1' . $file . '?v=' . $version . '"',
+            $html
+        );
+    }
+
+    return $html;
 }
 
 /**
