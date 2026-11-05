@@ -143,6 +143,11 @@
         let lastUserQuestion = '';
         let chatRun = 0;
         let chatMoreId = 0;
+        let chatUserCount = 0;
+        let chatPromoCount = 0;
+        let chatPromoAt = 0;
+        let chatPromoIndex = 0;
+        let promoSeen = {};
 
         const RULES = [
             {
@@ -251,7 +256,71 @@
                 chips: [
                     { label: 'Отправить вопрос библиотекарю', accent: true, action: askQuestion },
                     { label: 'Часы работы' }
-                ]
+                ],
+                promo: false
+            }
+        ];
+
+        const PROMOS = [
+            {
+                re: /спортзал|фитнес|трениров|стройн|похудет|качал/,
+                text: 'Кстати, если хотите быть в форме — у нас спортзал от 1000 ₽/месяц. Дешевле, чем фитнес-клуб, и без очереди к беговой дорожке 💪',
+                path: 'services/gym/',
+                label: 'Спортзал'
+            },
+            {
+                re: /саун|парн|баня|отдохн|расслаб/,
+                text: 'А если день выдался тяжёлым — сауна от 500 ₽/час. Пар, тишина и книга: три составляющие хорошего вечера 🧖',
+                path: 'services/sauna/',
+                label: 'Сауна'
+            },
+            {
+                re: /коворкинг|работ|ноутбук|офис|тишин/,
+                text: 'Ищете тихий угол для работы? Коворкинг от 200 ₽/час: Wi-Fi есть, коллег с чипсами нет 🎧',
+                path: 'services/coworking/',
+                label: 'Коворкинг'
+            },
+            {
+                re: /дет|ребен|ребён|школьн|малыш/,
+                text: 'Если вы с детьми — детская комната от 250 ₽/час. Взрослые читают, дети играют, никто никому не мешает 🧸',
+                path: 'services/kids-zone/',
+                label: 'Детская комната'
+            },
+            {
+                re: /кафе|кофе|обед|перекус|еда/,
+                text: 'Кстати, в кафе средний чек 300 ₽. Кофе с книгой — и день уже удался ☕',
+                path: 'services/cafe/',
+                label: 'Кафе'
+            },
+            {
+                re: /лектори|лекци|доклад|презентац/,
+                text: 'А лекторий можно арендовать от 5000 ₽/час — если ваша лекция должна собрать всех, а не только соседа 🎤',
+                path: 'services/lecture-hall/',
+                label: 'Лекторий'
+            },
+            {
+                re: /концерт|музык|групп|выступ/,
+                text: 'Концертный зал — от 10 000 ₽/час. Для музыки, которая уже не помещается в наушники 🎸',
+                path: 'services/concert-hall/',
+                label: 'Концертный зал'
+            },
+            {
+                re: /обзорн|площадк|панорам/,
+                text: 'Совет: обзорная площадка бесплатна для читателей. Лучший вид на Минск и ноль рублей за билет 🌇',
+                path: 'services/observation-deck/',
+                label: 'Обзорная площадка'
+            },
+            {
+                re: /печат|визитк|копир|скан/,
+                text: 'Нужны визитки? 350 ₽ за 50 штук — дешевле, чем каждый раз объяснять, кто вы, на словах 😄',
+                path: 'printing/',
+                label: 'Печать'
+            },
+            {
+                re: /книг|подборк|чтен|почитать|каталог/,
+                text: 'Не знаете, что читать? Загляните в «Подборки»: там книги, уже проверенные другими читателями 📚',
+                path: 'collections/',
+                label: 'Подборки'
             }
         ];
 
@@ -410,6 +479,24 @@
                 row.appendChild(src);
             }
 
+            if (options.promo && who === 'bot') {
+                const promo = doc.createElement('div');
+                promo.className = 'nlb-chat__promo';
+
+                const promoText = doc.createElement('span');
+                promoText.className = 'nlb-chat__promo-text';
+                promoText.textContent = options.promo.text;
+                promo.appendChild(promoText);
+
+                const promoLink = doc.createElement('a');
+                promoLink.className = 'nlb-chat__promo-link';
+                promoLink.href = chatHref(options.promo.path);
+                promoLink.textContent = options.promo.label;
+                promo.appendChild(promoLink);
+
+                row.appendChild(promo);
+            }
+
             if (options.rate && who === 'bot') {
                 row.appendChild(chatRate(text));
             }
@@ -449,11 +536,11 @@
             }, delay);
         };
 
-        const chatReply = function (text, delay, done, links, rate, more) {
+        const chatReply = function (text, delay, done, links, rate, more, promo) {
             showChatTyping();
             chatLater(function () {
                 hideChatTyping();
-                addChatMessage(text, 'bot', { links: links, rate: rate, more: more });
+                addChatMessage(text, 'bot', { links: links, rate: rate, more: more, promo: promo });
                 if (done) done();
             }, delay);
         };
@@ -613,6 +700,29 @@
             };
         };
 
+        const pickPromo = function (value) {
+            if (chatPromoCount >= 3) return null;
+
+            const gap = chatPromoCount === 0 ? 2 : 3;
+            if (chatUserCount - chatPromoAt < gap) return null;
+
+            for (let n = 0; n < PROMOS.length; n++) {
+                const promo = PROMOS[(chatPromoIndex + n) % PROMOS.length];
+                if (promoSeen[promo.label]) continue;
+                if (promo.re.test(value)) continue;
+                chatPromoIndex = (chatPromoIndex + n + 1) % PROMOS.length;
+                return promo;
+            }
+
+            return null;
+        };
+
+        const markPromo = function (promo) {
+            promoSeen[promo.label] = true;
+            chatPromoCount++;
+            chatPromoAt = chatUserCount;
+        };
+
         const answerLocally = function (value) {
             if (GREETING.test(value)) {
                 chatReply('Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Подскажу часы работы, как записаться, услуги и пространства, печать, бронирование, афишу, книги, Wi-Fi и контакты. Чем помочь?', 500, function () {
@@ -636,9 +746,11 @@
             });
 
             if (rule) {
+                const promo = rule.promo === false ? null : pickPromo(value);
+                if (promo) markPromo(promo);
                 chatReply(rule.a, 700, function () {
                     if (rule.chips) addChatChips(rule.chips);
-                }, rule.links, true, rule.more);
+                }, rule.links, true, rule.more, promo);
                 return;
             }
 
@@ -833,6 +945,11 @@
             stopChatMic();
             chatRun++;
             lastUserQuestion = '';
+            chatUserCount = 0;
+            chatPromoCount = 0;
+            chatPromoAt = 0;
+            chatPromoIndex = 0;
+            promoSeen = {};
             hideChatTyping();
             hideChatError();
             clearChatChips();
@@ -978,6 +1095,7 @@
             hideChatError();
             clearChatChips();
             lastUserQuestion = value;
+            chatUserCount++;
             addChatMessage(value, 'user');
             chatInput.value = '';
             handleChat(value);
