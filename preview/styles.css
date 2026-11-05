@@ -1767,24 +1767,6 @@ img {
     object-fit: cover;
 }
 
-.nlb-chat__avatar-icon {
-    display: none;
-    width: 22px;
-    height: 22px;
-}
-
-.nlb-chat__avatar.is-human {
-    background: #ff6b6b;
-}
-
-.nlb-chat__avatar.is-human .nlb-chat__avatar-img {
-    display: none;
-}
-
-.nlb-chat__avatar.is-human .nlb-chat__avatar-icon {
-    display: block;
-}
-
 .nlb-chat__titles {
     display: flex;
     flex-direction: column;

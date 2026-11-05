@@ -207,7 +207,7 @@ $nlbTpl = SITE_TEMPLATE_PATH;
 
 <div class="nlb-chat" id="nlbChat" role="dialog" aria-labelledby="nlbChatTitle" aria-hidden="true">
     <div class="nlb-chat__head">
-        <button class="nlb-chat__back" type="button" data-chat-back aria-label="Вернуться в начало диалога" hidden>
+        <button class="nlb-chat__back" type="button" data-chat-back aria-label="Вернуться в начало диалога">
             <svg class="i" aria-hidden="true"><use href="#i-chevron-left"/></svg>
             <span class="nlb-chat__back-text">Назад</span>
         </button>
@@ -217,7 +217,6 @@ $nlbTpl = SITE_TEMPLATE_PATH;
         </span>
         <span class="nlb-chat__avatar" aria-hidden="true">
             <img class="nlb-chat__avatar-img" src="<?= $nlbTpl ?>/assets/images/avatar-tatyana.svg" width="48" height="48" alt="" decoding="async">
-            <svg class="nlb-chat__avatar-icon"><use href="#i-user"/></svg>
         </span>
         <button class="nlb-chat__expand" type="button" aria-label="Развернуть чат" aria-pressed="false" data-chat-expand>
             <svg class="i" aria-hidden="true"><use href="#i-expand"/></svg>

@@ -128,8 +128,6 @@
         const chatForm = doc.getElementById('nlbChatForm');
         const chatInput = doc.getElementById('nlbChatInput');
         const chatStatus = doc.getElementById('nlbChatStatus');
-        const chatTitle = doc.getElementById('nlbChatTitle');
-        const chatAvatar = chat.querySelector('.nlb-chat__avatar');
         const chatBack = chat.querySelector('[data-chat-back]');
         const chatExpand = chat.querySelector('[data-chat-expand]');
         const chatError = doc.getElementById('nlbChatError');
@@ -141,7 +139,6 @@
         const API_URL = '/api/chat';
 
         let chatStarted = false;
-        let chatMode = 'bot';
         let chatTyping = null;
         let lastUserQuestion = '';
         let chatAtStart = true;
@@ -184,7 +181,7 @@
                 links: [{ path: 'services/', label: 'Услуги и пространства' }],
                 chips: [
                     { label: 'Услуги и пространства' },
-                    { label: 'Позвать оператора', action: switchToHuman }
+                    { label: 'Написать библиотекарю', action: askQuestion }
                 ]
             },
             {
@@ -247,12 +244,20 @@
                     { label: 'Часы работы' },
                     { label: 'Адрес и как добраться' }
                 ]
+            },
+            {
+                re: /оператор|человек|менеджер|живой|позов|позват|соедин|жалоб|не понял/,
+                a: 'Живого оператора в этом демо нет: отвечает виртуальный помощник по правилам сайта.\n\nЕсли нужен человек — оставьте вопрос в форме обратной связи, библиотекарь ответит в течение рабочего дня. Или позвоните: +375 (17) 300-00-00.',
+                links: [{ path: 'contacts/', label: 'Контакты' }],
+                chips: [
+                    { label: 'Отправить вопрос библиотекарю', accent: true, action: askQuestion },
+                    { label: 'Часы работы' }
+                ]
             }
         ];
 
         const THANKS = /спасибо|благодар|понятно|окей/;
 
-        const HUMAN_TRIGGER = /оператор|человек|менеджер|живой|позов|позват|соедин|жалоб|не понял/;
         const GREETING = /привет|здравств|добрый|хай|hello|hi\b/;
 
         const chatTime = function () {
@@ -502,7 +507,7 @@
                 { label: 'Услуги и пространства' },
                 { label: 'Афиша событий' },
                 { label: 'Задать свой вопрос', accent: true, action: focusQuestion },
-                { label: 'Позвать оператора', action: switchToHuman }
+                { label: 'Написать библиотекарю', action: askQuestion }
             ];
         };
 
@@ -526,7 +531,7 @@
                         { label: 'Часы работы' },
                         { label: 'Забронировать зал' },
                         { label: 'Задать свой вопрос', accent: true, action: focusQuestion },
-                        { label: 'Позвать оператора', action: switchToHuman }
+                        { label: 'Написать библиотекарю', action: askQuestion }
                     ]
                 };
             }
@@ -539,7 +544,7 @@
                         { label: 'Визитки' },
                         { label: 'Часы работы' },
                         { label: 'Задать свой вопрос', accent: true, action: focusQuestion },
-                        { label: 'Позвать оператора', action: switchToHuman }
+                        { label: 'Написать библиотекарю', action: askQuestion }
                     ]
                 };
             }
@@ -552,7 +557,7 @@
                         { label: 'Как записаться на событие' },
                         { label: 'Часы работы' },
                         { label: 'Задать свой вопрос', accent: true, action: focusQuestion },
-                        { label: 'Позвать оператора', action: switchToHuman }
+                        { label: 'Написать библиотекарю', action: askQuestion }
                     ]
                 };
             }
@@ -587,17 +592,17 @@
                     chips: [
                         { label: 'Часы работы' },
                         { label: 'Адрес и как добраться' },
-                        { label: 'Позвать оператора', action: switchToHuman }
+                        { label: 'Написать библиотекарю', action: askQuestion }
                     ]
                 };
             }
 
             if (section === 'feedback') {
                 return {
-                    text: 'Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Помогу сформулировать вопрос или соединю с оператором. Чем помочь?',
+                    text: 'Здравствуйте! Я Татьяна Петровна, ИИ-помощник библиотеки. Помогу сформулировать вопрос или передам его библиотекарю. Чем помочь?',
                     chips: [
                         { label: 'Задать свой вопрос', accent: true, action: focusQuestion },
-                        { label: 'Позвать оператора', action: switchToHuman },
+                        { label: 'Написать библиотекарю', action: askQuestion },
                         { label: 'Часы работы' }
                     ]
                 };
@@ -621,7 +626,7 @@
                 chatReply('Всегда рад помочь 😊 Если появятся вопросы — пишите.', 400, function () {
                     addChatChips([
                         { label: 'Задать свой вопрос', accent: true, action: focusQuestion },
-                        { label: 'Позвать оператора', action: switchToHuman }
+                        { label: 'Написать библиотекарю', action: askQuestion }
                     ]);
                 });
                 return;
@@ -641,7 +646,7 @@
             chatReply('Не нашёл ответа на этот вопрос 🤔 Я подсказываю про часы и адрес, запись, услуги, печать, бронирование, афишу, книги, электронные ресурсы и контакты.\n\nМожно отправить вопрос библиотекарю — он ответит в течение рабочего дня.', 900, function () {
                 addChatChips([
                     { label: 'Отправить вопрос библиотекарю', accent: true, action: askQuestion },
-                    { label: 'Позвать оператора', action: switchToHuman },
+                    { label: 'Написать библиотекарю', action: askQuestion },
                     { label: 'Задать другой вопрос', action: focusQuestion }
                 ]);
             }, [{ path: 'contacts/', label: 'Контакты' }], true);
@@ -746,52 +751,10 @@
             fallback();
         }
 
-        function switchToHuman() {
-            if (chatMode === 'human') return;
-            chatMode = 'human';
-
-            chatTitle.textContent = 'Анна';
-            chatStatus.textContent = 'оператор · печатает…';
-            if (chatAvatar) chatAvatar.classList.add('is-human');
-            chatAtStart = false;
-            updateChatBack();
-
-            clearChatChips();
-            hideChatError();
-            chatLog.querySelectorAll('.nlb-chat__msg--greeting').forEach(function (node) {
-                node.remove();
-            });
-
-            addChatMessage('⏳ Соединяю вас с оператором…', 'bot');
-
-            chatLater(function () {
-                if (!chatTyping) chatStatus.textContent = 'онлайн';
-                addChatMessage('Здравствуйте! Меня зовут Анна, я администратор библиотеки. Чем могу помочь?', 'bot');
-                if (chat.classList.contains('is-open')) chatInput.focus();
-            }, 500);
-        }
-
-        function switchToBot() {
-            if (chatMode === 'bot') return;
-            chatMode = 'bot';
-
-            chatTitle.textContent = 'Татьяна Петровна';
-            chatStatus.textContent = 'ИИ-помощник ТП НББ · онлайн';
-            if (chatAvatar) chatAvatar.classList.remove('is-human');
-            chatAtStart = false;
-            updateChatBack();
-
-            clearChatChips();
-            hideChatError();
-            chatReply('Снова на связи ИИ-помощник библиотеки. Чем помочь?', 400, function () {
-                addChatChips(startChips());
-            });
-        }
-
         const updateChatBack = function () {
             if (!chatBack) return;
-            chatBack.hidden = chatMode === 'bot' && chatAtStart;
-            chatBack.setAttribute('aria-label', chatMode === 'human' ? 'Вернуться к ИИ-помощнику' : 'Вернуться в начало диалога');
+            chatBack.hidden = chatAtStart;
+            chatBack.setAttribute('aria-label', 'Вернуться в начало диалога');
         };
 
         const chatMic = doc.getElementById('nlbChatMic');
@@ -876,12 +839,8 @@
         function resetChat() {
             stopChatMic();
             chatRun++;
-            chatMode = 'bot';
             chatAtStart = true;
             lastUserQuestion = '';
-            chatTitle.textContent = 'Татьяна Петровна';
-            chatStatus.textContent = 'ИИ-помощник ТП НББ · онлайн';
-            if (chatAvatar) chatAvatar.classList.remove('is-human');
             hideChatTyping();
             hideChatError();
             clearChatChips();
@@ -893,88 +852,6 @@
             updateChatBack();
             if (chat.classList.contains('is-open')) chatInput.focus();
         }
-
-        const operatorAnswers = [
-            {
-                re: /печат|копир|скан|принтер|визитк|буклет|ламинар|перепл/,
-                a: 'Печать — от 5 ₽ за страницу, сканирование — от 10 ₽, визитки — от 350 ₽ за 50 штук, переплёт и ламинирование — от 250 ₽. Файл можно принести на флешке или прислать на info@example.by. Сколько страниц и в каком формате?'
-            },
-            {
-                re: /цен|стоим|сколько сто|тариф|прайс|руб/,
-                a: 'Тарифы: коворкинг — от 200 ₽/час, детская комната — от 250 ₽/час, сауна — от 500 ₽/час, спортзал — от 1000 ₽/месяц, лекторий — от 5000 ₽/час, концертный зал — от 10 000 ₽/час. Печать — от 5 ₽ за страницу. Что именно считаем?'
-            },
-            {
-                re: /брон|аренд|зал|лектори|концертн|коворкинг|сауна|переговорн|пространств/,
-                a: 'Залы бронируем по телефону +375 (17) 300-00-00 или через форму на странице услуги. Подскажите дату, время и число гостей — проверю свободные окна. Лекторий — от 5000 ₽/час, концертный зал — от 10 000 ₽/час, коворкинг — от 200 ₽/час.'
-            },
-            {
-                re: /час|график|режим|работает|санитарн|во сколько|до скольк/,
-                a: 'Библиотека работает ежедневно с 10:00 до 22:00, санитарный день — последний вторник месяца. У коворкинга и детской комнаты свой график. Какое пространство вас интересует?'
-            },
-            {
-                re: /адрес|находит|добрат|метро|где вы|проезд|остановк/,
-                a: 'Мы на проспекте Независимости, 116, вход со стороны проспекта. От метро 7–10 минут пешком, для маломобильных посетителей есть пандус и лифт. Подсказать маршрут от конкретной станции?'
-            },
-            {
-                re: /событи|афиш|лекци|мастер-класс|экскурс|концерт|клуб|игротек|вечер/,
-                a: 'Ближайшие события: 06.11 — лекция «Как читать современную прозу», 08.11 — детский клуб «Совёнок», 12.11 — мастер-класс по нейросетям, 15.11 — поэтический вечер, 21.11 — экскурсия по фонду редких книг, 29.11 — игротека. Вход бесплатный. Записать вас на какое-то из них?'
-            },
-            {
-                re: /билет|запис|абонемент|читательск|стать читател/,
-                a: 'Читательский билет оформляется бесплатно на стойке информации, нужен паспорт. Регистрация на сайте его не заменяет — она для личного кабинета и заявок. Подсказать, что взять с собой?'
-            },
-            {
-                re: /книг|каталог|поиск|найти|автор|фонд|наличи/,
-                a: 'Проверю по каталогу. Напишите автора и название — посмотрю, есть ли книга в фонде, и подскажу, в каком зале её выдают.'
-            },
-            {
-                re: /wi-?fi|вай-?фай|интернет|компьютер|электронн|базы/,
-                a: 'Wi-Fi бесплатный, компьютеры — в читальных залах. Удалённые базы и продление книг открываются по читательскому билету. Нужен доступ к конкретной базе?'
-            },
-            {
-                re: /телефон|контакт|почт|e-?mail|позвон|связаться/,
-                a: 'Телефон справочной: +375 (17) 300-00-00, почта info@example.by. Работаем ежедневно с 10:00 до 22:00. Что ещё подсказать?'
-            },
-            {
-                re: /жалоб|плохо|не работает|проблем|ошибк|недовол/,
-                a: 'Спасибо, что сообщили. Передам замечание коллегам и вернусь с ответом. Если вопрос срочный — позвоните: +375 (17) 300-00-00.'
-            },
-            {
-                re: /спасибо|благодар|понятно|окей|хорошо|до свидан|пока/,
-                a: 'Пожалуйста! Если появятся вопросы — пишите, я на связи.'
-            }
-        ];
-
-        const operatorFallbacks = [
-            'Уточню у коллег и вернусь с ответом. Пока могу подсказать часы работы, адрес, услуги, печать и афишу — что интересует?',
-            'Хороший вопрос, мне нужно проверить. Оставьте, пожалуйста, телефон или e-mail — ответим в течение рабочего дня.',
-            'Сейчас посмотрю в расписании. Если вопрос не срочный, его можно оставить в форме обратной связи — я передам библиотекарю.'
-        ];
-
-        const operatorReply = function (text) {
-            const value = text.toLowerCase().replace(/ё/g, 'е');
-            const isGreeting = value.length <= 24 && /^(привет|здравств|добрый|доброе утро|хай|hello)/.test(value);
-
-            let answer;
-            if (isGreeting) {
-                answer = 'Здравствуйте! Анна, администратор библиотеки. Слушаю вас.';
-            } else {
-                const rule = operatorAnswers.find(function (item) {
-                    return item.re.test(value);
-                });
-                answer = rule
-                    ? rule.a
-                    : operatorFallbacks[Math.floor(Math.random() * operatorFallbacks.length)];
-            }
-
-            chatStatus.textContent = 'оператор · печатает…';
-            showChatTyping();
-            chatLater(function () {
-                hideChatTyping();
-                chatStatus.textContent = 'онлайн';
-                addChatMessage(answer, 'bot', { rate: true });
-            }, 700 + Math.min(value.length * 12, 900));
-        };
 
         const CHAT_BLOCKED = [
             'хуй', 'хуи', 'хуе', 'хуя', 'хую', 'пизд', 'ебан', 'ебал', 'ебл', 'бля',
@@ -1088,16 +965,6 @@
         const handleChat = function (text) {
             const value = text.toLowerCase().replace(/ё/g, 'е');
 
-            if (chatMode === 'human') {
-                operatorReply(text);
-                return;
-            }
-
-            if (HUMAN_TRIGGER.test(value)) {
-                switchToHuman();
-                return;
-            }
-
             askBackend(text).then(function (answer) {
                 if (answer) {
                     chatReply(answer, 800);
@@ -1132,6 +999,7 @@
             const row = addChatMessage(greeting.text, 'bot');
             row.classList.add('nlb-chat__msg--greeting');
             addChatChips(greeting.chips);
+            chatLog.scrollTop = 0;
         };
 
         const CHAT_PROMPT_KEY = 'nlbChatPrompt';
@@ -1221,8 +1089,7 @@
 
         if (chatBack) {
             chatBack.addEventListener('click', function () {
-                if (chatMode === 'human') switchToBot();
-                else resetChat();
+                resetChat();
             });
         }
 
