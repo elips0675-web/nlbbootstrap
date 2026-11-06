@@ -958,6 +958,33 @@ if (!function_exists('nlb_forms_date_human')) {
     }
 }
 
+if (!function_exists('nlb_forms_event_exists')) {
+    /**
+     * Есть ли тип почтового события в системе.
+     *
+     * Нужен для честного отката: если установка обновила файлы, но не
+     * прогнала миграцию 012, письмо о брони уйдёт старым NLB_NEW_REQUEST,
+     * а не потеряется молча.
+     */
+    function nlb_forms_event_exists(string $eventName): bool
+    {
+        if (!class_exists('CEventType')) {
+            return true;
+        }
+
+        try {
+            $result = CEventType::GetList([], [
+                'EVENT_NAME' => $eventName,
+                'LID' => 'ru',
+            ]);
+        } catch (Throwable $e) {
+            return true;
+        }
+
+        return $result && $result->Fetch() ? true : false;
+    }
+}
+
 if (!function_exists('nlb_forms_after_add')) {
     /**
      * OnAfterIBlockElementAdd: письмо-уведомление о новой заявке.
@@ -1010,10 +1037,16 @@ if (!function_exists('nlb_forms_after_add')) {
 
         try {
             if ($type === 'booking') {
-                CEvent::Send('NLB_NEW_BOOKING', nlb_site_id(), $fields);
+                if (nlb_forms_event_exists('NLB_NEW_BOOKING')) {
+                    CEvent::Send('NLB_NEW_BOOKING', nlb_site_id(), $fields);
+                } else {
+                    CEvent::Send('NLB_NEW_REQUEST', nlb_site_id(), $fields);
+                }
 
                 $email = trim((string)$fields['EMAIL']);
-                if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                if (filter_var($email, FILTER_VALIDATE_EMAIL)
+                    && nlb_forms_event_exists('NLB_BOOKING_CLIENT')
+                ) {
                     CEvent::Send('NLB_BOOKING_CLIENT', nlb_site_id(), $fields);
                 }
 
