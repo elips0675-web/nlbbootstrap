@@ -59,7 +59,7 @@
 
     шаблон local/templates/nlb_bootstrap (шапка, подвал, стили, скрипты,
     7 шаблонов компонентов)
-    слой данных db/: 11 идемпотентных миграций на API Битрикса + демо-контент
+    слой данных db/: 12 идемпотентных миграций на API Битрикса + демо-контент
     хелперы local/php_interface/: данные, формы, медиа, SEO, безопасность
     PWA: манифест, service worker, офлайн-заглушка, баннер установки,
     уведомление о cookie
@@ -120,7 +120,7 @@
     Миграций                                  11 (001–011)
     Шаблонов компонентов                      7
     Строк styles.css                          3 431
-    Строк script.js                           610 (+ pwa.js, consent.js)
+    Строк script.js                           610 (+ pwa.js, push.js, consent.js)
     Изображений                               163 файла, 8 252 КБ
                                               (20 исходников: JPG 3 885 КБ,
                                               WebP 2 331 КБ, AVIF 2 033 КБ,
@@ -185,11 +185,11 @@ db/lint.php (конфиги без ядра), db/tests/run.php (27 провер�
     urlrewrite.php              правила ЧПУ
     robots.txt                  индексация, Clean-param, Sitemap
     manifest.webmanifest        PWA-манифест
-    sw.js                       service worker
+    sw.js                       service worker + Web Push
     offline.html                офлайн-заглушка
     about/ news/ events/ …      17 разделов, у каждого index.php
     local/templates/nlb_bootstrap/   шаблон сайта
-    local/php_interface/        init.php + 5 хелперов
+    local/php_interface/        init.php + 6 хелперов
     db/                         миграции, конфиги, демо-контент, тесты
     docs/                       документация (14 .md)
     tools/                      гейты и служебные скрипты
@@ -272,7 +272,7 @@ local/templates/nlb_bootstrap/
     script.js           812 строк, 10 модулей + формы и слоты (8.1) + чат (4.1)
     assets/css/bootstrap.min.css        5.3.3, локально
     assets/js/bootstrap.bundle.min.js   5.3.3, локально
-    assets/js/pwa.js, consent.js
+    assets/js/pwa.js, push.js, consent.js
     assets/icons/       6 иконок
     assets/images/      163 файла (162 JPG/WebP/AVIF + аватар чата SVG)
 
@@ -296,6 +296,7 @@ local/templates/nlb_bootstrap/
     include/nlb_forms.php   формы: конфиг полей, разметка, слоты, события
     include/nlb_media.php   nlb_picture(): <picture> + srcset + WebP/AVIF
     include/nlb_seo.php     canonical, OG, Twitter, JSON-LD (Library, WebSite)
+    include/nlb_push.php    Web Push: VAPID, шифрование payload, подписки
     include/nlb_security.php  заголовки и CSP
 
 ================================================================
@@ -500,6 +501,9 @@ books/detail.php:91-110.
 ПОЧТА
 
     Тип события и шаблон создаёт миграция 008_requests.php:120-176.
+    Для брони — миграция 012_booking_mail.php: два события,
+    NLB_NEW_BOOKING (сотруднику) и NLB_BOOKING_CLIENT (клиенту,
+    EMAIL_TO = #EMAIL#). Дата в письмах — «06.11.2026 (пятница)».
     В админке: Настройки → Настройки продукта → Почтовые события →
     Почтовые шаблоны → NLB_NEW_REQUEST. Поле EMAIL_TO — реальный ящик
     библиотеки; демо-адрес info@example.by в продакшене не использовать
@@ -561,7 +565,7 @@ CSP отключается строкой define('NLB_CSP', false) в init.php; 
 
     manifest.webmanifest   имя, иконки, start_url, shortcuts (Каталог,
                            Афиша, Печать)
-    sw.js                  кеш оболочки nlb-shell-v1; CSS/JS/иконки —
+    sw.js                  кеш оболочки nlb-shell-v2; CSS/JS/иконки —
                            cache-first, переходы — network-first, HTML в кеш
                            не кладётся (на сайте есть авторизация),
                            запросы в /bitrix/ не перехватываются
@@ -569,6 +573,8 @@ CSP отключается строкой define('NLB_CSP', false) в init.php; 
     pwa.js                 регистрация SW, beforeinstallprompt, инструкция
                            для iOS, «Позже» на 30 дней
     consent.js             уведомление о cookie, выбор в localStorage
+    push.js                включение Web Push в кабинете админа
+                           (VAPID, подписка браузера)
 
 Баннер установки показывается только там, где установка возможна; два
 баннера одновременно не показываются. Нужен HTTPS — на голом HTTP баннера
@@ -656,7 +662,9 @@ prefers-reduced-motion для анимаций появления.
     bitrix:menu с типом top (создан ли тип, подхватился ли файл меню);
     bitrix:breadcrumb (цепочка, последний элемент без ссылки);
     bitrix:iblock.element.add.form: запись элемента, CAPTCHA, согласие;
-    отправка письма NLB_NEW_REQUEST (нужна настроенная почта);
+    отправка писем NLB_NEW_REQUEST / NLB_NEW_BOOKING / NLB_BOOKING_CLIENT
+    (нужна настроенная почта);
+    доставка Web Push (нужны HTTPS, живой Битрикс и подписка браузера);
     subscribe.form и агент рассылки (подтверждение, отписка, дубли);
     search.page (нужен индекс);
     system.auth.* (вход, регистрация, восстановление пароля);
@@ -702,6 +710,8 @@ P1 — качество и полнота
     P1-8  Проверка форм без JS (сейчас клиентская валидация только в JS,
           серверная — в компоненте Битрикса).
     P1-9  Бронирование услуг: запись, показ занятых слотов из БД, письмо.
+          Письма о брони (сотруднику и клиенту) и Web Push сделаны, но
+          на живом ядре не проверены: нужны SMTP, HTTPS и подписка.
     P1-10 Миграция 010 на существующих установках (свойства, типы, PRICE,
           разделы, удаление старых обложек).
     P1-11 Нет фотографий сувениров, услуг и 29 новых печатных услуг:
@@ -724,6 +734,10 @@ P1 — качество и полнота
           (секрет-заглушка, Authorize(1), чужие коды свойств, нет sessid и
           лимитов), слоты не атомарны, подтверждения клиенту нет. Варианты
           (доработать инфоблок / Marketplace / внешний сервис) — в бэклоге.
+
+    P1-18 Smart Site Search по мануалу (Python + BM25 + FastAPI) — другой
+          стек и инфраструктура, в PHP-шаблон не встраивается. Пункт
+          зафиксирован в бэклоге, код не добавлен.
 
 P2 — развитие
 
@@ -809,7 +823,7 @@ P2 — развитие
                                48 элементов»       версии 0.2.0, не текущее
                                                    состояние
 
-Причина: миграции 008-011 добавили инфоблоки заявок и расширили каталоги,
+Причина: миграции 008-012 добавили инфоблоки заявок и расширили каталоги,
 а сводные числа в README/project-context не обновили.
 
 ================================================================

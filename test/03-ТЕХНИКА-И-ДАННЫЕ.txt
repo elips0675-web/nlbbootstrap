@@ -144,6 +144,9 @@ books/detail.php:91-110.
 ПОЧТА
 
     Тип события и шаблон создаёт миграция 008_requests.php:120-176.
+    Для брони — миграция 012_booking_mail.php: два события,
+    NLB_NEW_BOOKING (сотруднику) и NLB_BOOKING_CLIENT (клиенту,
+    EMAIL_TO = #EMAIL#). Дата в письмах — «06.11.2026 (пятница)».
     В админке: Настройки → Настройки продукта → Почтовые события →
     Почтовые шаблоны → NLB_NEW_REQUEST. Поле EMAIL_TO — реальный ящик
     библиотеки; демо-адрес info@example.by в продакшене не использовать
@@ -205,7 +208,7 @@ CSP отключается строкой define('NLB_CSP', false) в init.php; 
 
     manifest.webmanifest   имя, иконки, start_url, shortcuts (Каталог,
                            Афиша, Печать)
-    sw.js                  кеш оболочки nlb-shell-v1; CSS/JS/иконки —
+    sw.js                  кеш оболочки nlb-shell-v2; CSS/JS/иконки —
                            cache-first, переходы — network-first, HTML в кеш
                            не кладётся (на сайте есть авторизация),
                            запросы в /bitrix/ не перехватываются
@@ -213,6 +216,8 @@ CSP отключается строкой define('NLB_CSP', false) в init.php; 
     pwa.js                 регистрация SW, beforeinstallprompt, инструкция
                            для iOS, «Позже» на 30 дней
     consent.js             уведомление о cookie, выбор в localStorage
+    push.js                включение Web Push в кабинете админа
+                           (VAPID, подписка браузера)
 
 Баннер установки показывается только там, где установка возможна; два
 баннера одновременно не показываются. Нужен HTTPS — на голом HTTP баннера

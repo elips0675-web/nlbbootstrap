@@ -94,6 +94,12 @@ const required = [
     'local/php_interface/include/nlb_db.php',
     'local/php_interface/include/nlb_seo.php',
     'local/php_interface/include/nlb_security.php',
+    'local/php_interface/include/nlb_forms.php',
+    'local/php_interface/include/nlb_push.php',
+    'local/ajax/push.php',
+    'tools/gen-vapid.php',
+    'tools/push-selftest.php',
+    `${tplRel}/assets/js/push.js`,
     'db/config/iblocks.php',
     'db/lib/boot.php',
     'db/lint.php',
@@ -574,7 +580,7 @@ if (manifest) {
 
 const sw = read('sw.js');
 if (sw) {
-    for (const token of ['CACHE', 'install', 'fetch', 'offline.html']) {
+    for (const token of ['CACHE', 'install', 'fetch', 'offline.html', 'notificationclick', 'showNotification']) {
         if (!sw.includes(token)) {
             fail(`sw.js: нет обязательного фрагмента «${token}»`);
         }
@@ -583,7 +589,7 @@ if (sw) {
     if (!version) {
         warn('sw.js: не найден const VERSION (кеш не инвалидируется при правке)');
     }
-    ok('sw.js: install/fetch/offline');
+    ok('sw.js: install/fetch/offline/push');
 }
 
 const header = read(`${tplRel}/header.php`);
@@ -605,7 +611,7 @@ if (header) {
 
 const footer = read(`${tplRel}/footer.php`);
 if (footer) {
-    for (const hook of ['nlbInstallBanner', 'nlbCookieNotice', 'pwa.js', 'consent.js']) {
+    for (const hook of ['nlbInstallBanner', 'nlbCookieNotice', 'pwa.js', 'consent.js', 'NLB_PUSH', 'push.js']) {
         if (!footer.includes(hook)) {
             fail(`footer.php: нет «${hook}»`);
         }

@@ -93,10 +93,10 @@ if (!function_exists('nlb_forms_config')) {
                 'title' => 'Забронировать',
                 'name_mode' => 'hidden',
                 'name_default' => 'Заявка на услугу',
-                'success' => 'Спасибо! Заявка на бронирование сохранена. Мы свяжемся с вами в течение часа.',
+                'success' => 'Спасибо! Бронь сохранена. Подтверждение отправили на e-mail, если вы его указали. Мы свяжемся с вами в течение часа.',
                 'submit' => 'Отправить заявку',
                 'anchor' => 'booking',
-                'hint' => 'Мы свяжемся с вами в течение часа для подтверждения брони.',
+                'hint' => 'Подтверждение записи придёт на e-mail, если вы его укажете.',
                 'fields' => [
                     'SERVICE' => [
                         'label' => 'Услуга',
@@ -922,6 +922,42 @@ if (!function_exists('nlb_forms_before_add')) {
     }
 }
 
+if (!function_exists('nlb_forms_date_human')) {
+    /**
+     * Дата заявки в человеческом виде: 2026-11-06 → «06.11.2026 (пятница)».
+     *
+     * В письмах и push нужна именно такая запись: ISO-формат читается плохо,
+     * а день недели помогает не ошибиться при подтверждении брони.
+     */
+    function nlb_forms_date_human(string $date): string
+    {
+        $date = trim($date);
+        if ($date === '' || !preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $date, $match)) {
+            return $date;
+        }
+
+        $stamp = mktime(12, 0, 0, (int)$match[2], (int)$match[3], (int)$match[1]);
+        if ($stamp === false) {
+            return $date;
+        }
+
+        $weekdays = [
+            1 => 'понедельник',
+            2 => 'вторник',
+            3 => 'среда',
+            4 => 'четверг',
+            5 => 'пятница',
+            6 => 'суббота',
+            7 => 'воскресенье',
+        ];
+        $weekday = $weekdays[(int)date('N', $stamp)] ?? '';
+
+        $human = date('d.m.Y', $stamp);
+
+        return $weekday !== '' ? $human . ' (' . $weekday . ')' : $human;
+    }
+}
+
 if (!function_exists('nlb_forms_after_add')) {
     /**
      * OnAfterIBlockElementAdd: письмо-уведомление о новой заявке.
@@ -944,12 +980,14 @@ if (!function_exists('nlb_forms_after_add')) {
         ];
         $values = nlb_forms_field_values($iblockId, $arFields);
         $elementId = (int)($arFields['ID'] ?? 0);
+        $dateHuman = nlb_forms_date_human((string)($values['DATE'] ?? ''));
 
         $fields = [
             'TYPE' => (string)($labels[$type] ?? $type),
             'NAME' => (string)($arFields['NAME'] ?? ''),
             'EMAIL' => (string)($values['EMAIL'] ?? ''),
             'PHONE' => (string)($values['PHONE'] ?? ''),
+            'PERSON' => (string)($values['PERSON'] ?? ''),
             'SUBJECT' => (string)($values['SUBJECT'] ?? ''),
             'MESSAGE' => (string)($values['MESSAGE'] ?? ''),
             'COMMENT' => (string)($values['COMMENT'] ?? ''),
@@ -958,6 +996,7 @@ if (!function_exists('nlb_forms_after_add')) {
             'SERVICE_CODE' => (string)($values['SERVICE_CODE'] ?? ''),
             'TARIFF' => (string)($values['TARIFF'] ?? ''),
             'DATE' => (string)($values['DATE'] ?? ''),
+            'DATE_HUMAN' => $dateHuman,
             'TIME' => (string)($values['TIME'] ?? ''),
             'ITEM' => (string)($values['ITEM'] ?? ''),
             'ARTICLE' => (string)($values['ARTICLE'] ?? ''),
@@ -970,6 +1009,30 @@ if (!function_exists('nlb_forms_after_add')) {
         ];
 
         try {
+            if ($type === 'booking') {
+                CEvent::Send('NLB_NEW_BOOKING', nlb_site_id(), $fields);
+
+                $email = trim((string)$fields['EMAIL']);
+                if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    CEvent::Send('NLB_BOOKING_CLIENT', nlb_site_id(), $fields);
+                }
+
+                if (function_exists('nlb_push_notify_booking')) {
+                    $page = (string)$fields['PAGE'];
+                    $url = $page !== '' ? $page . '#booking' : '';
+                    $pushValues = [
+                        'SERVICE' => $fields['SERVICE'],
+                        'DATE_HUMAN' => $dateHuman,
+                        'TIME' => $fields['TIME'],
+                        'PERSON' => $fields['PERSON'],
+                        'PHONE' => $fields['PHONE'],
+                    ];
+                    nlb_push_notify_booking($pushValues, $url, $elementId);
+                }
+
+                return;
+            }
+
             CEvent::Send('NLB_NEW_REQUEST', nlb_site_id(), $fields);
         } catch (Throwable $e) {
             /* Почта не должна ломать сохранение заявки. */

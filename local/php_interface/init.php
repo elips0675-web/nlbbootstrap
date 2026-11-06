@@ -17,6 +17,7 @@ if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) {
 require_once __DIR__ . '/include/nlb_security.php';
 require_once __DIR__ . '/include/nlb_db.php';
 require_once __DIR__ . '/include/nlb_forms.php';
+require_once __DIR__ . '/include/nlb_push.php';
 require_once __DIR__ . '/include/nlb_media.php';
 require_once __DIR__ . '/include/nlb_seo.php';
 

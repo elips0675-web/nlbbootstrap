@@ -10,11 +10,11 @@
     urlrewrite.php              правила ЧПУ
     robots.txt                  индексация, Clean-param, Sitemap
     manifest.webmanifest        PWA-манифест
-    sw.js                       service worker
+    sw.js                       service worker + Web Push
     offline.html                офлайн-заглушка
     about/ news/ events/ …      17 разделов, у каждого index.php
     local/templates/nlb_bootstrap/   шаблон сайта
-    local/php_interface/        init.php + 5 хелперов
+    local/php_interface/        init.php + 6 хелперов
     db/                         миграции, конфиги, демо-контент, тесты
     docs/                       документация (14 .md)
     tools/                      гейты и служебные скрипты
@@ -97,7 +97,7 @@ local/templates/nlb_bootstrap/
     script.js           812 строк, 10 модулей + формы и слоты (8.1) + чат (4.1)
     assets/css/bootstrap.min.css        5.3.3, локально
     assets/js/bootstrap.bundle.min.js   5.3.3, локально
-    assets/js/pwa.js, consent.js
+    assets/js/pwa.js, push.js, consent.js
     assets/icons/       6 иконок
     assets/images/      163 файла (162 JPG/WebP/AVIF + аватар чата SVG)
 
@@ -121,6 +121,7 @@ local/templates/nlb_bootstrap/
     include/nlb_forms.php   формы: конфиг полей, разметка, слоты, события
     include/nlb_media.php   nlb_picture(): <picture> + srcset + WebP/AVIF
     include/nlb_seo.php     canonical, OG, Twitter, JSON-LD (Library, WebSite)
+    include/nlb_push.php    Web Push: VAPID, шифрование payload, подписки
     include/nlb_security.php  заголовки и CSP
 
 ================================================================

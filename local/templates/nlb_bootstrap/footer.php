@@ -309,6 +309,15 @@ $nlbTpl = SITE_TEMPLATE_PATH;
 <script src="<?= $nlbTpl ?>/script.js"></script>
 <script>window.NLB_PWA = { sw: '<?= $nlbSiteDir ?>sw.js', scope: '<?= $nlbSiteDir ?>' };</script>
 <script src="<?= $nlbTpl ?>/assets/js/pwa.js"></script>
+<script>
+window.NLB_PUSH = {
+    enabled: <?= function_exists('nlb_push_enabled') && nlb_push_enabled() ? 'true' : 'false' ?>,
+    publicKey: '<?= htmlspecialcharsbx(function_exists('nlb_push_public_key') ? nlb_push_public_key() : '') ?>',
+    endpoint: '<?= $nlbSiteDir ?>local/ajax/push.php',
+    sessid: '<?= htmlspecialcharsbx(function_exists('bitrix_sessid') ? bitrix_sessid() : '') ?>'
+};
+</script>
+<script src="<?= $nlbTpl ?>/assets/js/push.js"></script>
 <script src="<?= $nlbTpl ?>/assets/js/consent.js"></script>
 </body>
 </html>

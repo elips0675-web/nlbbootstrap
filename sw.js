@@ -12,7 +12,7 @@
  * При смене состава оболочки увеличьте VERSION: старый кеш удалится в activate.
  */
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL_CACHE = `nlb-shell-${VERSION}`;
 const OFFLINE_URL = 'offline.html';
 const TEMPLATE = 'local/templates/nlb_bootstrap';
@@ -25,6 +25,7 @@ const SHELL = [
     `${TEMPLATE}/assets/js/bootstrap.bundle.min.js`,
     `${TEMPLATE}/script.js`,
     `${TEMPLATE}/assets/js/pwa.js`,
+    `${TEMPLATE}/assets/js/push.js`,
     `${TEMPLATE}/assets/js/consent.js`,
     `${TEMPLATE}/assets/icons/icon-192.png`,
     `${TEMPLATE}/assets/icons/icon-512.png`,
@@ -117,4 +118,60 @@ self.addEventListener('fetch', (event) => {
     if (STATIC_RE.test(url.pathname)) {
         event.respondWith(cacheFirst(request));
     }
+});
+
+/* ------------------------------------------------------------------
+ * Web Push: уведомления о бронировании.
+ *
+ * Payload приходит от local/php_interface/include/nlb_push.php:
+ * { title, body, url, tag, icon }. Текст — уже готовые строки, шаблон
+ * их не переводит: уведомление показывает система, а не страница.
+ * ------------------------------------------------------------------ */
+
+const NOTIFICATION_ICON = `${TEMPLATE}/assets/icons/icon-192.png`;
+const NOTIFICATION_BADGE = `${TEMPLATE}/assets/icons/icon-192.png`;
+
+self.addEventListener('push', (event) => {
+    let payload = {};
+    if (event.data) {
+        try {
+            payload = event.data.json();
+        } catch (error) {
+            payload = { body: event.data.text() };
+        }
+    }
+
+    const title = payload.title || 'Библиотека 2026';
+    const options = {
+        body: payload.body || '',
+        icon: payload.icon || NOTIFICATION_ICON,
+        badge: NOTIFICATION_BADGE,
+        tag: payload.tag || 'nlb-notification',
+        renotify: true,
+        data: { url: payload.url || '/' }
+    };
+
+    event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const target = new URL(
+        (event.notification.data && event.notification.data.url) || '/',
+        self.location.origin
+    ).href;
+
+    event.waitUntil((async () => {
+        const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        for (const client of clientList) {
+            if (client.url === target && 'focus' in client) {
+                return client.focus();
+            }
+        }
+        if (self.clients.openWindow) {
+            return self.clients.openWindow(target);
+        }
+        return undefined;
+    })());
 });

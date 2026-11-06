@@ -76,6 +76,30 @@ $APPLICATION->SetPageProperty(
                         'CACHE_TIME' => '3600',
                     ], false, ['HIDE_ICONS' => 'Y']); ?>
                 </div>
+
+                <?php if ($USER->IsAdmin() && function_exists('nlb_push_enabled') && nlb_push_enabled()): ?>
+                    <div class="info-card mt-4" data-push-card>
+                        <h2 class="h5">Уведомления о брони</h2>
+                        <p class="text-muted small mb-2">
+                            Браузер сообщит о новой заявке на услугу, даже если вкладка закрыта.
+                            Подписка привязана к этому устройству.
+                        </p>
+                        <p class="small mb-3" data-push-status data-tone="muted">
+                            Проверяем состояние…
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-nlb btn-sm" data-push-enable hidden>
+                                Включить уведомления
+                            </button>
+                            <button type="button" class="btn btn-nlb-outline btn-sm" data-push-disable hidden>
+                                Выключить уведомления
+                            </button>
+                        </div>
+                        <noscript>
+                            <p class="small text-muted mb-0">Для уведомлений нужен JavaScript.</p>
+                        </noscript>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
