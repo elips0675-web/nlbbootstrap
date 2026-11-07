@@ -1,18 +1,26 @@
 # Что доделать — коротко (07.11.2026)
 
 Сводка по двум папкам. Полные списки: `Что доделать.txt` (шаблон) и
-`D:\bitrix doker\Что доделать.txt` (стенд).
+`D:\bitrix doker\Что доделать.txt` (стенд). Это снимок на дату, а не замена
+бэклогов.
 
 ## Развёртывание работает
 
 ```
-D:\nlbbootstrap-main → work/overlay-project.ps1 → D:\bitrix doker\www
+D:\nlbbootstrap-main → tools/overlay-project.ps1 → D:\bitrix doker\www
                      → php db/run.php → db/check.php
 ```
 
-Копируется белый список: 8 файлов корня и 22 каталога. Не трогаются
-`bitrix/`, `upload/`, `menu/`, `.htaccess`, `.settings.php`, `dbconn.php`,
-`nlb_push_keys.php`.
+Скрипт лежит в репозитории шаблона и принимает пути параметрами:
+
+```powershell
+powershell -File tools\overlay-project.ps1 -Destination "D:\bitrix doker\www"
+```
+
+Копируется белый список: 8 файлов корня, 22 каталога и `preview/`
+(отключается `-SkipPreview`). Не трогаются `bitrix/`, `upload/`, `.htaccess`,
+`.settings.php`, `dbconn.php`, `nlb_push_keys.php`; каталога `menu/`
+в репозитории нет, поэтому сгенерированное меню не перезаписывается.
 
 Проверено 07.11.2026: sha256 всех 109 файлов поставки совпадают; `db/run.php`
 проходит 12 шагов одной командой (exit 0); `db/check.php` — OK; `?sent=1`
@@ -26,10 +34,8 @@ D:\nlbbootstrap-main → work/overlay-project.ps1 → D:\bitrix doker\www
 - **P1:** Web Push, ротация логов, healthcheck у web, индекс поиска,
   подписка, превью, консоль и мобильные ширины, мусор установщика,
   версия PHP, восстановление `dbconn.php`.
-- Закрыть устаревшие P1-10 и P1-11 (проверено: миграции идут одной командой,
-  письма создаются сами), удалить пустой `Что доделать в nlbbootstrap.txt`.
-- Перенести `work/overlay-project.ps1` в репозиторий шаблона и убрать
-  хардкод путей `D:\nlbbootstrap-main` → `D:\bitrix doker\www`.
+- P1-10 и P1-11 закрыты 07.11.2026 (миграции идут одной командой, письма
+  создаются сами), пустой `Что доделать в nlbbootstrap.txt` удалён.
 
 ## Шаблон: D:\nlbbootstrap-main
 
@@ -42,9 +48,8 @@ D:\nlbbootstrap-main → work/overlay-project.ps1 → D:\bitrix doker\www
 - **Владелец:** P1-16/P1-20 (запись и слоты), P1-17 (оператор в чате),
   P1-15 (персона помощника), P0-5 (подписка), P0-6 (контакты), P0-7 (фото),
   P2-8 (тон подсказок), P2-9 (АБИС).
-- **Мелочь:** `local/php_interface/include/nlb_db.php:34` кеширует нулевой ID,
-  в `db/lib/helpers.php:98-101` это уже исправлено — свести к одному.
-- **`Установка.txt`** не в git: перенести полезное в `docs/installation.md`
-  или удалить.
-- Расхождение: `docs/qa-checklist.md` §F2 велит исключать `preview/`,
-  а `overlay-project.ps1` его копирует — привести к одному.
+
+Сделано 07.11.2026 (Stage 57): документация стенда и шаблона сведена с фактом
+пересборки, `overlay-project.ps1` перенесён в `tools/`, `nlb_db.php` больше
+не кеширует нулевой ID, `Установка.txt` исключён из git, файлы вне карты
+документации описаны в `docs/README.md`.

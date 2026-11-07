@@ -98,7 +98,7 @@
     Публичных страниц                         28
     Разделов с index.php в корне              17
     PHP-файлов (без preview)                  98
-    Строк PHP                                 20 354
+    Строк PHP                                 20 359
     Типов инфоблоков                          3 (nlb_content, nlb_catalog,
                                               nlb_services)
     Инфоблоков                                9 (6 контентных + requests,

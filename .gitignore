@@ -35,3 +35,6 @@ npm-debug.log*
 
 # Vercel build output (tools/vercel-build.mjs)
 public/
+
+# Черновик установки владельца: канон — docs/installation.md
+Установка.txt

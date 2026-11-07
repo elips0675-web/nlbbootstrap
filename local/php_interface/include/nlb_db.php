@@ -31,7 +31,12 @@ if (!function_exists('nlb_iblock_id')) {
             $id = (int)$row['ID'];
         }
 
-        return $cache[$code] = $id;
+        // Ноль не кешируем: инфоблок может быть создан позже в этом же запуске.
+        if ($id > 0) {
+            $cache[$code] = $id;
+        }
+
+        return $id;
     }
 }
 
