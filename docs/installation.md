@@ -370,4 +370,6 @@ php tools/push-selftest.php
 - страницы и инфоблоки — `content.md`;
 - вызовы компонентов и поиск — `bitrix-integration.md`;
 - база, миграции, откат — `../db/README.md`;
-- приёмка — `qa-checklist.md`.
+- приёмка — `qa-checklist.md`;
+- стенд с ядром в Docker: синхронизация, миграции, проверки и известные
+  дефекты — `qa-checklist.md`, раздел F.
