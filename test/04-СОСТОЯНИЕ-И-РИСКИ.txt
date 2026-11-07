@@ -11,7 +11,7 @@
                                                           (98 файлов, PHP
                                                           8.3.30 и 8.5.12)
     Конфиги БД без ядра             php db/lint.php      0 ошибок
-    Миграции на заглушках ядра      php db/tests/run.php 28 из 28
+    Миграции на заглушках ядра      php db/tests/run.php 37 из 37
     Сборка превью                   php tools/build-     106 HTML, вывод
                                     preview-pages.php    побайтово совпал
                                                          с закоммиченным

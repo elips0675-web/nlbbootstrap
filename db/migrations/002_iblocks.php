@@ -24,7 +24,11 @@ return static function (): array {
     $formIblocks = ['requests', 'bookings', 'orders'];
 
     foreach ($config['iblocks'] as $code => $iblock) {
-        if (nlb_iblock_id($code) > 0) {
+        $existingId = (int)nlb_iblock_id($code);
+        if ($existingId > 0) {
+            if (in_array($code, $formIblocks, true)) {
+                nlb_iblock_relax_code($existingId);
+            }
             $skipped++;
             $notes[] = "инфоблок {$code} уже есть";
             continue;

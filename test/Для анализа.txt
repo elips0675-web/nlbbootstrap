@@ -109,7 +109,7 @@
     Публичных страниц                         28
     Разделов с index.php в корне              17
     PHP-файлов (без preview)                  98
-    Строк PHP                                 20 309
+    Строк PHP                                 20 354
     Типов инфоблоков                          3 (nlb_content, nlb_catalog,
                                               nlb_services)
     Инфоблоков                                9 (6 контентных + requests,
@@ -311,7 +311,7 @@ local/templates/nlb_bootstrap/
     db/lib/boot.php             загрузка конфигов без ядра
     db/lib/helpers.php          создание типов, инфоблоков, свойств, элементов
     db/sql/checks.sql           проверки схемы для check.php
-    db/tests/run.php            28 проверок на заглушках ядра
+    db/tests/run.php            37 проверок на заглушках ядра
     db/tests/stub/bitrix.php    заглушка ядра (26 КБ)
     db/run.php                  накат миграций (--only, --set-template)
     db/check.php                что реально в базе (нужно ядро)
@@ -430,7 +430,7 @@ CODE/XML_ID, поэтому повторный запуск ничего не д
     php db/run.php --only=007 --set-template   привязать шаблон к сайту
     php db/check.php           что реально в базе (нужно ядро)
     php db/rollback.php        откат демо-контента
-    php db/tests/run.php       автотест на заглушках ядра (27 проверок)
+    php db/tests/run.php       автотест на заглушках ядра (37 проверок)
 
 Отдельно про существующие установки: 003 и 005 пропускают уже созданные
 свойства и элементы, поэтому для базы, залитой старой версией, добавлены
@@ -633,7 +633,7 @@ prefers-reduced-motion для анимаций появления.
                                                           (98 файлов, PHP
                                                           8.3.30 и 8.5.12)
     Конфиги БД без ядра             php db/lint.php      0 ошибок
-    Миграции на заглушках ядра      php db/tests/run.php 28 из 28
+    Миграции на заглушках ядра      php db/tests/run.php 37 из 37
     Сборка превью                   php tools/build-     106 HTML, вывод
                                     preview-pages.php    побайтово совпал
                                                          с закоммиченным
