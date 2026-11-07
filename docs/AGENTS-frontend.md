@@ -2,7 +2,7 @@
 
 ## 1. Стек
 
-- CSS: Bootstrap 5.3.3 (вендор) + `styles.css` (наш, ~1800 строк).
+- CSS: Bootstrap 5.3.3 (вендор) + `styles.css` (наш, 3 785 строк).
 - JS: `bootstrap.bundle.min.js` (вендор) + `script.js` (наш, IIFE, ES5+).
 - Без Sass, PostCSS, Tailwind, jQuery, сборщиков.
 - Целевые браузеры: последние 2 версии Chrome, Firefox, Safari, Edge; мобильные
@@ -68,6 +68,16 @@ bootstrap.min.css → styles.css
 - обработчики прокрутки — `{ passive: true }`;
 - новые модули — в конец, с комментарием-номером;
 - глобальные переменные не создавать (всё внутри IIFE);
+- блок фильтра чата (`CHAT_BLOCKED` … `chatProblem`) держать между маркерами
+  `/* nlb-chat-filter:start */` и `/* nlb-chat-filter:end */`: по ним гейт
+  паритета отделяет фильтр от остального кода; после правки списков или
+  выражений — `node tools/check-filter-parity.mjs` и
+  `php tools/filter-selftest.php`, иначе сервер и браузер разойдутся молча;
+- мгновенный поиск (раздел 7) работает только через `textContent`: заголовки
+  и сниппеты приходят из текста документов, `innerHTML` здесь — XSS; адрес
+  эндпоинта берётся из `data-search-endpoint` формы, а не собирается из
+  `action` (иначе на сайте с `SITE_DIR` запрос уйдёт в 404); после правки
+  блока — `php tools/search-selftest.php` и `node tools/check-template.mjs`;
 - для Bootstrap-плагинов — `getOrCreateInstance`, не `new`;
 - проверять `window.bootstrap` перед вызовом.
 
@@ -128,6 +138,13 @@ if (el) {
 5. Responsive: 360 / 768 / 1440.
 6. `Ctrl+K`, модалки, скроллер, FAB, «наверх», фильтры разделов.
 7. `node tools/check-template.mjs` — exit 0.
+8. Если трогали фильтр чата — `node tools/check-filter-parity.mjs` — 0 расхождений.
+9. Если трогали поиск — `php tools/search-selftest.php` и
+   `php tools/build-search-index.php --check` (индекс мог устареть).
+
+Превью поиска не показывает: в статическом демо нет PHP, мгновенная выдача
+там не работает, форма ведёт на карту сайта. Проверять поиск — на живом
+Битриксе или через `php -S` по корню репозитория с ядром.
 
 Страницы `preview/` собираются из `db/config/` командой
 `php tools/build-preview-pages.php`. Если меняли разметку главной в

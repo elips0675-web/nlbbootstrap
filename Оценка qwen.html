@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Аудит шаблона сайта библиотеки на 1С-Битрикс</title>
+<style>
+  :root {
+    --bg: #f6f8fa;
+    --card: #ffffff;
+    --text: #1f2328;
+    --muted: #656d76;
+    --border: #d0d7de;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --danger: #cf222e;
+    --danger-soft: #ffebe9;
+    --warn: #9a6700;
+    --warn-soft: #fff8c5;
+    --ok: #1a7f37;
+    --ok-soft: #dafbe1;
+    --code-bg: #f6f8fa;
+    --shadow: 0 1px 3px rgba(27,31,36,0.08);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+  }
+  .wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 24px 20px 64px;
+  }
+  header.hero {
+    background: linear-gradient(135deg, #0969da 0%, #0550ae 100%);
+    color: #fff;
+    padding: 40px 20px;
+    margin-bottom: 24px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+  header.hero h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+  }
+  header.hero .sub {
+    opacity: 0.9;
+    font-size: 15px;
+  }
+  header.hero .meta {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 13px;
+  }
+  header.hero .meta span {
+    background: rgba(255,255,255,0.15);
+    padding: 4px 10px;
+    border-radius: 999px;
+    backdrop-filter: blur(4px);
+  }
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  nav.toc h2 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+    column-gap: 24px;
+  }
+  nav.toc a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  nav.toc a:hover { text-decoration: underline; }
+  section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  section h2 {
+    margin: 0 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--accent-soft);
+    font-size: 22px;
+    color: var(--text);
+  }
+  section h3 {
+    margin: 20px 0 10px;
+    font-size: 17px;
+    color: var(--text);
+  }
+  p { margin: 0 0 12px; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+  .badge.p0 { background: var(--danger-soft); color: var(--danger); }
+  .badge.p1 { background: var(--warn-soft); color: var(--warn); }
+  .badge.p2 { background: var(--accent-soft); color: var(--accent); }
+  .badge.ok  { background: var(--ok-soft); color: var(--ok); }
+  .badge.s   { background: var(--ok-soft); color: var(--ok); }
+  .badge.m   { background: var(--warn-soft); color: var(--warn); }
+  .badge.l   { background: var(--danger-soft); color: var(--danger); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 4px;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--code-bg);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--muted);
+  }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+  tbody tr:hover { background: var(--accent-soft); }
+  code {
+    font-family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .score {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--warn);
+    line-height: 1;
+  }
+  .score small {
+    font-size: 16px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+  }
+  .callout.warn {
+    border-left-color: var(--warn);
+    background: var(--warn-soft);
+  }
+  .callout.danger {
+    border-left-color: var(--danger);
+    background: var(--danger-soft);
+  }
+  .callout.ok {
+    border-left-color: var(--ok);
+    background: var(--ok-soft);
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 720px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    nav.toc ol { columns: 1; }
+    header.hero h1 { font-size: 22px; }
+    table { font-size: 13px; }
+    th, td { padding: 8px; }
+  }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  @media print {
+    body { background: #fff; }
+    .wrap { max-width: 100%; padding: 0; }
+    section { break-inside: avoid; box-shadow: none; }
+    header.hero { background: #0969da !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>Аудит шаблона сайта библиотеки на 1С-Битрикс</h1>
+  <div class="sub">Независимое продуктовое, UX и техническое ревью по файлам проекта</div>
+  <div class="meta">
+    <span>📅 Дата: 06.11.2026</span>
+    <span>📦 Версия продукта: 0.2.0</span>
+    <span>🎯 Роль: продакт-ревьюер + UX + техлид PHP/Bitrix</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>Содержание</h2>
+  <ol>
+    <li><a href="#s1">Продуктовый аудит и готовность к проду</a></li>
+    <li><a href="#s2">UX, контент и навигация</a></li>
+    <li><a href="#s3">Технический аудит</a></li>
+    <li><a href="#s4">Бэклог и план запуска</a></li>
+    <li><a href="#s5">Вопросы владельцу продукта</a></li>
+  </ol>
+</nav>
+
+<!-- ============ 1. ПРОДУКТОВЫЙ АУДИТ ============ -->
+<section id="s1">
+  <h2>1. Продуктовый аудит и готовность к проду</h2>
+
+  <h3>1. Задача и аудитория</h3>
+  <p>Продукт решает задачу быстрого развёртывания современного, автономного сайта библиотеки на типовом хостинге с 1С-Битрикс (ред. «Старт»+) для заказчиков, у которых есть лицензия и контент-менеджер, но нет фронтенд-команды.</p>
+
+  <h3>2. Границы объёма (ожидания vs реальность)</h3>
+  <p>Заказчик может ошибочно ожидать:</p>
+  <ul>
+    <li>Онлайн-оплату и корзину — реализован только сбор заявок (<span class="badge p1">P1</span>).</li>
+    <li>Интеграцию с АБИС (формуляр, задолженности) — её нет (<span class="badge p2">P2-5</span>).</li>
+    <li>Полноценный личный кабинет с историей бронирований — сейчас это только базовый <code>bitrix:main.profile</code>.</li>
+  </ul>
+
+  <h3>3. Оценка готовности к публикации</h3>
+  <div class="grid-2">
+    <div>
+      <div class="score">6<small>/10</small></div>
+      <p style="margin-top:8px;">Кодовая база зрелая, есть миграции, превью и гейты.</p>
+    </div>
+    <div class="callout danger">
+      <strong>Блокирует запуск:</strong>
+      <ul style="margin:6px 0 0;">
+        <li>Отсутствие проверки на живом ядре Битрикс (<span class="badge p0">P0-1</span>, <span class="badge p0">P0-4</span>, <span class="badge p0">P0-5</span>).</li>
+        <li>Демо-контакты и фото без зафиксированных прав (<span class="badge p0">P0-6</span>, <span class="badge p0">P0-7</span>).</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>4. Три сильные стороны</h3>
+  <ul>
+    <li><strong>Автономность.</strong> Отсутствие CDN, jQuery и Node.js на сервере снижает риски поломки при обновлениях хостинга.</li>
+    <li><strong>Надёжность данных.</strong> 11 идемпотентных миграций на API Битрикса с заглушечными тестами (27 проверок).</li>
+    <li><strong>Демонстрация.</strong> Статическое превью (106 HTML) позволяет согласовать дизайн с заказчиком без развёртывания Битрикса.</li>
+  </ul>
+
+  <h3>5. Пять главных продуктовых рисков</h3>
+  <ol>
+    <li>Заявки сохраняются, но письма не уходят из-за ненастроенной почты (<span class="badge p0">P0-4</span>, <span class="badge p1">P1-9</span>).</li>
+    <li>Юридический риск из-за нефиксированных прав на демо-изображения (<span class="badge p0">P0-7</span>).</li>
+    <li>Клиенты звонят по несуществующим номерам из демо-контактов (<span class="badge p0">P0-6</span>).</li>
+    <li>Гонка данных при бронировании: слот может быть занят дважды при одновременной отправке (<span class="badge p1">P1-9</span>).</li>
+    <li>Расхождение документации с кодом может ввести аудитора или нового разработчика в заблуждение (раздел 6).</li>
+  </ol>
+</section>
+
+<!-- ============ 2. UX ============ -->
+<section id="s2">
+  <h2>2. UX, контент и навигация</h2>
+
+  <h3>1. Полнота навигации</h3>
+  <p>В верхнем меню (7 пунктов) не хватает ссылок на «Электронный каталог (АБИС)» и «Расписание работы филиалов», что критично для библиотек.</p>
+
+  <h3>2. Пути пользователя</h3>
+  <ul>
+    <li><strong>Забронировать услугу.</strong> Путь обрывается отсутствием подтверждения клиенту (нет SMS/email) и визуальной гарантии, что слот действительно зарезервирован.</li>
+    <li><strong>Купить сувенир.</strong> Путь требует ручного контакта после заявки, так как нет корзины и оплаты, что снижает конверсию.</li>
+  </ul>
+
+  <h3>3. Проблемы доверия</h3>
+  <p>Заглушки вместо фото (<span class="badge p1">P1-11</span>), демо-реквизиты (УНП 000000000), отсутствие явного чекбокса согласия на обработку ПД в описании модалок (хотя серверная проверка есть).</p>
+
+  <h3>4. Топ-5 правок по UX (эффект / трудозатраты)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Правка</th>
+        <th>Где</th>
+        <th>Зачем</th>
+        <th>Объём</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Заменить демо-контакты и реквизиты на реальные</td>
+        <td><code>header.php</code>, <code>footer.php</code>, <code>nlb_seo.php</code></td>
+        <td>Исключить юридические риски и потерю клиентов</td>
+        <td><span class="badge s">S</span></td>
+      </tr>
+      <tr>
+        <td>Добавить явный текст о сроках обработки заявки</td>
+        <td>Шаблоны форм (<code>iblock.element.add.form/bootstrap</code>)</td>
+        <td>Снизить тревожность пользователя и количество повторных отправок</td>
+        <td><span class="badge s">S</span></td>
+      </tr>
+      <tr>
+        <td>Добавить раздел «Электронные ресурсы» или ссылку на АБИС</td>
+        <td><code>top.menu.php</code>, подвал</td>
+        <td>Закрыть базовую потребность читателя библиотеки</td>
+        <td><span class="badge s">S</span></td>
+      </tr>
+      <tr>
+        <td>Визуализировать занятые слоты не только в JS, но и текстом</td>
+        <td><code>services/detail.php</code>, <code>script.js</code></td>
+        <td>Поддержка пользователей с отключённым JS или скринридерами</td>
+        <td><span class="badge m">M</span></td>
+      </tr>
+      <tr>
+        <td>Синхронизировать сводные цифры в README.md с кодом</td>
+        <td><code>README.md</code>, <code>project-context.md</code></td>
+        <td>Предотвратить неверные выводы при аудите</td>
+        <td><span class="badge s">S</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 3. ТЕХНИЧЕСКИЙ АУДИТ ============ -->
+<section id="s3">
+  <h2>3. Технический аудит</h2>
+
+  <h3>1. Модель данных</h3>
+  <p>9 инфоблоков и 65 свойств. Для заявок (<code>requests</code>, <code>bookings</code>, <code>orders</code>) не хватает свойств: <code>SOURCE</code> (источник/UTM), <code>CREATED_BY</code> (ответственный), <code>DATE_PROCESSED</code> (дата обработки).</p>
+
+  <h3>2. Формы</h3>
+  <p>Серверная валидация есть, но отсутствует защита от double submit на уровне сессии (только CAPTCHA). При сбое почты <code>try/catch</code> позволяет сохранить заявку, но оператор об этом не узнает (риск <span class="badge p0">P0-4</span>).</p>
+
+  <h3>3. Кеш</h3>
+  <p><code>CACHE_TIME=3600</code> для страниц с бронированием (<code>services/detail.php</code>) опасен: пользователь может увидеть свободный слот, который уже занят, но кеш ещё не обновился.</p>
+
+  <h3>4. Безопасность</h3>
+  <p>Группа 2 имеет право <code>W</code> на инфоблоки заявок. Это необходимо для анонимных форм, но создаёт риск массового спама, если CAPTCHA будет скомпрометирована или отключена. CSP настроен гибко, но может конфликтовать с внешними виджетами на боевом nginx (<span class="badge p1">P1-4</span>).</p>
+
+  <h3>5. Таблица технических замечаний</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Проблема</th>
+        <th>Файл / место</th>
+        <th>Риск</th>
+        <th>Как исправить</th>
+        <th>Объём</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Гонка слотов бронирования</td>
+        <td><code>nlb_forms.php</code> (серверная проверка)</td>
+        <td>Двойное бронирование одного времени</td>
+        <td>Добавить транзакционную блокировку или уникальность по <code>SERVICE_CODE</code> + <code>DATE</code> + <code>TIME</code></td>
+        <td><span class="badge m">M</span></td>
+      </tr>
+      <tr>
+        <td>Устаревание данных о слотах</td>
+        <td>Компоненты с <code>CACHE_TIME=3600</code></td>
+        <td>Показ неактуальных свободных мест</td>
+        <td>Отключить кеш для блока формы бронирования или уменьшить <code>CACHE_TIME</code> до 60</td>
+        <td><span class="badge s">S</span></td>
+      </tr>
+      <tr>
+        <td>Отсутствие UTM/источника заявки</td>
+        <td><code>nlb_forms.php</code>, конфиги инфоблоков</td>
+        <td>Невозможность аналитики эффективности каналов</td>
+        <td>Добавить скрытое поле <code>SOURCE</code> и сохранять <code>$_SERVER['HTTP_REFERER']</code></td>
+        <td><span class="badge s">S</span></td>
+      </tr>
+      <tr>
+        <td>Расхождение документации и кода</td>
+        <td><code>README.md</code>, <code>project-context.md</code></td>
+        <td>Ошибки оценки и аудита</td>
+        <td>Обновить цифры гейтом <code>tools/check-docs.mjs</code></td>
+        <td><span class="badge s">S</span></td>
+      </tr>
+      <tr>
+        <td>Непроверенные заголовки на проде</td>
+        <td><code>nlb_security.php</code></td>
+        <td>Дублирование или переопределение nginx</td>
+        <td>Добавить пункт в чек-лист: <code>curl -I</code> на боевом домене</td>
+        <td><span class="badge s">S</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>6. Что проверить на живом Битриксе в первую очередь (топ-7)</h3>
+  <ol>
+    <li>Открытие всех 28 страниц без белого экрана и PHP-warning (<span class="badge p0">P0-1</span>).</li>
+    <li>Реальная запись элемента в <code>requests</code>/<code>bookings</code> и срабатывание CAPTCHA (<span class="badge p0">P0-4</span>).</li>
+    <li>Отправка и получение почтовых событий <code>NLB_NEW_REQUEST</code> (<span class="badge p0">P0-4</span>).</li>
+    <li>Корректность ЧПУ (<code>urlrewrite.php</code>) и работы <code>bitrix:menu</code> типа <code>top</code> (<span class="badge p0">P0-2</span>).</li>
+    <li>Освобождение слота при смене статуса заявки на «Отменена» в админке.</li>
+    <li>Сброс кеша и мгновенное отображение правок контента (<span class="badge p1">P1-6</span>).</li>
+    <li>Работа PWA (установка, офлайн-заглушка) по HTTPS.</li>
+  </ol>
+</section>
+
+<!-- ============ 4. БЭКЛОГ ============ -->
+<section id="s4">
+  <h2>4. Бэклог и план запуска</h2>
+
+  <h3>1. Валидация P0</h3>
+  <p>Все пункты P0 действительно блокируют запуск. Перенести в P1 можно только <span class="badge p0">P0-3</span> (хлебные крошки), если шаблон <code>breadcrumb/bootstrap</code> уже визуально работает и не ломает вёрстку, но формальная проверка всё равно нужна.</p>
+
+  <h3>2. План запуска на 2 недели</h3>
+  <table>
+    <thead>
+      <tr><th>Дни</th><th>Что делаем</th><th>Покрытие бэклога</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1–3</strong></td>
+        <td>Развёртывание на staging, прогон <code>db/run.php</code>, замена контактов и фото</td>
+        <td><span class="badge p0">P0-1</span> <span class="badge p0">P0-6</span> <span class="badge p0">P0-7</span></td>
+      </tr>
+      <tr>
+        <td><strong>4–6</strong></td>
+        <td>Настройка почты, тестирование форм и отправки заявок, проверка CAPTCHA</td>
+        <td><span class="badge p0">P0-4</span> <span class="badge p0">P0-5</span></td>
+      </tr>
+      <tr>
+        <td><strong>7–8</strong></td>
+        <td>Проверка ЧПУ, меню, крошек, пагинации и кеша</td>
+        <td><span class="badge p0">P0-2</span> <span class="badge p0">P0-3</span> <span class="badge p1">P1-6</span></td>
+      </tr>
+      <tr>
+        <td><strong>9–10</strong></td>
+        <td>Проверка заголовков безопасности (<code>curl -I</code>), PWA на HTTPS, мобильная вёрстка</td>
+        <td><span class="badge p1">P1-4</span> + чек-лист п. 9–12</td>
+      </tr>
+      <tr>
+        <td><strong>11–14</strong></td>
+        <td>Финальный регресс, обновление документации, перенос на прод</td>
+        <td><span class="badge p1">P1-13</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>3. Топ-3 пункта бэклога (максимальный эффект за минимальное время)</h3>
+  <div class="grid-2">
+    <div class="callout ok">
+      <strong><span class="badge p0">P0-6</span> / <span class="badge p0">P0-7</span></strong><br>
+      Замена демо-данных и фото. Устраняет главные юридические и репутационные риски.
+    </div>
+    <div class="callout ok">
+      <strong><span class="badge p1">P1-13</span></strong><br>
+      Синхронизация документации. Предотвращает путаницу при передаче проекта.
+    </div>
+  </div>
+  <div class="callout warn" style="margin-top:12px;">
+    <strong><span class="badge p1">P1-8</span></strong> — проверка форм без JS. Критично для доступности и отказоустойчивости.
+  </div>
+</section>
+
+<!-- ============ 5. ВОПРОСЫ ВЛАДЕЛЬЦУ ============ -->
+<section id="s5">
+  <h2>5. Вопросы владельцу продукта (до старта работ)</h2>
+  <ol>
+    <li>Когда будут предоставлены <strong>реальные контакты, реквизиты и лицензированные фотографии</strong> для замены демо-данных (<span class="badge p0">P0-6</span>, <span class="badge p0">P0-7</span>)?</li>
+    <li>Подтверждено ли, что на целевом хостинге уже развёрнут 1С-Битрикс (ред. «Старт»+) и настроена отправка почты (SMTP), необходимая для приёмки <span class="badge p0">P0-1</span> и <span class="badge p0">P0-4</span>?</li>
+    <li>Осознаёт ли заказчик, что «Заказ сувенира» и «Бронь услуги» сейчас работают <strong>только как заявки без онлайн-оплаты и проверки остатков</strong>, и не требуется ли это в первом релизе?</li>
+  </ol>
+
+  <div class="callout" style="margin-top:20px;">
+    <strong>Примечание.</strong> Оценка строго ограничена предоставленным текстом. Любые функции, пути или цифры, не упомянутые в файлах проекта, не использовались.
+  </div>
+</section>
+
+<footer>
+  Отчёт сформирован на основе файлов: 01-ПРОДУКТ · 04-СОСТОЯНИЕ-И-РИСКИ · 05-ПРОМТЫ-ДЛЯ-АНАЛИЗА · «Для анализа»<br>
+  Дата среза продукта: 04.11.2026 · Версия 0.2.0
+</footer>
+
+</div>
+</body>
+</html>

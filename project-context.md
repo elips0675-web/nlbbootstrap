@@ -19,12 +19,12 @@ Lovable-проекта `../src/` (React 18 + Tailwind 3 + shadcn/ui) на сер
 | Язык шаблона | PHP | 8.0+ |
 | CSS-фреймворк | Bootstrap | 5.3.3, `assets/css/bootstrap.min.css` |
 | JS-фреймворк | Bootstrap bundle (Popper внутри) | 5.3.3, `assets/js/bootstrap.bundle.min.js` |
-| Свой CSS | CSS3 + custom properties | `styles.css`, ~1800 строк |
+| Свой CSS | CSS3 + custom properties | `styles.css`, 3 785 строк |
 | Свой JS | ES5-совместимый vanilla, IIFE | `script.js`, 10 модулей + `pwa.js`, `consent.js` |
-| Шрифт | системный стек (`Manrope` — если установлен) | `styles.css:53`, внешних запросов нет |
+| Шрифт | системный стек (`Manrope` — если установлен) | `styles.css:55`, внешних запросов нет |
 | Иконки | inline SVG `<symbol>` | спрайт в `header.php`, копия в `preview/index.html` |
 | Изображения | JPG + WebP/AVIF, ширины 480/960/1280, `<picture>` и `srcset` | `assets/images/`, 20 исходников |
-| Данные | миграции на API Битрикса | `db/`, 6 инфоблоков, 48 элементов |
+| Данные | миграции на API Битрикса | `db/`, 9 инфоблоков, 91 элемент |
 | SEO | свои хелперы | `local/php_interface/include/nlb_seo.php` |
 | Безопасность | заголовки + CSP из PHP | `local/php_interface/include/nlb_security.php` |
 | PWA | manifest + service worker | `manifest.webmanifest`, `sw.js`, `offline.html` |
@@ -82,7 +82,7 @@ Lovable-проекта `../src/` (React 18 + Tailwind 3 + shadcn/ui) на сер
 | Надзаголовок | 0.8125rem | 700 | `.eyebrow` |
 | Подпись логотипа | 0.6875rem, uppercase, tracking .14em | 600 | `.brand-tag` |
 
-Семейство: `"Manrope", "Inter", "Segoe UI", system-ui, ...` (`styles.css:53`).
+Семейство: `"Manrope", "Inter", "Segoe UI", system-ui, ...` (`styles.css:55`).
 
 ## 5. Сетка и брейкпоинты
 
@@ -97,7 +97,7 @@ Lovable-проекта `../src/` (React 18 + Tailwind 3 + shadcn/ui) на сер
 
 Контейнер — стандартный `.container` Bootstrap (max-width 1320px на xl).
 Секции — `.section` (`padding: 5.5rem 0`), на мобильных 3.25rem
-(`styles.css:144`, адаптив в конце файла).
+(`styles.css:146`, адаптив в конце файла).
 
 ## 6. Карта секций главной
 
@@ -115,30 +115,30 @@ Lovable-проекта `../src/` (React 18 + Tailwind 3 + shadcn/ui) на сер
 | 8 | Подвал | `#contacts` | `.site-footer` | статика + настройки |
 
 Внутренние страницы: `page-head` + хлебные крошки + `.bitrix-content`
-(стили для контента визуального редактора, `styles.css:1570`).
+(стили для контента визуального редактора, `styles.css:2435`).
 
 ## 7. Точки интеграции с Битриксом
 
 | Что | Где вызывается | Компонент / шаблон |
 |---|---|---|
-| Меню | `header.php:135` | `bitrix:menu` → `top_bootstrap`, тип `top` |
-| Хлебные крошки | `header.php:217` | `bitrix:breadcrumb` → `bootstrap` |
+| Меню | `header.php:144` | `bitrix:menu` → `top_bootstrap`, тип `top` |
+| Хлебные крошки | `header.php:228` | `bitrix:breadcrumb` → `bootstrap` |
 | Заголовок страницы | `header.php:26` | `$APPLICATION->ShowTitle()` |
 | Мета/CSS/JS ядра | `header.php:25` | `$APPLICATION->ShowHead()` |
 | SEO и JSON-LD | `header.php:29–30` | `nlb_seo_head()`, `nlb_seo_jsonld()` |
 | Панель редактирования | `header.php:47` | `$APPLICATION->ShowPanel()` |
-| Поиск | `header.php:190` | форма `GET /search/?q=` → `bitrix:search.page` |
-| Личный кабинет | `header.php:159–174` | `/personal/`, `/auth/` |
+| Поиск | `header.php:191` | модалка `#searchModal`, форма на `:199` → `GET /search/?q=`; мгновенная выдача — `local/ajax/search.php` (BM25) |
+| Личный кабинет | `header.php:162–178` | `/personal/`, `/auth/` |
 | Подписка | `footer.php:92` | `/subscribe/` → `bitrix:subscribe.form` |
-| Обратная связь | `footer.php:227` | модалка → POST `/feedback/` → `requests` |
-| Реквизиты | `footer.php:260` | модалка, статика |
-| Скрипты | `footer.php:285–289` | bundle, `script.js`, `pwa.js`, `consent.js` |
+| Обратная связь | `footer.php:250` | модалка `#feedbackModal` → POST `/feedback/` → `requests` |
+| Реквизиты | `footer.php:283` | модалка `#requisitesModal`, статика |
+| Скрипты | `footer.php:308–321` | bundle, `script.js`, `pwa.js`, `push.js`, `consent.js` |
 
 ## 8. Ограничения
 
 - **Нет живой установки.** Ядра и лицензии Битрикса на машине разработки нет,
   поэтому интеграционные вещи не проверены (см. `Что доделать.txt`, P0).
-  Синтаксис всех 64 PHP-файлов проверен `php -l` — 0 ошибок.
+  Синтаксис всех 97 PHP-файлов (вне `preview/`) проверен `php -l` — 0 ошибок.
 - **Демо-контент.** Все тексты, контакты, цены, события и фото — заглушки.
 - **Один шаблон.** Мультисайтовость не настроена; `SITE_DIR`/`SITE_ID`
   используются, но второй сайт не тестировался.
@@ -148,7 +148,9 @@ Lovable-проекта `../src/` (React 18 + Tailwind 3 + shadcn/ui) на сер
   AVIF и ширины 480/960/1280, вывод — через `nlb_picture()`. Варианты собирает
   `php tools/build-image-variants.php` (GD с `imagewebp`/`imageavif`).
 - **Без CI.** Гейты локальные: `node tools/check-template.mjs`,
-  `node tools/check-docs.mjs`, `php db/lint.php`, `php db/tests/run.php`.
+  `node tools/check-docs.mjs`, `node tools/check-filter-parity.mjs`,
+  `php db/lint.php`, `php db/tests/run.php`, `php tools/filter-selftest.php`,
+  `php tools/search-selftest.php`, `php tools/build-search-index.php --check`.
 
 ## 9. Соглашения
 

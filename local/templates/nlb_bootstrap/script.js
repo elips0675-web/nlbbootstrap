@@ -961,19 +961,24 @@
             if (chat.classList.contains('is-open')) chatInput.focus();
         }
 
+        /* nlb-chat-filter:start */
         const CHAT_BLOCKED = [
-            'хуй', 'хуи', 'хуе', 'хуя', 'хую', 'пизд', 'ебан', 'ебал', 'ебл', 'бля',
-            'сука', 'залуп', 'уеб', 'пидор', 'гандон', 'шлюх', 'мраз', 'дебил',
+            'хуй', 'хуи', 'хуе', 'хуя', 'хую', 'пизд', 'ебат', 'ебан', 'ебал', 'ебл', 'ебуч', 'бля',
+            'сука', 'суки', 'суке', 'суку', 'сукой', 'сучар', 'залуп', 'уеб', 'пидор', 'гандон', 'шлюх', 'мраз', 'дебил',
             'кретин', 'идиот', 'дурак', 'дура', 'чмо', 'урод', 'говн', 'дерьм',
             'жоп', 'сран', 'срак', 'жидок', 'жиды', 'жидов',
+            'мудак', 'мудил', 'придур', 'сдохн', 'заткн', 'туп', 'долбое',
+            'пошел ты', 'пошла ты',
             'fuck', 'shit', 'bitch', 'cunt', 'asshole', 'dick', 'bastard', 'slut',
-            'whore', 'nigger'
+            'whore', 'nigger', 'idiot', 'stupid', 'moron', 'loser', 'shut up', 'hate you'
         ];
+
+        const CHAT_NEUTRAL = /дурацк[а-я]*|дурачеств[а-я]*|идиотск[а-я]*/g;
 
         const CHAT_SENSITIVE = [
             'убий', 'убить', 'убил', 'убью', 'убива', 'насил', 'террор', 'экстрем',
             'взорв', 'взрыв', 'расправ', 'оружи', 'нарко', 'порно', 'секс',
-            'проститут', 'kill', 'murder', 'terror', 'violen', 'weapon', 'drug', 'porn'
+            'проститут', 'ненавиж', 'kill', 'murder', 'terror', 'violen', 'weapon', 'drug', 'porn'
         ];
 
         const CHAT_SPAM = [
@@ -990,7 +995,8 @@
 
         const chatHit = function (value, roots) {
             for (let i = 0; i < roots.length; i++) {
-                if (value.indexOf(roots[i]) !== -1) return true;
+                const root = roots[i];
+                if (new RegExp('(^|[^a-zа-я])' + root).test(value)) return true;
             }
             return false;
         };
@@ -1035,18 +1041,21 @@
         };
 
         const chatProblem = function (text) {
-            const value = String(text || '').toLowerCase().replace(/ё/g, 'е');
+            const value = String(text || '').toLowerCase().replace(/ё/g, 'е').replace(CHAT_NEUTRAL, ' ');
             const study = CHAT_STUDY.test(value);
 
             if (chatHit(value, CHAT_BLOCKED) || chatHit(value, CHAT_SPAM)) return 'rude';
             if (!study && chatHit(value, CHAT_SENSITIVE)) return 'rude';
 
-            const links = value.split('nlb.by').join('').split('example.by').join('');
+            const links = value
+                .split('www.nlb.by').join('').split('www.example.by').join('')
+                .split('nlb.by').join('').split('example.by').join('');
             if (CHAT_LINK.test(links)) return 'spam';
 
-            if (chatGibberish(value)) return 'gibberish';
+            if (chatGibberish(links)) return 'gibberish';
             return '';
         };
+        /* nlb-chat-filter:end */
 
         const CHAT_ERRORS = {
             rude: 'Давайте без грубостей, рекламы и подозрительных предложений. Напишите вопрос спокойно — помогу с книгами, залами, печатью и афишей.',
@@ -1250,7 +1259,10 @@
     }
 
     /* ------------------------------------------------------------------
-     * 7. Автофокус в модальном поиске
+     * 7. Мгновенный поиск и автофокус в модальном окне
+     *    Список под полем — прогрессивное улучшение: без него форма
+     *    отправляется в /search/ как обычно, поэтому отказ эндпоинта
+     *    (503 index_unavailable) ничего не ломает.
      * ------------------------------------------------------------------ */
     const searchModal = doc.getElementById('searchModal');
     if (searchModal) {
@@ -1258,6 +1270,98 @@
             const input = searchModal.querySelector('input[type="search"]');
             if (input) input.focus();
         });
+
+        const searchForm = searchModal.querySelector('form[role="search"]');
+        const searchField = searchModal.querySelector('input[type="search"]');
+        const searchInstant = searchModal.querySelector('#nlbSearchInstant');
+
+        if (searchForm && searchField && searchInstant) {
+            const searchEndpoint = String(
+                searchForm.getAttribute('data-search-endpoint') || '/local/ajax/search.php'
+            );
+            let searchTimer = 0;
+            let searchAbort = null;
+
+            const clearInstant = function () {
+                searchInstant.textContent = '';
+                searchInstant.hidden = true;
+            };
+
+            const renderInstant = function (items) {
+                searchInstant.textContent = '';
+                if (!items.length) {
+                    clearInstant();
+                    return;
+                }
+
+                items.forEach(function (item) {
+                    const link = doc.createElement('a');
+                    link.className = 'search-instant__item';
+                    link.href = String(item.url || '#');
+
+                    const title = doc.createElement('span');
+                    title.className = 'search-instant__title';
+                    title.textContent = String(item.title || '');
+                    link.appendChild(title);
+
+                    if (item.snippet) {
+                        const snippet = doc.createElement('span');
+                        snippet.className = 'search-instant__snippet';
+                        snippet.textContent = String(item.snippet);
+                        link.appendChild(snippet);
+                    }
+
+                    searchInstant.appendChild(link);
+                });
+
+                searchInstant.hidden = false;
+            };
+
+            const runInstant = function () {
+                const value = String(searchField.value || '').trim();
+                if (value.length < 2) {
+                    clearInstant();
+                    return;
+                }
+
+                if (searchAbort) searchAbort.abort();
+                const controller = typeof AbortController === 'function' ? new AbortController() : null;
+                searchAbort = controller;
+
+                const url = searchEndpoint + '?q=' + encodeURIComponent(value) + '&limit=5';
+                const options = { headers: { Accept: 'application/json' } };
+                if (controller) options.signal = controller.signal;
+
+                fetch(url, options)
+                    .then(function (response) {
+                        return response.ok ? response.json() : null;
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            clearInstant();
+                            return;
+                        }
+                        renderInstant(Array.isArray(data.results) ? data.results : []);
+                    })
+                    .catch(function () {
+                        if (controller && controller.signal.aborted) return;
+                        clearInstant();
+                    });
+            };
+
+            searchField.addEventListener('input', function () {
+                window.clearTimeout(searchTimer);
+                searchTimer = window.setTimeout(runInstant, 250);
+            });
+
+            searchField.addEventListener('search', clearInstant);
+
+            searchModal.addEventListener('hidden.bs.modal', function () {
+                window.clearTimeout(searchTimer);
+                if (searchAbort) searchAbort.abort();
+                clearInstant();
+            });
+        }
     }
 
     /* ------------------------------------------------------------------

@@ -45,19 +45,18 @@ GET /news/
 
 ## 2. header.php
 
-Слои сверху вниз:
+Слои сверху вниз (по порядку в файле, без номеров строк — они устаревают на
+каждой правке, искать по селекторам и вызовам):
 
-| Строки | Что |
-|---|---|
-| 1–16 | защита от прямого вызова, `$nlbSiteDir`, `$nlbTpl`, `$nlbAuthorized` |
-| 18–31 | `<head>`: meta, preconnect, Manrope, `ShowHead()`, `<title>` |
-| 33–35 | `ShowPanel()`, открытие `<body>` |
-| 39–77 | inline SVG-спрайт: 37 символов `#i-*` |
-| 80–102 | `.topbar`: адрес, часы, телефон, e-mail (только ≥ lg) |
-| 104–168 | navbar: логотип, бургер, меню, поиск, уведомления, кабинет |
-| 170–200 | модалка поиска `#searchModal` |
-| 202–215 | контейнер хлебных крошек (не на главной) |
-| 217 | открытие `<main>` |
+- защита от прямого вызова, `$nlbSiteDir`, `$nlbTpl`, `$nlbAuthorized`;
+- `<head>`: meta, preconnect, Manrope, `ShowHead()`, `<title>`;
+- `ShowPanel()` и открытие `<body>`;
+- inline SVG-спрайт: 37 символов `#i-*`;
+- `.site-header` и `.topbar`: адрес, часы, телефон, e-mail (только ≥ lg);
+- navbar: логотип, бургер, меню, поиск, уведомления, кабинет;
+- модалка поиска `#searchModal` с формой `role="search"`;
+- контейнер хлебных крошек `.page-head` (не на главной);
+- открытие `<main class="site-main" id="main">`.
 
 Важные переменные:
 
@@ -74,16 +73,19 @@ GET /news/
 
 ## 3. footer.php
 
-| Строки | Что |
-|---|---|
-| 1–16 | закрытие `<main>`, защита, переменные |
-| 18–115 | подвал: бренд, соцсети, 2 колонки ссылок, контакты, подписка |
-| 105–112 | нижняя строка: копирайт, политика, условия, карта сайта |
-| 117–143 | FAB: Telegram, WhatsApp, звонок, e-mail, обратная связь |
-| 145–147 | кнопка «наверх» |
-| 149–188 | модалка обратной связи `#feedbackModal` (`nlb_form_render('request')`) |
-| 190–213 | модалка реквизитов `#requisitesModal` |
-| 215–216 | `bootstrap.bundle.min.js` + `script.js` |
+Слои сверху вниз (по порядку в файле, без номеров строк):
+
+- закрытие `<main>`, защита от прямого вызова, переменные;
+- `.site-footer`: бренд, соцсети, колонки ссылок, контакты, подписка
+  (`bitrix:subscribe.form`);
+- `.footer-bottom`: копирайт, политика, условия, карта сайта, настройки cookie;
+- `.site-notices`: баннеры cookie и PWA;
+- FAB `#nlbFab`: Telegram, WhatsApp, звонок, e-mail, обратная связь;
+- кнопка «наверх» `.to-top`;
+- модалка обратной связи `#feedbackModal` (`nlb_form_render('request')`);
+- модалка реквизитов `#requisitesModal`;
+- скрипты: `bootstrap.bundle.min.js`, `script.js`, `pwa.js`, `push.js`,
+  `consent.js`.
 
 Скрипты подключаются в конце `<body>`, без `defer`: bundle нужен до
 `script.js`, а оба файла локальные и лёгкие. `script.js` сам проверяет наличие
@@ -134,7 +136,7 @@ GET /news/
 | 8 | Валидация форм | `form.needs-validation` | 153–163 |
 | 9 | Ctrl+K | `keydown`, `#searchModal` | 166–175 |
 
-В конце на `<html>` добавляется класс `js` (`script.js:931`) — это позволяет
+В конце на `<html>` добавляется класс `js` (`script.js:1512`) — это позволяет
 в будущем скрывать анимации при отключённом JS.
 
 ## 6. Компонентные шаблоны
@@ -146,7 +148,7 @@ GET /news/
 - `setFrameMode(true)` — режим компонента, чтобы правки в админке применялись к
   фрагменту;
 - если `$arResult` пуст — подставляется демо-меню из 7 пунктов с демо-подпунктами
-  для «Услуг» и «Печати» (`template.php:16`), чтобы сайт не остался без
+  для «Услуг» и «Печати» (`components/bitrix/menu/top_bootstrap/template.php:46`), чтобы сайт не остался без
   навигации до создания типа `top`;
 - `$arResult` приходит плоским списком (`DEPTH_LEVEL`): шаблон собирает из него
   дерево и пункты с детьми рисует как `.nav-item.dropdown` с
@@ -155,7 +157,7 @@ GET /news/
   выбран дочерний пункт, подсвечивается и родитель;
 - ссылка и текст экранируются: `htmlspecialcharsbx()`.
 
-Вызов — `header.php:139`:
+Вызов — `header.php:144`:
 
 ```php
 $APPLICATION->IncludeComponent('bitrix:menu', 'top_bootstrap', [
@@ -182,9 +184,48 @@ $APPLICATION->IncludeComponent('bitrix:menu', 'top_bootstrap', [
 - выводит `<nav aria-label="Хлебные крошки"><ol class="breadcrumb-navigation">`;
 - последний элемент без ссылки получает `aria-current="page"`;
 - пустой `$arResult` → компонент ничего не рисует;
-- вызов — `header.php:204`, только если `GetCurPage(false) !== SITE_DIR`.
+- вызов — `header.php:228`, только если `GetCurPage(false) !== SITE_DIR`.
 
-## 7. Демо-лендинг и превью
+## 7. Серверный слой
+
+Ядро подключает `local/php_interface/init.php` до вывода страницы. Порядок
+включений важен: сначала заголовки, потом хелперы, которые используют шаблон
+и страницы.
+
+| Файл (`local/php_interface/include/`) | Назначение |
+|---|---|
+| `nlb_security.php` | заголовки безопасности и CSP; вызов `nlb_security_headers()` из `init.php` |
+| `nlb_db.php` | чтение инфоблоков: поиск по коду, количество элементов, классы оформления |
+| `nlb_forms.php` | три формы заявок (`request` → `requests`, `booking` → `bookings`, `order` → `orders`), разметка `nlb_form_render()`, проверка слота и письмо |
+| `nlb_push.php` | Web Push (VAPID): ключи, подписки браузеров, отправка уведомлений о брони |
+| `nlb_media.php` | адаптивные изображения: `<picture>`, WebP/AVIF, `srcset` |
+| `nlb_seo.php` | canonical, Open Graph, Twitter Card, robots, JSON-LD |
+| `nlb_search.php` | индекс и ранжирование BM25 для мгновенной выдачи |
+| `nlb_text_filter.php` | серверный фильтр сообщений чата, паритет с браузерным |
+
+`nlb_search.php` и `nlb_text_filter.php` не входят в `init.php`: их подключают
+только те точки входа, которым они нужны (`local/ajax/search.php` и
+`local/ajax/chat.php`), чтобы не грузить BM25 и списки фраз на каждой странице.
+
+Обработчики событий ядра регистрирует `nlb_forms.php`:
+
+- `OnBeforeIBlockElementAdd` → `nlb_forms_before_add()` — согласие на обработку
+  ПД, дата не в прошлом, слот не занят (проверка на сервере, не в JS);
+- `OnAfterIBlockElementAdd` → `nlb_forms_after_add()` — письмо о новой заявке.
+
+AJAX-точки входа `local/ajax/` отвечают только JSON и не рендерят HTML:
+
+| Файл | Запрос | Ответ |
+|---|---|---|
+| `search.php` | `GET q=… [limit=1..10]` | `{ ok, query, count, results[] }`, 400/405/503 |
+| `chat.php` | `POST message=… [sessid]` | `{ ok, verdict }`, 400/403/405/413/422/503 |
+| `push.php` | `POST action=subscribe|unsubscribe` | `{ ok, … }` |
+
+Клиентские скрипты сверх `script.js` подключаются в подвале: `pwa.js`
+(service worker, офлайн-страница), `push.js` (подписка на Web Push),
+`consent.js` (баннер cookie). Все три — vanilla, без сборки.
+
+## 8. Демо-лендинг и превью
 
 | Файл | Что это | Зачем |
 |---|---|---|
@@ -207,7 +248,7 @@ $APPLICATION->IncludeComponent('bitrix:menu', 'top_bootstrap', [
 разделов (`/services/`, `/news/`, `/events/`, `/printing/`, `/books/`,
 `/collections/`, `/contacts/`, `/subscribe/`).
 
-## 8. Зависимости
+## 9. Зависимости
 
 ```
 Bootstrap CSS ─┐

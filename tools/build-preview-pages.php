@@ -289,6 +289,7 @@ function rewrite_home_links(string $html): string
         'class="event-btn" href="#contacts"' => 'class="event-btn" href="events/"',
         'href="#contacts">Подписаться на рассылку<' => 'href="subscribe/">Подписаться на рассылку<',
         'action="#contacts"' => 'action="feedback/"',
+        'action="#contacts" method="get" role="search"' => 'action="sitemap/" method="get" role="search"',
         'href="#top"' => 'href="./"',
         'href="#news">Все события<' => 'href="events/">Все мероприятия<',
         'href="news/">Все события<' => 'href="events/">Все мероприятия<',

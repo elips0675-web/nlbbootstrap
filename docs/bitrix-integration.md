@@ -12,7 +12,7 @@
 
 ## 1. Меню
 
-Уже подключено в `header.php:139`. Менять состав — в админке (**Структура
+Уже подключено в `header.php:144`. Менять состав — в админке (**Структура
 сайта → Меню**), а не в коде.
 
 Второй уровень включён: `MAX_LEVEL => '2'`, `CHILD_MENU_TYPE => 'left'`.
@@ -37,13 +37,13 @@ $APPLICATION->IncludeComponent('bitrix:menu', 'top_bootstrap', [
 Шаблон `top_bootstrap` выводит `<ul class="navbar-nav mx-auto">` — для подвала
 это визуально не подходит. Либо сделайте второй шаблон компонента
 (`menu/bottom_links/template.php`) с классом `footer-links`, либо оставьте
-подвал статическим (как сейчас, `footer.php:45`).
+подвал статическим (как сейчас, `footer.php:51`).
 
 ---
 
 ## 2. Хлебные крошки
 
-Уже подключены в `header.php:204`:
+Уже подключены в `header.php:228`:
 
 ```php
 $APPLICATION->IncludeComponent('bitrix:breadcrumb', 'bootstrap', [
@@ -120,7 +120,7 @@ $APPLICATION->IncludeComponent('bitrix:news.detail', 'article', [
 ```
 
 В шаблоне `article` детальный текст оборачивается в `.bitrix-content` — тогда
-работают стили абзацев, списков, цитат и картинок (`styles.css:1570`).
+работают стили абзацев, списков, цитат и картинок (`styles.css:2435`).
 
 ---
 
@@ -411,7 +411,7 @@ $APPLICATION->IncludeComponent('bitrix:subscribe.edit', '', [
 
 ## 10. Поиск
 
-Модалка поиска (`header.php:170`) отправляет `GET /search/?q=…`.
+Модалка поиска (`header.php:191`) отправляет `GET /search/?q=…`.
 
 Страница `/search/index.php`:
 
@@ -450,7 +450,7 @@ $APPLICATION->IncludeComponent('bitrix:search.page', '', [
 
 ## 11. Авторизация и личный кабинет
 
-Ссылки шаблона ведут на `/auth/` и `/personal/` (`header.php:150`).
+Ссылки шаблона ведут на `/auth/` и `/personal/` (`header.php:168`, `:175`).
 
 `/auth/index.php`:
 

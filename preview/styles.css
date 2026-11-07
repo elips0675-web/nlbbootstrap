@@ -1495,6 +1495,41 @@ img {
     color: var(--nlb-primary-dark);
 }
 
+.search-instant {
+    margin-bottom: 1rem;
+    border: 1px solid var(--nlb-line);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.search-instant__item {
+    display: block;
+    padding: 0.65rem 1rem;
+    border-top: 1px solid var(--nlb-line);
+    color: inherit;
+    text-decoration: none;
+}
+
+.search-instant__item:first-child {
+    border-top: 0;
+}
+
+.search-instant__item:hover,
+.search-instant__item:focus-visible {
+    background: var(--nlb-soft-2);
+}
+
+.search-instant__title {
+    display: block;
+    font-weight: 600;
+}
+
+.search-instant__snippet {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--nlb-muted);
+}
+
 .fab {
     position: fixed;
     right: 1.25rem;

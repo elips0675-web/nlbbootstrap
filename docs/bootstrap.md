@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/local/templates/nlb_bootstrap/styles.css">
 ```
 
-Скрипты — в `footer.php:285`:
+Скрипты — в `footer.php:308`:
 
 ```html
 <script src="/local/templates/nlb_bootstrap/assets/js/bootstrap.bundle.min.js"></script>
@@ -36,7 +36,7 @@
 |---|---|---|
 | Grid | все секции | `container`, `row`, `col-*`, `g-*` |
 | Utilities | разметка | `d-flex`, `gap-*`, `text-center`, `mb-*`, `w-100` |
-| Navbar | `header.php:104` | `navbar`, `navbar-expand-lg`, `collapse` |
+| Navbar | `header.php:125` | `navbar`, `navbar-expand-lg`, `collapse` |
 | Carousel | hero | `carousel`, `carousel-fade`, `data-bs-ride` |
 | Modal | поиск, обратная связь, реквизиты | `modal`, `modal-dialog`, `data-bs-toggle` |
 | Collapse | мобильное меню | через navbar-toggler |
@@ -77,13 +77,13 @@ Bootstrap остаётся базой, но несколько компонен�
 
 | Компонент | Переопределение | Строка |
 |---|---|---|
-| `.btn` | скругление 999px, вес 700, паддинги | `styles.css:201` |
-| `.form-control`, `.form-select` | радиус `--nlb-radius-sm`, бордер `--nlb-line` | `styles.css:303` |
-| `.modal-content` | радиус 1.5rem, тень | `styles.css:329` |
-| `.navbar` | свои паддинги, прозрачный фон | `styles.css:397` |
-| `.nav-link` | свои паддинги, hover-фон | `styles.css:452` |
-| `.carousel-indicators` | круглые точки, зелёный активный | `styles.css:607` |
-| `.breadcrumb` | **не используется** — своя разметка `.breadcrumb-navigation` | `styles.css:1535` |
+| `.btn` | скругление 999px, вес 700, паддинги | `styles.css:203` |
+| `.form-control`, `.form-select` | радиус `--nlb-radius-sm`, бордер `--nlb-line` | `styles.css:305` |
+| `.modal-content` | радиус 1.5rem, тень | `styles.css:331` |
+| `.navbar` | свои паддинги, прозрачный фон | `styles.css:413` |
+| `.nav-link` | свои паддинги, hover-фон | `styles.css:468` |
+| `.carousel-indicators` | круглые точки, зелёный активный | `styles.css:664` |
+| `.breadcrumb` | **не используется** — своя разметка `.breadcrumb-navigation` | `styles.css:2400` |
 
 Важно: `.breadcrumb` Bootstrap не применяется, потому что компонент
 `bitrix:breadcrumb` выводит свой `<ol class="breadcrumb-navigation">`.
@@ -123,9 +123,9 @@ Bootstrap 5 сам инициализирует всё по `data-bs-*`. Сво�
 | Плагин | Инициализация | Наш код |
 |---|---|---|
 | Carousel | `data-bs-ride="carousel"` на `.carousel` | не нужен |
-| Collapse (navbar) | `data-bs-toggle="collapse" data-bs-target="#nlbNav"` | закрытие после клика (`script.js:770`) |
-| Modal | `data-bs-toggle="modal" data-bs-target="#searchModal"` | автофокус (`script.js:780`), Ctrl+K (`script.js:900`) |
-| Validation | класс `needs-validation` | обработчик submit (`script.js:789`) |
+| Collapse (navbar) | `data-bs-toggle="collapse" data-bs-target="#nlbNav"` | закрытие после клика (`script.js:1256`) |
+| Modal | `data-bs-toggle="modal" data-bs-target="#searchModal"` | автофокус (`script.js:1269`), Ctrl+K (`script.js:1481`) |
+| Validation | класс `needs-validation` | обработчик submit (`script.js:1370`) |
 
 Программный вызов — только через `getOrCreateInstance`, не `new bootstrap.Modal(...)`:
 
@@ -187,9 +187,9 @@ bootstrap.Collapse.getOrCreateInstance(document.getElementById('nlbNav')).hide()
   `script.js:93`;
 - `visually-hidden` для текста, который нужен скринридеру, но не виден
   (подписи слайдов);
-- `:focus-visible` задан глобально (`styles.css:82`), не убирайте его;
+- `:focus-visible` задан глобально (`styles.css:84`), не убирайте его;
 - `prefers-reduced-motion` отключает reveal и плавный скролл
-  (`styles.css:2070`).
+  (`styles.css:2485`).
 
 ## 10. Обновление Bootstrap
 

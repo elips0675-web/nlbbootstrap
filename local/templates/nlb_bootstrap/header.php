@@ -196,13 +196,15 @@ $nlbAuthorized = $USER->IsAuthorized();
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-                <form action="<?= $nlbSiteDir ?>search/" method="get" role="search">
+                <form action="<?= $nlbSiteDir ?>search/" method="get" role="search"
+                      data-search-endpoint="<?= $nlbSiteDir ?>local/ajax/search.php">
                     <label class="visually-hidden" for="nlbSearchInput">Поисковый запрос</label>
                     <div class="search-field mb-3">
                         <svg class="i i-24" aria-hidden="true"><use href="#i-search"/></svg>
                         <input class="form-control" id="nlbSearchInput" type="search" name="q"
                                placeholder="Сувениры, события, услуги…" autocomplete="off">
                     </div>
+                    <div class="search-instant" id="nlbSearchInstant" aria-live="polite" hidden></div>
                     <div class="d-flex flex-wrap gap-2 mb-3" aria-label="Популярные запросы">
                         <a class="search-chip" href="<?= $nlbSiteDir ?>search/?q=сувенир">Сувениры</a>
                         <a class="search-chip" href="<?= $nlbSiteDir ?>search/?q=набор">Подарочные наборы</a>

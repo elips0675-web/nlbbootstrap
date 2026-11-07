@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Аудит документации NLB Bootstrap — что документация говорит неверно</title>
+<style>
+  :root {
+    --bg: #f6f8fa;
+    --card: #ffffff;
+    --text: #1f2328;
+    --muted: #656d76;
+    --border: #d0d7de;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --danger: #cf222e;
+    --danger-soft: #ffebe9;
+    --warn: #9a6700;
+    --warn-soft: #fff8c5;
+    --ok: #1a7f37;
+    --ok-soft: #dafbe1;
+    --code-bg: #f6f8fa;
+    --shadow: 0 1px 3px rgba(27,31,36,0.08);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 64px; }
+  header.hero {
+    background: linear-gradient(135deg, #7d4e00 0%, #9a6700 45%, #0969da 100%);
+    color: #fff;
+    padding: 40px 20px;
+    margin-bottom: 24px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+  header.hero h1 { margin: 0 0 8px; font-size: 28px; font-weight: 700; }
+  header.hero .sub { opacity: 0.95; font-size: 15px; max-width: 880px; }
+  header.hero .meta { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 10px; font-size: 13px; }
+  header.hero .meta span { background: rgba(255,255,255,0.18); padding: 4px 10px; border-radius: 999px; }
+  header.hero code {
+    background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.4); color: #fff;
+  }
+  nav.toc {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 20px; margin-bottom: 24px; box-shadow: var(--shadow);
+  }
+  nav.toc h2 { margin: 0 0 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+  nav.toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 24px; }
+  nav.toc a { color: var(--accent); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+  section {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow);
+  }
+  section h2 {
+    margin: 0 0 16px; padding-bottom: 10px; border-bottom: 2px solid var(--accent-soft);
+    font-size: 22px;
+  }
+  section h3 { margin: 20px 0 10px; font-size: 17px; }
+  p { margin: 0 0 12px; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  .badge {
+    display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px;
+    border-radius: 999px; vertical-align: middle; margin-right: 4px; white-space: nowrap;
+  }
+  .badge.bad { background: var(--danger-soft); color: var(--danger); }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); }
+  .badge.ok { background: var(--ok-soft); color: var(--ok); }
+  .badge.info { background: var(--accent-soft); color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 4px; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th {
+    background: var(--code-bg); font-weight: 600; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 0.3px; color: var(--muted);
+  }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+  tbody tr:hover { background: var(--accent-soft); }
+  code {
+    font-family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em; background: var(--code-bg); padding: 2px 6px;
+    border-radius: 4px; border: 1px solid var(--border);
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.5;
+  }
+  pre code { background: none; border: 0; padding: 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 14px 0; }
+  .card {
+    border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; background: #fbfcfd;
+  }
+  .card h4 { margin: 0 0 6px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--muted); }
+  .card .big { font-size: 26px; font-weight: 700; line-height: 1.2; }
+  .card .note { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .callout {
+    border-left: 4px solid var(--accent); background: var(--accent-soft);
+    padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0;
+  }
+  .callout.bad { border-left-color: var(--danger); background: var(--danger-soft); }
+  .callout.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .callout.ok { border-left-color: var(--ok); background: var(--ok-soft); }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .fine { font-size: 13px; color: var(--muted); }
+  footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 28px; }
+  @media (max-width: 720px) {
+    nav.toc ol { columns: 1; }
+    table { font-size: 13px; }
+    th, td { padding: 8px 9px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>Аудит документации NLB Bootstrap</h1>
+  <div class="sub">
+    Проверка не кода, а того, что о коде написано: совпадают ли числа в документах с файлами,
+    ведут ли ссылки <code>file:line</code> туда, куда обещают, и что поймёт внешний аудитор,
+    у которого есть только документация. Каждое расхождение пересчитано по файлу.
+  </div>
+  <div class="meta">
+    <span>06.11.2026</span>
+    <span>31 документ</span>
+    <span>51 число проверено</span>
+    <span>160 ссылок file:line</span>
+    <span>21 расхождение</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>Содержание</h2>
+  <ol>
+    <li><a href="#s1">Резюме</a></li>
+    <li><a href="#s2">Метод и границы</a></li>
+    <li><a href="#s3">Сводка по документам</a></li>
+    <li><a href="#s4">Числа, расходящиеся с кодом</a></li>
+    <li><a href="#s5">Ссылки file:line</a></li>
+    <li><a href="#s6">Противоречия между документами</a></li>
+    <li><a href="#s7">Чего документация не описывает</a></li>
+    <li><a href="#s8">Что проверено и верно</a></li>
+    <li><a href="#s9">План правок и гейт</a></li>
+    <li><a href="#s10">Ограничения аудита</a></li>
+  </ol>
+</nav>
+
+<section id="s1">
+  <h2>1. Резюме</h2>
+
+  <p>
+    Документация этого проекта сильнее, чем у большинства шаблонов такого размера: есть карта
+    документов, правила, чек-лист приёмки, журнал этапов и бэклог с доказательствами. Проблема
+    не в объёме, а в том, что <strong>часть чисел и ссылок отстала от кода</strong> — и отстала
+    молча: гейт документации проверяет существование markdown-ссылок и наличие разделов, но не
+    сверяет ни одно число и ни одну ссылку <code>file:line</code>.
+  </p>
+
+  <div class="grid">
+    <div class="card">
+      <h4>Проверено чисел</h4>
+      <div class="big">51</div>
+      <div class="note">30 совпало с кодом, 21 расходится</div>
+    </div>
+    <div class="card">
+      <h4>Ссылок file:line</h4>
+      <div class="big">160</div>
+      <div class="note">17 ведут в пустую строку, 23 смещены на 5+ строк</div>
+    </div>
+    <div class="card">
+      <h4>Документов с ошибками</h4>
+      <div class="big">10 из 31</div>
+      <div class="note">по числам; ссылки не работают ещё в 7 документах</div>
+    </div>
+    <div class="card">
+      <h4>Максимальный сдвиг</h4>
+      <div class="big">865</div>
+      <div class="note">docs/bootstrap.md ссылается на styles.css:1535, где давно другой блок</div>
+    </div>
+  </div>
+
+  <h3>Пять выводов</h3>
+  <ol>
+    <li>
+      <strong>README описывает модель данных трёхдневной давности.</strong>
+      <code>README.md:82-85</code> обещает 6 инфоблоков, 33 свойства и 89 элементов.
+      Факт — 9 инфоблоков, 65 свойств, 91 элемент. Три «лишних» инфоблока — это
+      <code>requests</code>, <code>bookings</code>, <code>orders</code>, то есть персональные
+      данные посетителей. Аудитор, начавший с README, решит, что заявок в модели нет.
+    </li>
+    <li>
+      <strong>README противоречит <code>db/README.md</code>.</strong>
+      В одном документе «девять инфоблоков» (<code>db/README.md:4</code>), в другом — «шесть»
+      (<code>README.md:82</code>, <code>docs/installation.md:90</code>), а внутри самого
+      <code>db/README.md</code> — и то и другое (<code>:4</code> против <code>:84</code>).
+    </li>
+    <li>
+      <strong>Размер фронта занижен в 8,5 раза.</strong>
+      <code>docs/security-performance.md:207</code> и <code>:287</code> называют
+      <code>script.js</code> размером 8,4 КБ. Факт — 73 595 байт (71,9 КиБ). Там же
+      <code>:283</code> — «styles.css 47,6 КБ», факт 80 738 байт (78,8 КиБ).
+      Правило <code>docs/AGENTS-frontend.md:127</code> («CSS не должен расти больше ~50 КБ»)
+      нарушено собственным файлом проекта, и об этом нигде не сказано.
+    </li>
+    <li>
+      <strong>Ссылки <code>file:line</code> — самый хрупкий формат.</strong>
+      После Stage 44 (мгновенный поиск) <code>header.php</code> вырос на ~20 строк, и таблица
+      «строки → что» в <code>docs/architecture.md:50-60</code> перестала соответствовать файлу
+      целиком. В <code>docs/bootstrap.md</code> ссылки на <code>script.js</code> уехали на
+      486–581 строку: аудитор, открывший <code>script.js:900</code> «Ctrl+K», увидит код
+      распознавания речи.
+    </li>
+    <li>
+      <strong>Главный архитектурный документ не описывает 146 КБ PHP.</strong>
+      <code>docs/architecture.md</code> — дерево файлов обрывается на шаблоне: ноль упоминаний
+      <code>local/php_interface/</code> (9 файлов), <code>local/ajax/</code> (3 эндпоинта),
+      <code>pwa.js</code>/<code>push.js</code>/<code>consent.js</code>. Формы, поиск, push,
+      фильтр и БД-хелперы живут вне схемы, по которой аудитор судит об устройстве.
+    </li>
+  </ol>
+
+  <div class="callout bad">
+    <strong>Что это значит для приёмки.</strong> Числа в документации — не косметика:
+    по ним оценивают объём работ. «6 инфоблоков, 33 свойства» читается как «модель данных
+    маленькая», а «8,4 КБ JS» — как «фронт почти пустой». Обе оценки занижены, причём
+    вторая — на порядок. Пока эти числа не сверяются гейтом, следующая миграция снова
+    сделает документацию неправдой, и заметит это только следующий аудит.
+  </div>
+
+  <h3>Оценка по осям</h3>
+  <div class="table-scroll"><table>
+    <thead><tr><th>Ось</th><th>Балл</th><th>Обоснование</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Полнота (описано ли то, что есть)</td>
+        <td><span class="badge warn">7 / 10</span></td>
+        <td>Есть все домены: установка, данные, компоненты, фронт, безопасность, приёмка. Провал — архитектура без PHP-слоя и без AJAX-эндпоинтов.</td>
+      </tr>
+      <tr>
+        <td>Точность (совпадает ли с кодом)</td>
+        <td><span class="badge bad">6 / 10</span></td>
+        <td>30 из 51 проверенных чисел верны. Ошибки не случайные: они копятся там, где код менялся последним (миграции 008–012, поиск, размеры фронта).</td>
+      </tr>
+      <tr>
+        <td>Пригодность как вход для внешнего аудита без кода</td>
+        <td><span class="badge bad">4 / 10</span></td>
+        <td>Аудитор получит заниженную модель данных, заниженный фронт и ссылки, которые не открываются. Оценки, сделанные по такой документации (дипсик, qwen), уже разошлись с кодом.</td>
+      </tr>
+      <tr>
+        <td>Защита от протухания</td>
+        <td><span class="badge bad">2 / 10</span></td>
+        <td><code>tools/check-docs.mjs</code> проверяет ссылки-пути, карту документов и структуру журнала. Ни одно число и ни одна ссылка <code>file:line</code> не сверяются.</td>
+      </tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s2">
+  <h2>2. Метод и границы</h2>
+
+  <p>
+    Аудит шёл в два прохода. Сначала — «как читает аудитор»: взять документ, выписать каждое
+    утверждение с числом или ссылкой и предположить, какой вывод из него следует. Потом — «как
+    проверяет разработчик»: для каждого утверждения открыть файл и посчитать.
+  </p>
+
+  <h3>Что считалось фактом</h3>
+  <ul>
+    <li>значение, полученное из файла: <code>require</code> конфига, подсчёт строк, размер в байтах, <code>php -l</code>, прогон гейта;</li>
+    <li>строка кода, открытая по указанному адресу и процитированная;</li>
+    <li>вывод самого проекта: <code>php db/lint.php</code>, <code>php tools/filter-selftest.php</code>, <code>php tools/search-selftest.php</code>, <code>php tools/build-search-index.php --check</code>.</li>
+  </ul>
+
+  <h3>Чем проверялось</h3>
+  <pre><code>php db/lint.php                     # 9 инфоблоков, 91 элемент, 12 миграций
+php -l по всем *.php вне preview/   # 96 файлов, 0 ошибок
+php tools/filter-selftest.php       # 97 из 97
+php tools/search-selftest.php       # 109 из 109
+php tools/build-search-index.php --check
+node tools/check-docs.mjs           # что гейт реально проверяет
+node -e "..."                       # require db/config/iblocks.php → 9 / 65 / 0
+node -e "..."                       # styles.css, script.js, index.json: байты и строки
+node -e "..."                       # сканер ссылок file:line по 31 документу</code></pre>
+
+  <p class="fine">
+    Размеры приведены в байтах и в КиБ (деление на 1024), потому что документы используют
+    «КБ» без указания базы. Для сравнения с утверждением «8,4 КБ» пересчёт в те же единицы:
+    73 595 Б = 71,9 КиБ. Разница в 8,5 раза не зависит от выбора базы.
+  </p>
+
+  <h3>Границы</h3>
+  <ul>
+    <li><strong>Живое ядро не проверялось</strong> — его нет. Всё, что документация утверждает о поведении Битрикса (кеш, права, компоненты), здесь не проверяемо в принципе.</li>
+    <li><strong>Исторические записи не считаются дефектами.</strong> <code>CHANGELOG.md:150-151</code> («6 инфоблоков, 32 свойства, 48 элементов») и старые Stage-записи в <code>Что сделано.txt</code> описывают прошлое состояние — это нормально, пока запись датирована.</li>
+    <li><strong>Числа о происхождении картинок</strong> («3722 → 1813 КБ, −51 %») не проверяемы: исходников, которые сжимали, в репозитории нет.</li>
+    <li><strong>Оценки в <code>Оценка дипсик.txt</code> и <code>Оценка qwen.html</code></strong> — предмет отдельного свода (<code>Оценка общее.html</code>), здесь они не пересматриваются.</li>
+  </ul>
+</section>
+
+<section id="s3">
+  <h2>3. Сводка по документам</h2>
+
+  <p>
+    «Ссылок» — количество упоминаний <code>file:line</code> в документе. «Проблемных» — те, что
+    ведут в пустую строку, на закрывающую скобку или смещены на 5 и более строк относительно
+    описанной конструкции.
+  </p>
+
+  <div class="table-scroll"><table>
+    <thead>
+      <tr><th>Документ</th><th>Роль</th><th>Ссылок</th><th>Чисел неверно</th><th>Проблемных ссылок</th><th>Вердикт</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>README.md</code></td><td>обзор и состав поставки</td><td>0</td><td>3</td><td>0</td><td><span class="badge bad">модель данных отстала</span></td></tr>
+      <tr><td><code>project-context.md</code></td><td>стек, токены, карта секций</td><td>18</td><td>2</td><td>8</td><td><span class="badge bad">карта строк устарела</span></td></tr>
+      <tr><td><code>AGENTS.md</code></td><td>границы и гейты для агента</td><td>2</td><td>0</td><td>0</td><td><span class="badge ok">ок</span></td></tr>
+      <tr><td><code>CHANGELOG.md</code></td><td>версии</td><td>0</td><td>0</td><td>0</td><td><span class="badge ok">ок (история)</span></td></tr>
+      <tr><td><code>Промты.txt</code></td><td>указатель «тема → документ»</td><td>1</td><td>0</td><td>0</td><td><span class="badge ok">ок</span></td></tr>
+      <tr><td><code>Как работает.txt</code></td><td>объяснение потока заявки</td><td>11</td><td>1</td><td>1</td><td><span class="badge warn">одно число</span></td></tr>
+      <tr><td><code>db/README.md</code></td><td>что создают миграции</td><td>0</td><td>1</td><td>0</td><td><span class="badge warn">сам себе противоречит</span></td></tr>
+      <tr><td><code>docs/README.md</code></td><td>карта документации</td><td>0</td><td>0</td><td>0</td><td><span class="badge ok">ок</span></td></tr>
+      <tr><td><code>docs/architecture.md</code></td><td>устройство шаблона</td><td>5 + 2 таблицы строк</td><td>0</td><td>3</td><td><span class="badge bad">нет PHP-слоя, строки уехали</span></td></tr>
+      <tr><td><code>docs/bitrix-integration.md</code></td><td>вызовы компонентов</td><td>7</td><td>0</td><td>2</td><td><span class="badge warn">ссылки уехали</span></td></tr>
+      <tr><td><code>docs/bootstrap.md</code></td><td>Bootstrap и переопределения</td><td>16</td><td>0</td><td>8</td><td><span class="badge bad">худший дрейф</span></td></tr>
+      <tr><td><code>docs/content.md</code></td><td>страницы и разделы</td><td>0</td><td>0</td><td>0</td><td><span class="badge ok">ок</span></td></tr>
+      <tr><td><code>docs/customization.md</code></td><td>логотип, палитра, контакты</td><td>17</td><td>0</td><td>6</td><td><span class="badge warn">сдвиг 5–21</span></td></tr>
+      <tr><td><code>docs/db.md</code></td><td>модель данных</td><td>0</td><td>0</td><td>0</td><td><span class="badge ok">ок</span></td></tr>
+      <tr><td><code>docs/design-system.md</code></td><td>токены и компоненты</td><td>2</td><td>0</td><td>0</td><td><span class="badge ok">ок</span></td></tr>
+      <tr><td><code>docs/installation.md</code></td><td>установка</td><td>2</td><td>3</td><td>2</td><td><span class="badge bad">6/39 и «11 шагов»</span></td></tr>
+      <tr><td><code>docs/qa-checklist.md</code></td><td>ручная приёмка</td><td>0</td><td>0</td><td>0</td><td><span class="badge ok">ок</span></td></tr>
+      <tr><td><code>docs/AGENTS-frontend.md</code></td><td>правила CSS/JS</td><td>1</td><td>1</td><td>0</td><td><span class="badge warn">правило нарушено</span></td></tr>
+      <tr><td><code>docs/AGENTS-bitrix.md</code></td><td>правила админки</td><td>0</td><td>0</td><td>0</td><td><span class="badge ok">ок</span></td></tr>
+      <tr><td><code>docs/roadmap.md</code></td><td>план</td><td>0</td><td>2</td><td>0</td><td><span class="badge bad">план смешан с фактом</span></td></tr>
+      <tr><td><code>docs/security-performance.md</code></td><td>права, кеш, картинки</td><td>2</td><td>3</td><td>1</td><td><span class="badge bad">8,4 КБ и 47,6 КБ</span></td></tr>
+      <tr><td><code>Что доделать.txt</code></td><td>бэклог</td><td>32</td><td>0</td><td>1</td><td><span class="badge ok">ок</span></td></tr>
+      <tr><td><code>test/</code> (6 файлов)</td><td>срез для внешнего аудита</td><td>44</td><td>4</td><td>1</td><td><span class="badge bad">противоречия внутри набора</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="fine">
+    <code>Что сделано.txt</code> (журнал) в таблицу не входит: его задача — фиксировать прошлое,
+    и устаревшие числа в датированных записях дефектом не считаются. Ссылки в бэклоге
+    проверены отдельно: <code>nlb_forms.php:486</code>, <code>:877</code>, <code>:914</code>,
+    <code>iblocks.php:455/509/594</code>, <code>top.menu.php:12-20</code>,
+    <code>services/detail.php:5-8/60/80</code> — все указывают точно.
+  </p>
+</section>
+
+<section id="s4">
+  <h2>4. Числа, расходящиеся с кодом</h2>
+
+  <p>
+    21 утверждение в 10 документах. В колонке «что поймёт аудитор» — вывод, который следует
+    из написанного, а не из кода.
+  </p>
+
+  <div class="table-scroll"><table>
+    <thead>
+      <tr><th>Где</th><th>Написано</th><th>Факт</th><th>Чем проверено</th><th>Что поймёт аудитор</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>README.md:82</code></td><td>6 инфоблоков</td><td><strong>9</strong></td>
+        <td><code>require db/config/iblocks.php</code></td>
+        <td>«Заявок в модели нет» — а там три инфоблока с персональными данными</td>
+      </tr>
+      <tr>
+        <td><code>README.md:83</code></td><td>33 свойства</td><td><strong>65</strong></td>
+        <td>тот же конфиг</td>
+        <td>«Модель данных на треть беднее, чем есть»</td>
+      </tr>
+      <tr>
+        <td><code>README.md:85</code></td><td>89 элементов</td><td><strong>91</strong></td>
+        <td><code>php db/lint.php</code></td>
+        <td>Расхождение маленькое, но в паре с двумя выше читается как «документ не обновляли»</td>
+      </tr>
+      <tr>
+        <td><code>project-context.md:22</code></td><td>styles.css, ~1800 строк</td><td><strong>3785</strong></td>
+        <td>подсчёт строк</td>
+        <td>«Стилей мало, дизайн-система простая» — файл вырос вдвое</td>
+      </tr>
+      <tr>
+        <td><code>project-context.md:27</code></td><td>6 инфоблоков, 48 элементов</td><td><strong>9 и 91</strong></td>
+        <td>конфиг + lint</td>
+        <td>Та же занижённая модель данных</td>
+      </tr>
+      <tr>
+        <td><code>docs/AGENTS-frontend.md:5</code></td><td>styles.css ~1800 строк</td><td><strong>3785</strong></td>
+        <td>подсчёт строк</td>
+        <td>Правило «≤50 КБ» выглядит выполнимым — при 78,8 КБ оно нарушено</td>
+      </tr>
+      <tr>
+        <td><code>docs/installation.md:86</code></td><td>«php db/run.php — 11 шагов»</td><td><strong>12</strong></td>
+        <td><code>db/migrations/*.php</code></td>
+        <td>Установщик «потеряет» шаг писем о брони (012)</td>
+      </tr>
+      <tr>
+        <td><code>docs/installation.md:90</code></td><td>6 инфоблоков</td><td><strong>9</strong></td>
+        <td>конфиг</td>
+        <td>После установки аудитор сверит админку с чек-листом и решит, что три инфоблока лишние</td>
+      </tr>
+      <tr>
+        <td><code>docs/installation.md:91</code></td><td>39 свойств</td><td><strong>65</strong></td>
+        <td>конфиг</td>
+        <td>«Свойств меньше, чем создаётся» — сигнал о рассинхроне конфига и документа</td>
+      </tr>
+      <tr>
+        <td><code>db/README.md:84</code></td><td>«в админке шесть инфоблоков»</td><td><strong>девять</strong></td>
+        <td>конфиг</td>
+        <td>Чек-лист приёмки сам сбивает приёмку: шаг «проверить шесть» пройдёт при неполной базе</td>
+      </tr>
+      <tr>
+        <td><code>docs/roadmap.md:19</code></td><td><code>php -l</code> по 64 файлам</td><td><strong>96</strong></td>
+        <td><code>php -l</code>, 96 файлов, 0 ошибок</td>
+        <td>«Проверено меньше половины PHP-файлов»</td>
+      </tr>
+      <tr>
+        <td><code>docs/roadmap.md:20</code></td><td>8 миграций</td><td><strong>12</strong></td>
+        <td>каталог миграций</td>
+        <td>«Слой данных остановился на 008» — не видны заявки и письма о брони</td>
+      </tr>
+      <tr>
+        <td><code>docs/security-performance.md:207</code></td><td>script.js — 8,4 КБ</td><td><strong>71,9 КиБ</strong> (73 595 Б)</td>
+        <td>размер файла</td>
+        <td>«Фронт почти без JS» — в реальности там чат, поиск, карусели, FAB, push</td>
+      </tr>
+      <tr>
+        <td><code>docs/security-performance.md:283</code></td><td>styles.css — 47,6 КБ</td><td><strong>78,8 КиБ</strong> (80 738 Б)</td>
+        <td>размер файла</td>
+        <td>«CSS укладывается в бюджет»</td>
+      </tr>
+      <tr>
+        <td><code>docs/security-performance.md:287</code></td><td>script.js — 8,4 КБ</td><td><strong>71,9 КиБ</strong></td>
+        <td>размер файла</td>
+        <td>Повтор того же числа: ошибка закреплена дважды в одном разделе</td>
+      </tr>
+      <tr>
+        <td><code>Как работает.txt:121</code></td><td>«6 инфоблоков, включая bookings / orders»</td><td><strong>9</strong></td>
+        <td>конфиг</td>
+        <td>Фраза внутренне противоречива: перечислены заявки, а число — шесть</td>
+      </tr>
+      <tr>
+        <td><code>test/01-ПРОДУКТ.txt:100</code></td><td>83 PHP-файла</td><td><strong>96</strong></td>
+        <td><code>php -l</code></td>
+        <td>Набор для внешнего аудита даёт устаревший объём</td>
+      </tr>
+      <tr>
+        <td><code>test/01-ПРОДУКТ.txt:109</code></td><td>11 миграций (001–011)</td><td><strong>12</strong></td>
+        <td>каталог миграций</td>
+        <td>Противоречит строке 51 того же файла («12 идемпотентных миграций»)</td>
+      </tr>
+      <tr>
+        <td><code>test/01-ПРОДУКТ.txt:142</code></td><td>26 проверок</td><td><strong>27</strong></td>
+        <td><code>db/tests/run.php</code></td>
+        <td>Расходится с <code>test/04:14</code> («27 из 27») и README</td>
+      </tr>
+      <tr>
+        <td><code>test/04-СОСТОЯНИЕ-И-РИСКИ.txt:11</code></td><td>83 файла</td><td><strong>96</strong></td>
+        <td><code>php -l</code></td>
+        <td>Та же ошибка, что в test/01, но в другом файле набора</td>
+      </tr>
+      <tr>
+        <td><code>test/04-СОСТОЯНИЕ-И-РИСКИ.txt:103</code></td><td>«~1800 строк против 3 431»</td><td><strong>3785</strong></td>
+        <td>подсчёт строк</td>
+        <td>Документ, который бичует устаревшие числа, сам оперирует устаревшим «фактом»</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout warn">
+    <strong>Почему ошибки именно такие.</strong> Все 21 расходятся в одну сторону — документация
+    занижает. Причина одна: числа писались один раз (03.11.2026, версия 0.2.0) и не
+    перепроверялись после миграций 008–012 и Stage 44. Никакой из этих документов не обновляют
+    «по обязанности» — только когда о нём вспомнят.
+  </div>
+</section>
+
+<section id="s5">
+  <h2>5. Ссылки file:line</h2>
+
+  <p>
+    Формат <code>styles.css:201</code> удобен ровно до первого сдвига строки. После него он
+    врёт молча: строка существует, но содержит другое. Проверены все 160 ссылок в 31 документе;
+    ниже — те, где ошибка меняет смысл.
+  </p>
+
+  <div class="table-scroll"><table>
+    <thead>
+      <tr><th>Ссылка</th><th>Что обещает</th><th>Что реально на этой строке</th><th>Где конструкция на самом деле</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>docs/bootstrap.md:86</code><br><code>styles.css:1535</code></td>
+        <td>«<code>.breadcrumb</code> не используется — своя разметка <code>.breadcrumb-navigation</code>»</td>
+        <td><code>right: 1.25rem;</code> — это <code>.fab</code></td>
+        <td><strong>2400</strong> (сдвиг 865)</td>
+      </tr>
+      <tr>
+        <td><code>docs/bootstrap.md:128</code><br><code>script.js:789</code></td>
+        <td>обработчик submit для <code>.needs-validation</code></td>
+        <td>пустая строка</td>
+        <td><strong>1370</strong> (сдвиг 581)</td>
+      </tr>
+      <tr>
+        <td><code>docs/bootstrap.md:127</code><br><code>script.js:900</code></td>
+        <td>Ctrl+K открывает поиск</td>
+        <td><code>chatRecognition.addEventListener('start', …)</code> — распознавание речи</td>
+        <td><strong>1481</strong> (сдвиг 581)</td>
+      </tr>
+      <tr>
+        <td><code>docs/bootstrap.md:126</code><br><code>script.js:770</code></td>
+        <td>закрытие мобильного меню после клика</td>
+        <td><code>});</code></td>
+        <td><strong>1256</strong> (сдвиг 486)</td>
+      </tr>
+      <tr>
+        <td><code>docs/architecture.md:50-60</code></td>
+        <td>таблица «строки 1–16 / 18–31 / 39–77 / 80–102 / 104–168 / 170–200 / 202–215 / 217» для header.php</td>
+        <td>таблица не соответствует файлу целиком</td>
+        <td><code>&lt;head&gt;</code> 20–45, топбар 101–123, navbar 125–189, модалка поиска 191–221, крошки 223–238, <code>&lt;main&gt;</code> <strong>240</strong> (сдвиг 20–23)</td>
+      </tr>
+      <tr>
+        <td><code>docs/architecture.md:82</code><br><code>footer.php</code> 117–143</td>
+        <td>FAB</td>
+        <td>—</td>
+        <td><strong>169–199</strong> (сдвиг 52)</td>
+      </tr>
+      <tr>
+        <td><code>docs/architecture.md:86</code><br><code>footer.php</code> 215–216</td>
+        <td>подключение скриптов</td>
+        <td>—</td>
+        <td><strong>308–321</strong> (сдвиг 93; добавились <code>pwa.js</code>, <code>push.js</code>, <code>consent.js</code>)</td>
+      </tr>
+      <tr>
+        <td><code>project-context.md:24</code>, <code>:85</code><br><code>styles.css:53</code></td>
+        <td>системный стек шрифтов</td>
+        <td>пустая строка</td>
+        <td><strong>56</strong></td>
+      </tr>
+      <tr>
+        <td><code>project-context.md:130</code><br><code>header.php:190</code></td>
+        <td>форма поиска</td>
+        <td>пустая строка</td>
+        <td>модалка <strong>191</strong>, форма <strong>199</strong></td>
+      </tr>
+      <tr>
+        <td><code>project-context.md:135</code><br><code>footer.php:285</code></td>
+        <td>подключение скриптов</td>
+        <td><code>&lt;div class="modal-content"&gt;</code> — модалка реквизитов</td>
+        <td><strong>308</strong></td>
+      </tr>
+      <tr>
+        <td><code>docs/installation.md:131</code><br><code>header.php:126</code></td>
+        <td>«шаблон ждёт меню с кодом top»</td>
+        <td><code>&lt;div class="container"&gt;</code></td>
+        <td>вызов меню <strong>145</strong></td>
+      </tr>
+      <tr>
+        <td><code>docs/bitrix-integration.md:414</code><br><code>header.php:170</code></td>
+        <td>модалка поиска</td>
+        <td><code>&lt;?php if ($nlbAuthorized): ?&gt;</code> — иконка кабинета</td>
+        <td><strong>191</strong></td>
+      </tr>
+      <tr>
+        <td><code>docs/customization.md:227</code><br><code>styles.css:360</code></td>
+        <td>«топбар <code>.topbar</code> — фон #0b1220»</td>
+        <td><code>@media (max-height: 700px)</code></td>
+        <td><strong>376</strong> (сдвиг 16)</td>
+      </tr>
+      <tr>
+        <td><code>docs/security-performance.md:28</code><br><code>template.php:44</code></td>
+        <td>«пункты меню экранируются»</td>
+        <td>пустая строка</td>
+        <td><code>htmlspecialcharsbx()</code> — строки <strong>123/133/143</strong></td>
+      </tr>
+      <tr>
+        <td><code>docs/architecture.md:149</code><br><code>template.php:16</code></td>
+        <td>демо-меню при пустом <code>$arResult</code></td>
+        <td>пустая строка</td>
+        <td><strong>46</strong> (<code>if (empty($items))</code>)</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <h3>Итог по ссылкам</h3>
+  <div class="grid">
+    <div class="card">
+      <h4>В пустоту</h4>
+      <div class="big">17</div>
+      <div class="note">строка пустая или это <code>}</code> / <code>});</code> — проверять нечего (13 в корне и docs/, ещё 4 — в test/, «Как работает.txt» и бэклоге)</div>
+    </div>
+    <div class="card">
+      <h4>Указывают не туда</h4>
+      <div class="big">23</div>
+      <div class="note">конструкция есть, но на другом месте; сдвиг от 5 до 865 строк</div>
+    </div>
+    <div class="card">
+      <h4>Максимум</h4>
+      <div class="big">865</div>
+      <div class="note"><code>styles.css:1535</code> вместо 2400</div>
+    </div>
+    <div class="card">
+      <h4>Пригодны</h4>
+      <div class="big">36 из 72</div>
+      <div class="note">в корневых документах и <code>docs/</code>; остальные 88 ссылок — бэклог и <code>test/</code>, проверены только на существование строки</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Правило, которое стоит принять.</strong> Ссылка на строку допустима только там, где
+    строка не двигается (например, <code>:root</code> в начале файла) или где она проверяется
+    гейтом. Во всех остальных случаях якорь — селектор, имя функции, заголовок раздела:
+    <code>.breadcrumb-navigation</code> не уедет, а <code>styles.css:1535</code> уедет на
+    следующей правке. Это не стилистика: половина ссылок в корневых документах уже не позволяет
+    проверить утверждение, и каждая из них когда-то была верной.
+  </div>
+</section>
+
+<section id="s6">
+  <h2>6. Противоречия между документами</h2>
+
+  <p>
+    Отдельный класс дефектов: каждый документ по отдельности выглядит правдоподобно, но вместе
+    они не сходятся. Аудитор, читающий два файла, получает два разных проекта.
+  </p>
+
+  <div class="table-scroll"><table>
+    <thead>
+      <tr><th>Что с чем спорит</th><th>Версии</th><th>Факт</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>README.md:82</code> ↔ <code>db/README.md:4</code></td>
+        <td>«6 инфоблоков» ↔ «девять инфоблоков»</td>
+        <td><strong>9</strong></td>
+      </tr>
+      <tr>
+        <td><code>db/README.md:4</code> ↔ <code>db/README.md:84</code></td>
+        <td>«девять» ↔ «шесть» в одном файле</td>
+        <td><strong>9</strong></td>
+      </tr>
+      <tr>
+        <td><code>README.md:380</code> ↔ <code>docs/roadmap.md:19</code> ↔ <code>test/01:100</code></td>
+        <td>96 ↔ 64 ↔ 83 PHP-файла</td>
+        <td><strong>96</strong></td>
+      </tr>
+      <tr>
+        <td><code>project-context.md:141</code> ↔ <code>test/04:200</code></td>
+        <td>96 ↔ 83 («64» как цитата старого README)</td>
+        <td><strong>96</strong></td>
+      </tr>
+      <tr>
+        <td><code>test/01:51</code> ↔ <code>test/01:109</code></td>
+        <td>«12 идемпотентных миграций» ↔ «11 (001–011)» в одном файле</td>
+        <td><strong>12</strong></td>
+      </tr>
+      <tr>
+        <td><code>test/01:142</code> ↔ <code>test/04:14</code> ↔ <code>README.md:93</code></td>
+        <td>26 ↔ 27 ↔ 27 проверок</td>
+        <td><strong>27</strong></td>
+      </tr>
+      <tr>
+        <td><code>docs/AGENTS-frontend.md:127</code> ↔ <code>styles.css</code></td>
+        <td>правило «CSS ≤ ~50 КБ» ↔ файл 78,8 КиБ</td>
+        <td>Правило не выполнено; нигде не сказано, что это осознанное исключение</td>
+      </tr>
+      <tr>
+        <td><code>docs/roadmap.md</code> ↔ <code>project-context.md:30</code>, <code>README.md:102</code></td>
+        <td>PWA «только если нужно», поиск с подсказками — «план» ↔ PWA и BM25 уже сделаны</td>
+        <td>Roadmap от 03.11.2026 читается как актуальный план; по факту часть «плана» — история</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout bad">
+    <strong>Самый дорогой случай — <code>test/</code>.</strong> Набор <code>test/00…05</code>
+    существует именно для того, чтобы внешняя модель оценивала проект по нему. Внутри набора
+    четыре разных числа для одной величины (PHP-файлы: 83, 96, 64; миграции: 11 и 12; проверки:
+    26 и 27; строки CSS: 1800, 3431, 3785), причём <code>test/04</code> сам перечисляет
+    устаревшие числа как дефект — и тут же приводит своё, тоже устаревшее. Аудит, сделанный по
+    этому набору, гарантированно разойдётся с кодом.
+  </div>
+</section>
+
+<section id="s7">
+  <h2>7. Чего документация не описывает</h2>
+
+  <p>
+    Пробелы опаснее ошибок: ошибку можно найти сравнением, пробел — нет. Ниже то, чего в
+    документации нет вовсе, хотя в коде оно есть.
+  </p>
+
+  <h3>7.1. Архитектурный документ обрывается на шаблоне</h3>
+  <p>
+    <code>docs/architecture.md</code> — единственный документ «как устроен проект». В нём
+    <strong>ноль упоминаний</strong> <code>local/php_interface/</code>,
+    <code>local/ajax/</code>, <code>pwa.js</code>, <code>push.js</code>, <code>consent.js</code>,
+    WebP/AVIF. Дерево файлов в §1 заканчивается на <code>assets/images/*.jpg</code>.
+  </p>
+
+  <div class="table-scroll"><table>
+    <thead><tr><th>Слой</th><th>Файлов</th><th>Объём</th><th>Где описан</th></tr></thead>
+    <tbody>
+      <tr><td><code>local/php_interface/include/</code></td><td>9</td><td>146 КБ (<code>nlb_forms</code> 44,2; <code>nlb_search</code> 35,4; <code>nlb_push</code> 24,1; <code>nlb_db</code> 13,1; <code>nlb_seo</code> 9,9; <code>nlb_media</code> 7,6; <code>nlb_text_filter</code> 7,4; <code>nlb_security</code> 3,3; <code>init</code> 0,9)</td><td>нигде целиком: фрагменты в <code>bitrix-integration.md</code>, <code>db.md</code>, <code>security-performance.md</code></td></tr>
+      <tr><td><code>local/ajax/</code></td><td>3</td><td>8,1 КБ (<code>chat.php</code>, <code>push.php</code>, <code>search.php</code>)</td><td>эндпоинты упомянуты в README и security-performance, но не в архитектуре</td></tr>
+      <tr><td><code>assets/js/</code> сверх бандла</td><td>3</td><td>17,1 КБ (<code>pwa.js</code>, <code>push.js</code>, <code>consent.js</code>)</td><td>только в <code>bootstrap.md</code> одной строкой про подключение</td></tr>
+      <tr><td>WebP/AVIF-варианты</td><td>108</td><td>4364 КБ</td><td>README и <code>security-performance.md</code> — про конвейер, не про структуру каталога</td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="fine">
+    Итог: 146 КБ PHP, которые выполняются на каждом запросе, не входят в схему «что из чего
+    состоит». Аудитор, читающий архитектуру, увидит шаблон и два компонентных шаблона — и
+    решит, что вся серверная логика в страницах.
+  </p>
+
+  <h3>7.2. Нет бюджета фронта</h3>
+  <p>
+    Есть правило «CSS ≤ ~50 КБ» (<code>docs/AGENTS-frontend.md:127</code>) и нет ни одного
+    документа, который фиксирует текущий размер, бюджет JS и точку, после которой это
+    считается проблемой. Факт: 78,8 КиБ CSS и 71,9 КиБ JS. Это не «нарушение правила» —
+    это отсутствие измерения: правило есть, числа нет, проверить нечем.
+  </p>
+
+  <h3>7.3. У гейта документации нет зубов против чисел</h3>
+  <p>
+    <code>tools/check-docs.mjs</code> (188 строк) проверяет: что markdown-ссылки ведут на
+    существующие файлы, что каждый документ из <code>docs/</code> упомянут в карте, что в
+    бэклоге нет закрытых пунктов, что журнал начинается с заголовка и что в README есть три
+    обязательных раздела. Всё. Ни одно число, ни одна ссылка <code>file:line</code>, ни одно
+    утверждение о размере файла не сверяются — поэтому 21 расхождение и живёт.
+  </p>
+
+  <h3>7.4. Roadmap не отделяет историю от плана</h3>
+  <p>
+    <code>docs/roadmap.md</code> — единственный документ, где «сделано» и «план» соседствуют
+    без даты сверки. Пункты 0.4–0.5 помечены как план, хотя PWA, мгновенный поиск и выпадающее
+    меню второго уровня уже реализованы. Для аудитора это выглядит как «половина
+    функциональности не начата».
+  </p>
+</section>
+
+<section id="s8">
+  <h2>8. Что проверено и верно</h2>
+
+  <p>
+    Чтобы правки не задели то, что и так сходится. Эти утверждения проверены повторно и
+    совпали с кодом — их трогать не нужно.
+  </p>
+
+  <div class="table-scroll"><table>
+    <thead><tr><th>Утверждение</th><th>Где</th><th>Проверено</th></tr></thead>
+    <tbody>
+      <tr><td>3 типа инфоблоков; 12 разделов</td><td><code>README.md:81,84</code></td><td>конфиг + <code>sections_data</code></td></tr>
+      <tr><td>28 страниц; 14 документов в <code>docs/</code></td><td><code>README.md:31,35</code></td><td>файлы страниц, <code>*.md</code> в docs</td></tr>
+      <tr><td>99 документов, 1319 термов, ~331 КБ в индексе</td><td><code>README.md:114</code></td><td><code>db/search/index.json</code> = 339 050 Б</td></tr>
+      <tr><td>109 проверок поиска, 26 запросов, 20 push, 87 фраз и 97 проверок фильтра</td><td><code>README.md:116,181,372</code></td><td>selftest-прогоны</td></tr>
+      <tr><td>20 базовых JPG = 2002 КБ; 162 файла производных</td><td><code>README.md:208-209</code></td><td>пересчёт по каталогу (54+54+54)</td></tr>
+      <tr><td>96 PHP-файлов, <code>php -l</code> — 0 ошибок</td><td><code>README.md:380</code>, <code>project-context.md:141</code></td><td>прогон 06.11.2026 на 8.5.12</td></tr>
+      <tr><td>10 модулей <code>script.js</code>; 20 исходников изображений</td><td><code>project-context.md:23,26</code></td><td>нумерованные секции, базовые JPG</td></tr>
+      <tr><td>18 пронумерованных разделов <code>styles.css</code></td><td><code>docs/architecture.md:94</code></td><td>подсчёт заголовков</td></tr>
+      <tr><td>12 миграций; 109 проверок поиска</td><td><code>docs/qa-checklist.md:230,249</code></td><td>каталог, selftest</td></tr>
+      <tr><td>Таблица элементов по инфоблокам (10/6/6/24/8/37 = 91)</td><td><code>db/README.md:14-24</code></td><td><code>php db/lint.php</code></td></tr>
+      <tr><td>Индекс поиска в закрытом каталоге; свежесть по sha256</td><td><code>docs/security-performance.md:183,196</code></td><td><code>db/.htaccess</code>, <code>build-search-index.php</code></td></tr>
+      <tr><td>Раздел про BM25 (формула, <code>k1</code>/<code>b</code>, coord, прогрессивное улучшение)</td><td><code>README.md:102-140</code></td><td><code>nlb_search.php</code>, selftest</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout ok">
+    <strong>Документация по поиску — образец для остальных.</strong> Раздел
+    <code>README.md:102-140</code> и <code>docs/db.md:371-386</code> описывают BM25 без ссылок
+    на строки, с проверяемыми числами и явным «что будет без PHP». Именно так стоит переписать
+    остальные разделы: не «строка 1535», а «блок <code>.breadcrumb-navigation</code>».
+  </div>
+</section>
+
+<section id="s9">
+  <h2>9. План правок и гейт</h2>
+
+  <h3>9.1. Обновить числа (P1-13, расширенный)</h3>
+  <p>
+    Девять документов, 21 значение. Порядок: сначала <code>db/config/iblocks.php</code> как
+    источник, от него — README, project-context, installation, db/README, roadmap. Отдельно
+    снять размеры файлов (байты, не «КБ на глаз») и обновить
+    <code>security-performance.md</code> и правило в <code>AGENTS-frontend.md</code>: либо
+    поднять порог, либо честно записать «78,8 КБ — принятое исключение, потому что…».
+  </p>
+
+  <h3>9.2. Заменить хрупкие ссылки (новый пункт)</h3>
+  <p>
+    Половина ссылок <code>file:line</code> в корневых документах и <code>docs/</code> (36 из 72)
+    не позволяет проверить утверждение. Правка двухуровневая:
+  </p>
+  <ol>
+    <li>таблицы диапазонов в <code>docs/architecture.md:50-60</code> и <code>:77-86</code> заменить на перечень блоков (заголовок/комментарий/селектор), без номеров строк;</li>
+    <li>остальные ссылки — либо на якорь (селектор, функция, заголовок), либо оставить строку, но только если она проверяется гейтом.</li>
+  </ol>
+
+  <h3>9.3. Дописать архитектуру (новый пункт)</h3>
+  <p>
+    В <code>docs/architecture.md</code> добавить слой <code>local/php_interface</code>
+    (9 файлов, 146 КБ), <code>local/ajax</code> (3 эндпоинта), <code>assets/js</code>
+    (<code>pwa.js</code>, <code>push.js</code>, <code>consent.js</code>) и структуру
+    <code>assets/images</code> (JPG + WebP/AVIF, ширины 480/960/1280). Без этого документ
+    описывает около половины проекта.
+  </p>
+
+  <h3>9.4. Спецификация гейта</h3>
+  <p>
+    Без гейта правки протухнут на следующей миграции — это уже случилось. Минимальная
+    конструкция, которая закрывает 21 расхождение и 36 непригодных ссылок:
+  </p>
+  <pre><code>1. Источник чисел — код, а не документ.
+   php db/stats.php --json   → { types:3, iblocks:9, properties:65,
+                                 elements:91, sections:12, migrations:12,
+                                 php_files:96, css_lines:3785, css_bytes:80738,
+                                 js_bytes:73595, index_docs:99, index_terms:1319 }
+   Скрипт считается через require db/config/iblocks.php и обход файлов.
+   Нет PHP в PATH → exit 1 (пропуск = зелёный гейт без единой сверки).
+
+2. Проверка чисел.
+   Каждое число в документах, которое гейт умеет считать, помечается
+   якорем в тексте: «9 инфоблоков» / «3785 строк» / «71,9 КиБ».
+   Гейт ищет утверждение по шаблону и сравнивает с --json.
+   Расхождение → exit 1 с сообщением «README.md:82: написано 6, факт 9».
+
+3. Проверка ссылок file:line.
+   Для каждой ссылки: строка существует И не пустая И не `}`/`});`.
+   Дополнительно: если рядом в тексте есть селектор/функция — она
+   встречается в файле (допуск ±30 строк). Иначе — только проверка
+   «строка не пустая»: этого достаточно, чтобы поймать 13 мёртвых ссылок.
+
+4. Запуск.
+   node tools/check-docs.mjs          — как сейчас (ссылки-пути, карта, журнал)
+   node tools/check-doc-numbers.mjs   — новый блок (2)
+   node tools/check-doc-refs.mjs      — новый блок (3)
+   Все три — в README («Проверка») и в AGENTS.md («Гейты»).</code></pre>
+
+  <p class="fine">
+    Почему не «просто обновить числа руками»: за три дня до этого аудита числа уже обновляли —
+    и снова разошлись. Ручная сверка не имеет механизма, который заметит следующую миграцию.
+  </p>
+
+  <h3>9.5. Приоритеты</h3>
+  <div class="table-scroll"><table>
+    <thead><tr><th>Правка</th><th>Эффект для аудита</th><th>Трудозатраты</th><th>Приоритет</th></tr></thead>
+    <tbody>
+      <tr><td>README: 6/33/89 → 9/65/91</td><td>Первый документ перестаёт занижать модель данных</td><td>5 минут</td><td><span class="badge bad">P0 для документации</span></td></tr>
+      <tr><td>project-context: строки и инфоблоки</td><td>Карта секций перестаёт врать</td><td>10 минут</td><td><span class="badge bad">P1</span></td></tr>
+      <tr><td>security-performance: 8,4 КБ / 47,6 КБ</td><td>Размер фронта перестаёт быть заниженным в 8,5 раза</td><td>10 минут</td><td><span class="badge warn">P1</span></td></tr>
+      <tr><td>installation, db/README, roadmap</td><td>Установка и план сходятся с кодом</td><td>20 минут</td><td><span class="badge warn">P1</span></td></tr>
+      <tr><td>test/01, test/04</td><td>Внешний аудит получает верные числа</td><td>20 минут</td><td><span class="badge warn">P1</span></td></tr>
+      <tr><td>Ссылки file:line (38)</td><td>Аудитор открывает то, что обещано</td><td>2–3 часа</td><td><span class="badge info">P1</span></td></tr>
+      <tr><td>architecture: PHP-слой и AJAX</td><td>Схема проекта перестаёт быть половиной</td><td>2 часа</td><td><span class="badge info">P1</span></td></tr>
+      <tr><td>Гейт чисел и ссылок</td><td>Дальше не протухает</td><td>3–4 часа</td><td><span class="badge info">P1</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s10">
+  <h2>10. Ограничения аудита</h2>
+
+  <ul>
+    <li>
+      <strong>Проверялась документация против кода, а не код против требований.</strong>
+      Правильный ли BM25, безопасна ли форма брони, работает ли кеш на ядре — это другие аудиты,
+      и без Битрикса они невозможны.
+    </li>
+    <li>
+      <strong>Ни одно утверждение о поведении ядра не проверено.</strong> Всё, что документы
+      говорят про <code>OnBeforeIBlockElementAdd</code>, кеш компонентов, права групп и
+      электронную почту, остаётся заявлением: подтвердить его можно только на живой установке.
+    </li>
+    <li>
+      <strong>Сканер ссылок эвристический.</strong> «Смещение» считается по первому вхождению
+      селектора или функции в файл и проверено вручную только для 15 показательных случаев —
+      таблица в разделе 5. По остальным ссылкам утверждение слабее: «строка не пустая».
+    </li>
+    <li>
+      <strong>Происхождение изображений не проверяемо.</strong> «3722 → 1813 КБ (−51 %)» —
+      единственное число, для которого в репозитории нет исходных данных; оно не включено ни в
+      верные, ни в ошибочные.
+    </li>
+    <li>
+      <strong>Срез — 06.11.2026.</strong> Любая следующая миграция снова сдвинет числа; именно
+      поэтому предложение в разделе 9 — гейт, а не разовая правка.
+    </li>
+  </ul>
+
+  <div class="callout warn">
+    <strong>Что сделать первым.</strong> Если из всего отчёта делать что-то одно — правку
+    <code>README.md:82-85</code>. Это документ, с которого начинают все: и аудитор, и
+    контрибьютор, и следующая внешняя модель. Сейчас он сообщает, что заявок в модели данных
+    нет, — а это именно та часть, которая требует наибольшей аккуратности при приёмке.
+  </div>
+</section>
+
+<footer>
+  Аудит документации шаблона <code>nlb_bootstrap</code> · 06.11.2026 ·
+  проверено по файлам, не по пересказу · офлайн-документ, без скриптов и внешних зависимостей
+</footer>
+
+</div>
+</body>
+</html>

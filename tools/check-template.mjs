@@ -16,6 +16,7 @@
  * Выход: 0 — ошибок нет, 1 — есть ошибки.
  */
 
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -96,9 +97,21 @@ const required = [
     'local/php_interface/include/nlb_security.php',
     'local/php_interface/include/nlb_forms.php',
     'local/php_interface/include/nlb_push.php',
+    'local/php_interface/include/nlb_text_filter.php',
     'local/ajax/push.php',
+    'local/ajax/chat.php',
     'tools/gen-vapid.php',
     'tools/push-selftest.php',
+    'tools/filter-selftest.php',
+    'tools/check-filter-parity.mjs',
+    'db/tests/fixtures/filter-cases.json',
+    'local/php_interface/include/nlb_search.php',
+    'local/ajax/search.php',
+    'tools/build-search-index.php',
+    'tools/search-selftest.php',
+    'db/search/pages.json',
+    'db/search/index.json',
+    'db/tests/fixtures/search-cases.json',
     `${tplRel}/assets/js/push.js`,
     'db/config/iblocks.php',
     'db/lib/boot.php',
@@ -684,6 +697,197 @@ if (init) {
         fail('init.php: не вызывает nlb_security_headers()');
     }
     ok('init.php: хелперы подключены');
+}
+
+/* ------------------------------------------------------------------ */
+/* 11.1. Фильтр чата: браузер ↔ сервер                                */
+/* ------------------------------------------------------------------ */
+
+const chatFilter = read('local/php_interface/include/nlb_text_filter.php');
+if (chatFilter) {
+    for (const fn of ['nlb_filter_blocked', 'nlb_filter_sensitive', 'nlb_filter_study', 'nlb_filter_hit', 'nlb_text_problem']) {
+        if (!chatFilter.includes(`function ${fn}(`)) {
+            fail(`nlb_text_filter.php: нет ${fn}()`);
+        }
+    }
+    if (!chatFilter.includes("'ненавиж'")) {
+        fail('nlb_text_filter.php: «ненавиж» не в тематических корнях — «книги о ненависти» перестанут проходить');
+    }
+    ok('nlb_text_filter.php: списки и вердикт на месте');
+}
+
+const chatAjax = read('local/ajax/chat.php');
+if (chatAjax) {
+    if (!chatAjax.includes('nlb_text_filter.php')) {
+        fail('local/ajax/chat.php: не подключает nlb_text_filter.php');
+    }
+    if (!chatAjax.includes('nlb_text_problem(')) {
+        fail('local/ajax/chat.php: не вызывает nlb_text_problem()');
+    }
+    ok('local/ajax/chat.php: серверный фильтр подключён');
+}
+
+const chatScript = read(`${tplRel}/script.js`) || '';
+for (const marker of ['/* nlb-chat-filter:start */', '/* nlb-chat-filter:end */']) {
+    if (!chatScript.includes(marker)) {
+        fail(`script.js: нет маркера ${marker} — гейт паритета не найдёт блок фильтра`);
+    }
+}
+if (!chatScript.includes('const chatProblem = function')) {
+    fail('script.js: нет chatProblem()');
+}
+ok('script.js: блок фильтра отделён маркерами');
+
+const filterFixture = read('db/tests/fixtures/filter-cases.json');
+if (filterFixture) {
+    let filterCases = 0;
+    try {
+        filterCases = (JSON.parse(filterFixture).cases || []).length;
+    } catch (error) {
+        fail(`db/tests/fixtures/filter-cases.json: не JSON — ${error.message}`);
+    }
+    if (filterCases > 0 && filterCases < 40) {
+        fail(`db/tests/fixtures/filter-cases.json: ${filterCases} фраз, нужно не меньше 40`);
+    } else if (filterCases >= 40) {
+        ok(`фильтр чата: общий набор фраз (${filterCases})`);
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* 11.2. Поиск по сайту: индекс свежий, эндпоинт и модалка связаны     */
+/* ------------------------------------------------------------------ */
+
+const searchLib = read('local/php_interface/include/nlb_search.php');
+if (searchLib) {
+    for (const fn of ['nlb_search_query', 'nlb_search_tokenize', 'nlb_search_build_index', 'nlb_search_source_hashes', 'nlb_search_load_index']) {
+        if (!searchLib.includes(`function ${fn}(`)) {
+            fail(`nlb_search.php: нет ${fn}()`);
+        }
+    }
+    ok('nlb_search.php: ранжирование и сборка индекса на месте');
+}
+
+const searchAjax = read('local/ajax/search.php');
+if (searchAjax) {
+    if (!searchAjax.includes('nlb_search.php')) {
+        fail('local/ajax/search.php: не подключает nlb_search.php');
+    }
+    if (!searchAjax.includes('nlb_search_api(')) {
+        fail('local/ajax/search.php: не вызывает nlb_search_api() — контракт должен жить в библиотеке и проверяться самопроверкой');
+    }
+    if (!searchAjax.includes('search_unavailable')) {
+        fail('local/ajax/search.php: нет ответа 503 search_unavailable — без библиотеки эндпоинт отдаст 200 с пустотой');
+    }
+    if (!searchAjax.includes('no-store')) {
+        fail('local/ajax/search.php: нет Cache-Control: no-store — выдачу закеширует прокси');
+    }
+    ok('local/ajax/search.php: эндпоинт подключён к библиотеке');
+}
+
+const searchHeader = read(`${tplRel}/header.php`) || '';
+if (searchHeader && !searchHeader.includes('id="nlbSearchInstant"')) {
+    fail('header.php: нет контейнера #nlbSearchInstant — мгновенная выдача некуда выводить');
+}
+if (searchHeader && !searchHeader.includes('data-search-endpoint=')) {
+    fail('header.php: у формы поиска нет data-search-endpoint — script.js не узнает адрес эндпоинта');
+}
+ok('header.php: контейнер мгновенной выдачи и адрес эндпоинта');
+
+const searchScript = read(`${tplRel}/script.js`) || '';
+if (searchScript) {
+    for (const part of ['#nlbSearchInstant', 'AbortController', 'textContent', 'data-search-endpoint']) {
+        if (!searchScript.includes(part)) {
+            fail(`script.js: в блоке мгновенного поиска нет ${part}`);
+        }
+    }
+    if (/innerHTML\s*=/.test(searchScript.slice(searchScript.indexOf('#nlbSearchInstant')))) {
+        fail('script.js: выдача поиска собирается через innerHTML — только textContent, иначе XSS из текста документа');
+    }
+    ok('script.js: мгновенный поиск через textContent и AbortController');
+}
+
+const searchStyles = read(`${tplRel}/styles.css`) || '';
+if (searchStyles && !searchStyles.includes('.search-instant__item')) {
+    fail('styles.css: нет стилей .search-instant__item');
+} else if (searchStyles) {
+    ok('styles.css: стили мгновенной выдачи');
+}
+
+const searchFixture = read('db/tests/fixtures/search-cases.json');
+if (searchFixture) {
+    let searchCases = 0;
+    try {
+        searchCases = (JSON.parse(searchFixture).cases || []).length;
+    } catch (error) {
+        fail(`db/tests/fixtures/search-cases.json: не JSON — ${error.message}`);
+    }
+    if (searchCases > 0 && searchCases < 20) {
+        fail(`db/tests/fixtures/search-cases.json: ${searchCases} запросов, нужно не меньше 20`);
+    } else if (searchCases >= 20) {
+        ok(`поиск по сайту: набор запросов (${searchCases})`);
+    }
+}
+
+const searchIndexRaw = read('db/search/index.json');
+if (searchIndexRaw) {
+    let index = null;
+    try {
+        index = JSON.parse(searchIndexRaw);
+    } catch (error) {
+        fail(`db/search/index.json: не JSON — ${error.message}`);
+    }
+
+    if (index) {
+        if (!Array.isArray(index.docs) || index.docs.length === 0) {
+            fail('db/search/index.json: нет документов');
+        }
+        if (!index.terms || Object.keys(index.terms).length === 0) {
+            fail('db/search/index.json: нет словаря термов');
+        }
+        if (index.docs_count !== (index.docs || []).length) {
+            fail('db/search/index.json: docs_count не совпадает с числом документов');
+        }
+
+        const dataFiles = fs.existsSync(path.join(root, 'db/config/data'))
+            ? fs.readdirSync(path.join(root, 'db/config/data')).filter((name) => name.endsWith('.php')).sort()
+            : [];
+        const expected = [
+            ...dataFiles.map((name) => `db/config/data/${name}`),
+            'db/config/iblocks.php',
+            'db/search/pages.json',
+        ];
+
+        const computed = {};
+        for (const relative of expected) {
+            const abs = path.join(root, relative);
+            computed[relative] = fs.existsSync(abs)
+                ? crypto.createHash('sha256').update(fs.readFileSync(abs)).digest('hex')
+                : '';
+        }
+
+        const stored = index.sources && typeof index.sources === 'object' ? index.sources : {};
+        const stale = [];
+        for (const relative of expected) {
+            if (stored[relative] !== computed[relative]) stale.push(relative);
+        }
+        for (const relative of Object.keys(stored)) {
+            if (!expected.includes(relative)) stale.push(`${relative} (исчез)`);
+        }
+
+        if (stale.length) {
+            fail(
+                'db/search/index.json устарел, php tools/build-search-index.php не запускали после правки: '
+                + stale.join(', ')
+            );
+        } else {
+            const total = crypto.createHash('sha256').update(JSON.stringify(computed)).digest('hex');
+            if (index.source_hash !== total) {
+                fail('db/search/index.json: source_hash не совпадает с отпечатками sources');
+            } else {
+                ok(`индекс поиска свежий: ${(index.docs || []).length} документов, ${Object.keys(index.terms || {}).length} термов`);
+            }
+        }
+    }
 }
 
 /* ------------------------------------------------------------------ */
