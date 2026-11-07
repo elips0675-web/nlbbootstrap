@@ -430,7 +430,7 @@ $APPLICATION->IncludeComponent('bitrix:search.page', '', [
     'PAGER_DESC_NUMBERING' => 'N',
     'PAGER_DESC_NUMBERING_CACHE_TIME' => '36000',
     'SHOW_LOGIN' => 'N',
-    'arrFILTER' => ['iblock_news', 'iblock_events', 'iblock_books'],
+    'arrFILTER' => ['iblock_news', 'iblock_events', 'iblock_books', 'iblock_services', 'iblock_printing', 'iblock_collections'],
     'CACHE_TYPE' => 'A',
     'CACHE_TIME' => '3600',
 ], false);
@@ -445,6 +445,21 @@ $APPLICATION->IncludeComponent('bitrix:search.page', '', [
 
 Форма в шапке не обязана быть компонентом: параметр `q` — стандартный для
 `search.page`.
+
+### Мгновенная выдача (BM25)
+
+Модалка дополнительно запрашивает `local/ajax/search.php` (адрес задан в
+`header.php:200`) и рисует подсказки из готового индекса
+`db/search/index.json`. Индекс собирает `php tools/build-search-index.php`:
+на живом ядре документы берутся из инфоблоков **вместе со свойствами**
+(`AUTHOR`, `TAGS`, `PRICE`, `YEAR` и другие из белого списка
+`nlb_search_property_text()`), без ядра — из `db/config/data/*.php`.
+Значения списков индексируются текстом («Книги»), а не ID значения.
+
+После установки в базу индекс нужно пересобрать вручную: правки контента в
+админке сами его не обновляют, хука на `OnAfterIBlockElement*` пока нет.
+Свежесть файлов демо-данных сторожит `php tools/build-search-index.php --check`,
+но на живой базе эта проверка смотрит на `db/config/data/*.php`, а не на БД.
 
 ---
 

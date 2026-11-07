@@ -558,6 +558,11 @@ if (!function_exists('nlb_search_documents_from_bitrix')) {
      * Документы из инфоблоков на живом ядре. Вызывается сборщиком индекса
      * после установки Битрикса; офлайн возвращает пустой массив, чтобы
      * сборка не падала без ядра.
+     *
+     * Свойства читаются `GetProperty` отдельно на каждый элемент: это N+1
+     * запрос, зато автор, теги и цена попадают в индекс так же, как в
+     * демо-пути, — иначе после установки поиск был бы хуже демо. Сборка
+     * идёт из CLI, на скорость ответа пользователю не влияет.
      */
     function nlb_search_documents_from_bitrix(?string $root = null): array
     {
@@ -601,17 +606,34 @@ if (!function_exists('nlb_search_documents_from_bitrix')) {
                     continue;
                 }
 
-                $url = (string)$element['DETAIL_PAGE_URL'];
+                $url = (string)($element['DETAIL_PAGE_URL'] ?? '');
                 if ($url === '') {
                     $url = $detail !== ''
                         ? str_replace('#ELEMENT_CODE#', (string)$element['CODE'], $detail)
                         : $list;
                 }
 
+                $properties = [];
+                $propertyIterator = CIBlockElement::GetProperty((int)$found['ID'], (int)$element['ID']);
+                while ($property = $propertyIterator->Fetch()) {
+                    $propertyCode = (string)($property['CODE'] ?? '');
+                    if ($propertyCode === '') {
+                        continue;
+                    }
+                    $propertyValue = (string)($property['PROPERTY_TYPE'] ?? '') === 'L'
+                        ? (string)($property['VALUE_ENUM'] ?? '')
+                        : (string)($property['VALUE'] ?? '');
+                    $propertyValue = nlb_search_plain_text($propertyValue);
+                    if ($propertyValue !== '') {
+                        $properties[$propertyCode][] = $propertyValue;
+                    }
+                }
+
                 $text = trim(implode(' ', [
                     $title,
                     nlb_search_plain_text((string)$element['PREVIEW_TEXT']),
                     nlb_search_plain_text((string)$element['DETAIL_TEXT']),
+                    nlb_search_property_text($properties),
                 ]));
 
                 $documents[] = [

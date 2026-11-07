@@ -191,6 +191,7 @@ class CIBlock
             'CODE' => $code,
             'NAME' => $fields['NAME'] ?? '',
             'IBLOCK_TYPE_ID' => $fields['IBLOCK_TYPE_ID'] ?? '',
+            'TYPE' => $fields['IBLOCK_TYPE_ID'] ?? '',
             'ACTIVE' => $fields['ACTIVE'] ?? 'Y',
             'SORT' => (int)($fields['SORT'] ?? 500),
             'VERSION' => (int)($fields['VERSION'] ?? 1),
@@ -620,6 +621,10 @@ class CIBlockElement
                 if ($one === '') {
                     continue;
                 }
+                $enumValue = '';
+                if ($type === 'L') {
+                    $enumValue = (string)(NlbStubStore::$enums[(int)$one]['VALUE'] ?? '');
+                }
                 $rows[] = [
                     'ID' => 0,
                     'IBLOCK_ELEMENT_ID' => $elementId,
@@ -628,7 +633,7 @@ class CIBlockElement
                     'CODE' => (string)$code,
                     'PROPERTY_TYPE' => $type,
                     'VALUE' => $one,
-                    'VALUE_ENUM' => $one,
+                    'VALUE_ENUM' => $enumValue,
                 ];
             }
         }

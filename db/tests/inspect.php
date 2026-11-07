@@ -93,6 +93,49 @@ if (array_sum($counts) !== 91) {
     $errors[] = 'сумма nlb_counts() = ' . array_sum($counts) . ' вместо 91';
 }
 
+/*
+ * Поиск после установки в базу: документы берутся из инфоблоков, а не из
+ * db/config/data/*.php. Свойства (автор, теги, цена) обязаны попадать в
+ * текст документа — иначе на живой базе поиск хуже демо.
+ */
+require_once dirname(__DIR__, 2) . '/local/php_interface/include/nlb_search.php';
+
+$searchDocuments = nlb_search_documents_from_bitrix(nlb_root());
+if (count($searchDocuments) !== 91) {
+    $errors[] = 'поиск: документов из инфоблоков ' . count($searchDocuments) . ' вместо 91';
+}
+
+$searchById = [];
+foreach ($searchDocuments as $searchDocument) {
+    $searchById[(string)($searchDocument['id'] ?? '')] = $searchDocument;
+}
+
+$newsDocument = $searchById['news:' . $newsId] ?? null;
+if (!is_array($newsDocument)) {
+    $errors[] = 'поиск: нет документа news:' . $newsId;
+} else {
+    $newsText = (string)($newsDocument['text'] ?? '');
+    if (mb_strpos($newsText, 'Пресс-служба') === false) {
+        $errors[] = 'поиск: в тексте новости нет свойства AUTHOR';
+    }
+    if (mb_strpos($newsText, 'Цифровые ресурсы') === false) {
+        $errors[] = 'поиск: в тексте новости нет текста значения списка TAGS';
+    }
+}
+
+$bookDocument = $searchById['books:' . $bookId] ?? null;
+if (!is_array($bookDocument)) {
+    $errors[] = 'поиск: нет документа books:' . $bookId;
+} else {
+    $bookText = (string)($bookDocument['text'] ?? '');
+    if (mb_strpos($bookText, 'Латунь') === false) {
+        $errors[] = 'поиск: в тексте сувенира нет свойства AUTHOR';
+    }
+    if (mb_strpos($bookText, '350') === false) {
+        $errors[] = 'поиск: в тексте сувенира нет числа из свойства PRICE';
+    }
+}
+
 if ($errors) {
     echo "Ошибки inspect:\n";
     foreach ($errors as $error) {
@@ -101,5 +144,5 @@ if ($errors) {
     exit(1);
 }
 
-echo "OK: значения свойств, даты, списки и картинки корректны\n";
+echo "OK: значения свойств, даты, списки и картинки корректны; свойства попадают в документы поиска\n";
 exit(0);
