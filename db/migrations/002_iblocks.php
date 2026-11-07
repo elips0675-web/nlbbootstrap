@@ -8,6 +8,11 @@
  *
  * Версия инфоблока — 2 (свойства в отдельной таблице), как в новых
  * установках Битрикса.
+ *
+ * У requests/bookings/orders CODE и XML_ID не обязательны: публичные формы
+ * их не передают, код элемента генерируется в OnBeforeIBlockElementAdd
+ * (local/php_interface/include/nlb_forms.php). Иначе Битрикс отклоняет
+ * добавление с «Не заполнено обязательное поле».
  */
 
 return static function (): array {
@@ -16,6 +21,7 @@ return static function (): array {
     $created = 0;
     $skipped = 0;
     $notes = [];
+    $formIblocks = ['requests', 'bookings', 'orders'];
 
     foreach ($config['iblocks'] as $code => $iblock) {
         if (nlb_iblock_id($code) > 0) {
@@ -90,6 +96,10 @@ return static function (): array {
         if ($id <= 0) {
             $error = isset($object->LAST_ERROR) ? (string)$object->LAST_ERROR : '';
             throw new RuntimeException("инфоблок {$code}: " . ($error ?: 'не удалось создать'));
+        }
+
+        if (in_array($code, $formIblocks, true)) {
+            nlb_iblock_relax_code($id);
         }
 
         $created++;

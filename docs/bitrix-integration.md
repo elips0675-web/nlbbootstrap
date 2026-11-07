@@ -313,7 +313,7 @@ $APPLICATION->IncludeComponent('bitrix:iblock.element.add.form', 'bootstrap', [
     'IBLOCK_ID' => nlb_iblock_id('requests'),
     'PROPERTY_CODES' => nlb_form_property_codes('request'),
     'PROPERTY_CODES_REQUIRED' => nlb_form_required_codes('request'),
-    'GROUPS' => [],
+    'GROUPS' => [2],
     'STATUS_NEW' => '',
     'ELEMENT_ASSOC' => 'NONE',
     'MAX_USER_ENTRIES' => 0,
@@ -340,6 +340,18 @@ $APPLICATION->IncludeComponent('bitrix:iblock.element.add.form', 'bootstrap', [
 Права: у инфоблоков заявок группа 2 «Все пользователи» имеет `W` (запись),
 иначе анонимная форма не создаст элемент. Поисковый индекс выключен, чтобы
 персональные данные не попадали в поиск.
+
+`GROUPS => [2]` в параметрах компонента — не то же самое, что пустой массив:
+с `[]` компонент показывает гостю форму, но при отправке не даёт группе 2
+добавить элемент, и заявка теряется с ошибкой прав. Поэтому во всех трёх
+вызовах (`feedback/index.php`, `services/detail.php`, `books/detail.php`)
+стоит `[2]`.
+
+Поля `CODE` и `XML_ID` у инфоблоков `requests`, `bookings`, `orders` не
+обязательны: формы их не передают. Миграция `002_iblocks.php` снимает
+обязательность через `nlb_iblock_relax_code()`, а код элемента генерирует
+`OnBeforeIBlockElementAdd` в `nlb_forms.php` — иначе Битрикс отклоняет
+добавление на проверке обязательных полей.
 
 Почтовое событие создаёт миграция `008_requests.php`. В админке проверьте:
 **Настройки → Настройки продукта → Почтовые события → Почтовые шаблоны** →

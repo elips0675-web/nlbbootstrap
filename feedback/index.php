@@ -50,7 +50,7 @@ $APPLICATION->SetPageProperty(
                         'IBLOCK_ID' => nlb_iblock_id('requests'),
                         'PROPERTY_CODES' => nlb_form_property_codes('request'),
                         'PROPERTY_CODES_REQUIRED' => nlb_form_required_codes('request'),
-                        'GROUPS' => [],
+                        'GROUPS' => [2],
                         'STATUS_NEW' => '',
                         'ELEMENT_ASSOC' => 'NONE',
                         'MAX_USER_ENTRIES' => 0,

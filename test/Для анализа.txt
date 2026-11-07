@@ -108,8 +108,8 @@
     ---------------------------------------------------------------
     Публичных страниц                         28
     Разделов с index.php в корне              17
-    PHP-файлов (без preview)                  97
-    Строк PHP                                 20 015
+    PHP-файлов (без preview)                  98
+    Строк PHP                                 20 309
     Типов инфоблоков                          3 (nlb_content, nlb_catalog,
                                               nlb_services)
     Инфоблоков                                9 (6 контентных + requests,
@@ -150,8 +150,8 @@
 Готово в коде: шаблон, 28 страниц, слой данных, формы (обращение, бронь,
 заказ), SEO, заголовки безопасности, PWA, статическое превью, документация.
 
-Проверено локально: синтаксис PHP (97 файлов, 0 ошибок на PHP 8.3.30 и 8.5.12),
-db/lint.php (конфиги без ядра), db/tests/run.php (27 проверок на заглушках
+Проверено локально: синтаксис PHP (98 файлов, 0 ошибок на PHP 8.3.30 и 8.5.12),
+db/lint.php (конфиги без ядра), db/tests/run.php (28 проверок на заглушках
 ядра), tools/check-template.mjs, tools/check-docs.mjs, статическое превью в
 браузере (0 ошибок консоли на главной), пересборка превью под PHP 8.5 —
 побайтово совпала с закоммиченной.
@@ -311,7 +311,7 @@ local/templates/nlb_bootstrap/
     db/lib/boot.php             загрузка конфигов без ядра
     db/lib/helpers.php          создание типов, инфоблоков, свойств, элементов
     db/sql/checks.sql           проверки схемы для check.php
-    db/tests/run.php            27 проверок на заглушках ядра
+    db/tests/run.php            28 проверок на заглушках ядра
     db/tests/stub/bitrix.php    заглушка ядра (26 КБ)
     db/run.php                  накат миграций (--only, --set-template)
     db/check.php                что реально в базе (нужно ядро)
@@ -344,7 +344,7 @@ local/templates/nlb_bootstrap/
     Подвал, подписка, модалки   footer.php
     Поведение JS                script.js (IIFE, без jQuery)
     Тексты страниц              PHP-файлы разделов + инфоблоки
-    Поля форм и их обязательность  nlb_forms.php:32-236
+    Поля форм и их обязательность  nlb_forms.php:31-245
     Данные каталога             db/config/data/*.php
     Структура инфоблоков        db/config/iblocks.php
     SEO                         nlb_seo.php, sitemap.php, robots.txt
@@ -459,16 +459,16 @@ books/detail.php:91-110.
 
 ПУТЬ ОДНОГО ОТПРАВЛЕНИЯ
 
-1. nlb_form_render() (nlb_forms.php:603-821) рисует форму: bitrix_sessid_post(),
+1. nlb_form_render() (nlb_forms.php:602-830) рисует форму: bitrix_sessid_post(),
    CAPTCHA (USE_CAPTCHA=Y), скрытые PROPERTY[<ID>][0] с предзаполненными
    значениями (SERVICE, SERVICE_CODE, TARIFF, PRICE либо ITEM, ARTICLE, PRICE).
 2. POST уходит на тот же URL; компонент делает CIBlockElement::Add.
-3. OnBeforeIBlockElementAdd → nlb_forms_before_add() (nlb_forms.php:877-922):
+3. OnBeforeIBlockElementAdd → nlb_forms_before_add() (nlb_forms.php:878-937):
    - требует CONSENT=Y (согласие на обработку персональных данных);
    - отклоняет дату в прошлом;
    - отклоняет занятый слот (для booking).
    Проверки серверные, работают и при отключённом JavaScript.
-4. OnAfterIBlockElementAdd → nlb_forms_after_add() (nlb_forms.php:995-1073):
+4. OnAfterIBlockElementAdd → nlb_forms_after_add() (nlb_forms.php:1003-1088):
    CEvent::Send('NLB_NEW_REQUEST', …) с типом заявки, именем, контактами,
    услугой/товаром, датой/временем и ссылкой на элемент в админке.
    Ошибка почты не ломает сохранение (try/catch).
@@ -478,16 +478,16 @@ books/detail.php:91-110.
 
 Название элемента собирается из данных, чтобы в списке админки не было
 одинаковых «Заявка на услугу»: «Бронь: Сауна — 2026-11-10 14:00»,
-«Заказ: Кружка «Библиотека 2026»» (nlb_forms.php:546-592).
+«Заказ: Кружка «Библиотека 2026»» (nlb_forms.php:554-600).
 
 СЛОТЫ БРОНИ
 
     часы            10:00–21:00, шаг 1 час (nlb_form_time_options)
     занятость       элементы bookings с тем же SERVICE_CODE, не отменённые,
-                    с датой не в прошлом (nlb_form_slots, nlb_forms.php:427-479)
+                    с датой не в прошлом (nlb_form_slots, nlb_forms.php:435-488)
     передача в JS   JSON в data-nlb-slots; script.js гасит занятые <option>
                     и пишет «Свободных слотов: N» (script.js:1426-1473)
-    серверная защита  nlb_form_slot_taken() (nlb_forms.php:482-516) — двойная проверка
+    серверная защита  nlb_form_slot_taken() (nlb_forms.php:490-524) — двойная проверка
     отмена брони   смена STATUS на «Отменена» в админке освобождает слот
 
 ПРАВА И АНТИСПАМ
@@ -630,10 +630,10 @@ prefers-reduced-motion для анимаций появления.
     Проверка                        Как                  Результат
     ----------------------------------------------------------------
     Синтаксис PHP                   php -l, все файлы    0 ошибок
-                                                          (97 файлов, PHP
+                                                          (98 файлов, PHP
                                                           8.3.30 и 8.5.12)
     Конфиги БД без ядра             php db/lint.php      0 ошибок
-    Миграции на заглушках ядра      php db/tests/run.php 27 из 27
+    Миграции на заглушках ядра      php db/tests/run.php 28 из 28
     Сборка превью                   php tools/build-     106 HTML, вывод
                                     preview-pages.php    побайтово совпал
                                                          с закоммиченным

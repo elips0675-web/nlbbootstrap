@@ -59,16 +59,16 @@ bootstrap/template.php
 
 1. services/detail.php:80-98 (и books/detail.php:91-110) подключают
    компонент с NLB_FORM => 'booking' / 'order'.
-2. nlb_form_render() (local/php_interface/include/nlb_forms.php:603-821)
+2. nlb_form_render() (local/php_interface/include/nlb_forms.php:602-830)
    рисует форму: bitrix_sessid_post(), CAPTCHA (USE_CAPTCHA=Y), скрытые
    PROPERTY[<ID>][0] — SERVICE / SERVICE_CODE / TARIFF / PRICE либо
    ITEM / ARTICLE / PRICE.
 3. POST идёт на тот же URL, компонент делает CIBlockElement::Add
    в bookings / orders.
 4. OnBeforeIBlockElementAdd -> nlb_forms_before_add()
-   (nlb_forms.php:877-922): согласие на обработку ПД, дата не в прошлом,
+   (nlb_forms.php:878-937): согласие на обработку ПД, дата не в прошлом,
    слот не занят — на сервере, независимо от JS.
-5. OnAfterIBlockElementAdd -> nlb_forms_after_add() (nlb_forms.php:995): письмо
+5. OnAfterIBlockElementAdd -> nlb_forms_after_add() (nlb_forms.php:1010): письмо
    NLB_NEW_REQUEST через CEvent::Send; в теле тип, имя, телефон, услуга,
    дата, время, товар и ссылка на элемент в админке.
 6. Редирект на ?sent=1#order (или #booking), вместо формы — «Спасибо!
@@ -80,11 +80,11 @@ bootstrap/template.php
 
 БРОНЬ — единственная «умная» форма:
 - слоты 10:00–21:00 (nlb_form_time_options());
-- занятые берутся из уже созданных элементов (nlb_form_slots(), nlb_forms.php:436-479)
+- занятые берутся из уже созданных элементов (nlb_form_slots(), nlb_forms.php:435-488)
   и приходят в data-nlb-slots;
 - отменённая бронь слот освобождает;
 - двойная защита: JS гасит <option> + серверная nlb_form_slot_taken()
-  (nlb_forms.php:486-515).
+  (nlb_forms.php:490-524).
 
 ПОЧТА: тип события и шаблон создаёт 008_requests.php:120-205. После
 установки в админке надо прописать реальный EMAIL_TO вместо демо

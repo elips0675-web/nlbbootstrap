@@ -21,4 +21,6 @@ require_once __DIR__ . '/include/nlb_push.php';
 require_once __DIR__ . '/include/nlb_media.php';
 require_once __DIR__ . '/include/nlb_seo.php';
 
+\Bitrix\Main\Loader::includeModule('iblock');
+
 nlb_security_headers();

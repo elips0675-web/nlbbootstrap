@@ -20,6 +20,14 @@ if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) {
     die();
 }
 
+if (!function_exists('nlb_site_id')) {
+    function nlb_site_id(): string
+    {
+        $siteId = defined('SITE_ID') ? (string)SITE_ID : '';
+        return $siteId !== '' ? $siteId : 's1';
+    }
+}
+
 if (!function_exists('nlb_forms_config')) {
     /**
      * Описание форм: инфоблок, поля, тексты.
@@ -654,8 +662,8 @@ if (!function_exists('nlb_form_render')) {
                             <?= htmlspecialcharsbx($form['name_label'] ?? 'Имя') ?> *
                         </label>
                         <input class="form-control" id="<?= htmlspecialcharsbx($formId) ?>-NAME"
-                               type="text" name="NAME" data-nlb-field="NAME"
-                               value="<?= htmlspecialcharsbx(trim((string)($_POST['NAME'] ?? ''))) ?>"
+                               type="text" name="PROPERTY[NAME][0]" data-nlb-field="NAME"
+                               value="<?= htmlspecialcharsbx(trim((string)($_POST['PROPERTY']['NAME'][0] ?? ''))) ?>"
                                autocomplete="name" placeholder="Ваше имя" required>
                         <div class="invalid-feedback">Укажите имя.</div>
                     </div>
@@ -664,11 +672,11 @@ if (!function_exists('nlb_form_render')) {
             <?php else: ?>
                 <?php
                 $nameValue = nlb_form_element_name($type, $values);
-                if (isset($_POST['NAME']) && trim((string)$_POST['NAME']) !== '') {
-                    $nameValue = trim((string)$_POST['NAME']);
+                if (isset($_POST['PROPERTY']['NAME'][0]) && trim((string)$_POST['PROPERTY']['NAME'][0]) !== '') {
+                    $nameValue = trim((string)$_POST['PROPERTY']['NAME'][0]);
                 }
                 ?>
-                <input type="hidden" name="NAME" data-nlb-field="NAME"
+                <input type="hidden" name="PROPERTY[NAME][0]" data-nlb-field="NAME"
                        value="<?= htmlspecialcharsbx($nameValue) ?>">
             <?php endif; ?>
 
@@ -882,6 +890,13 @@ if (!function_exists('nlb_forms_before_add')) {
         $type = nlb_forms_type_by_iblock($iblockId);
         if ($type === '') {
             return true;
+        }
+
+        if (trim((string)($arFields['CODE'] ?? '')) === '') {
+            $arFields['CODE'] = $type . '-' . date('YmdHis') . '-' . bin2hex(random_bytes(3));
+        }
+        if (trim((string)($arFields['XML_ID'] ?? '')) === '') {
+            $arFields['XML_ID'] = $arFields['CODE'];
         }
 
         $isFormPost = isset($_SERVER['REQUEST_METHOD'])

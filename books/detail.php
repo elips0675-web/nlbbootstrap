@@ -93,7 +93,7 @@ $APPLICATION->SetPageProperty(
                     'IBLOCK_ID' => nlb_iblock_id('orders'),
                     'PROPERTY_CODES' => nlb_form_property_codes('order'),
                     'PROPERTY_CODES_REQUIRED' => nlb_form_required_codes('order'),
-                    'GROUPS' => [],
+                    'GROUPS' => [2],
                     'STATUS_NEW' => '',
                     'ELEMENT_ASSOC' => 'NONE',
                     'MAX_USER_ENTRIES' => 0,

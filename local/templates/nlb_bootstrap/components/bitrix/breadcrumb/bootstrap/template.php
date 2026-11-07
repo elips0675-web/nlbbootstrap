@@ -7,7 +7,9 @@ if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) {
     die();
 }
 
-$this->setFrameMode(true);
+if (method_exists($this, 'setFrameMode')) {
+    $this->setFrameMode(true);
+}
 
 if (empty($arResult) || !is_array($arResult)) {
     return;
