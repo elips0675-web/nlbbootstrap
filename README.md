@@ -111,9 +111,9 @@ Python на shared-хостинге Битрикса нет, а сам BM25 — 
 | `local/php_interface/include/nlb_search.php` | токенизация, усечение окончаний, сборка индекса, ранжирование, сниппет |
 | `local/ajax/search.php` | JSON-эндпоинт для мгновенной выдачи: `GET q`, `limit` |
 | `db/search/pages.json` | курируемые страницы (часы работы, контакты, запись, сувениры) — то, чего нет в инфоблоках |
-| `db/search/index.json` | собранный индекс: 99 документов, 1319 термов, ~331 КБ |
+| `db/search/index.json` | собранный индекс: 99 документов, 1340 термов, ~333 КБ |
 | `tools/build-search-index.php` | сборка индекса, `--check` — проверка свежести |
-| `tools/search-selftest.php` | самопроверка: индекс, математика, 26 запросов, контракт API (109 проверок) |
+| `tools/search-selftest.php` | самопроверка: индекс, математика, 29 запросов, контракт API (116 проверок) |
 | `db/tests/fixtures/search-cases.json` | ожидаемое поведение запросов |
 
 Формула — Okapi BM25, `k1 = 1.5`, `b = 0.75`, idf в варианте Lucene
@@ -125,7 +125,7 @@ Python на shared-хостинге Битрикса нет, а сам BM25 — 
 ```bash
 php tools/build-search-index.php          # пересобрать индекс
 php tools/build-search-index.php --check  # свежий ли индекс
-php tools/search-selftest.php             # 109 проверок
+php tools/search-selftest.php             # 116 проверок
 ```
 
 Индекс обязан пересобираться после правки `db/config/data/*.php`,
@@ -370,7 +370,7 @@ php -l <файл>                 # синтаксис PHP
 php db/lint.php               # конфиги БД без ядра
 php db/tests/run.php          # миграции на заглушках ядра
 php tools/filter-selftest.php # фильтр чата: 95 фраз, 105 проверок
-php tools/search-selftest.php # поиск: индекс, математика, 26 запросов, контракт API
+php tools/search-selftest.php # поиск: индекс, математика, 29 запросов, контракт API
 php tools/build-search-index.php --check # индекс не устарел
 node tools/check-template.mjs  # структура шаблона + §11.2 поиск
 node tools/check-docs.mjs      # ссылки и карта документации
@@ -383,7 +383,7 @@ node tools/check-filter-parity.mjs # фильтр чата: браузер ↔ �
 на PHP 8.3.30 и 8.5.12), `db/lint.php` — 0 ошибок, `db/tests/run.php` — 27 из 27
 проверок пройдено (184 объекта, повторный запуск — 0 новых, книжная база
 переводится шагами 009/010), `filter-selftest.php` — 105 из 105,
-`search-selftest.php` — 109 из 109, `build-search-index.php --check` — индекс
+`search-selftest.php` — 116 из 116, `build-search-index.php --check` — индекс
 соответствует источникам, `check-filter-parity.mjs` — 0 расхождений
 на 95 фразах, `check-doc-numbers.mjs` — расхождений с кодом нет,
 `check-doc-refs.mjs` — мёртвых ссылок нет (сколько проверено, каждый гейт

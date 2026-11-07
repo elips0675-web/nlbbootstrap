@@ -101,6 +101,7 @@ const claims = [
     { file: 'README.md', re: /автотест на заглушках ядра \((\d+) проверок\)/, keys: ['db_tests'] },
     { file: 'README.md', re: /фильтр чата: (\d+) фраз, (\d+) проверок/, keys: ['filter_cases', 'filter_checks'] },
     { file: 'README.md', re: /поиск: индекс, математика, (\d+) запросов/, keys: ['search_cases'] },
+    { file: 'README.md', re: /собранный индекс: (\d+) документов, (\d+) термов/, keys: ['index_docs', 'index_terms'] },
     { file: 'README.md', re: /`db\/tests\/run\.php` — (\d+) из (\d+)/, keys: ['db_tests', 'db_tests'] },
     { file: 'README.md', re: /`filter-selftest\.php` — (\d+) из (\d+)/, keys: ['filter_checks', 'filter_checks'] },
     { file: 'README.md', re: /`search-selftest\.php` — (\d+) из (\d+)/, keys: ['search_checks', 'search_checks'] },

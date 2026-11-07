@@ -165,6 +165,11 @@ if (!function_exists('nlb_search_stem')) {
     /**
      * Усечение окончания. Возвращает основу, по которой идут и документ,
      * и запрос, — иначе «печать» и «печати» не встретятся.
+     *
+     * Второй проход режет только однобуквенные окончания. Иначе «мировых»
+     * теряет «ых», а затем «ов», склеивается с «мир», и запрос «Война и мир»
+     * находит «Концертный зал». Двух однобуквенных проходов хватает там, где
+     * они нужны: «поступления» → «поступлени» → «поступлен».
      */
     function nlb_search_stem(string $token): string
     {
@@ -192,6 +197,9 @@ if (!function_exists('nlb_search_stem')) {
             foreach ($minimums as $group => $minimum) {
                 foreach ($groups[$group] as $suffix) {
                     $suffixLength = mb_strlen($suffix, 'UTF-8');
+                    if ($pass === 1 && $suffixLength > 1) {
+                        continue;
+                    }
                     if ($suffixLength >= $length || $suffixLength <= mb_strlen($cut, 'UTF-8')) {
                         continue;
                     }
