@@ -143,6 +143,7 @@ const claims = [
         keys: ['properties', 'sections', 'elements'],
     },
     { file: 'docs/roadmap.md', re: /всех PHP-файлов \((\d+) файл(?:ов|а)?, 0 ошибок\)/, keys: ['php_files'] },
+    { file: 'docs/db.md', re: /прогон миграций на заглушках ядра \((\d+) проверк(?:а|ок|и)\)/, keys: ['db_tests'] },
     {
         file: 'docs/roadmap.md',
         re: /слой БД: (\d+) инфоблоков, (\d+) свойств(?:о|а)?, (\d+) элемент, (\d+) миграций/,

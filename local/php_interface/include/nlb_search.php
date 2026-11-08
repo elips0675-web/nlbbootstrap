@@ -17,7 +17,8 @@
  * Индекс собирается `tools/build-search-index.php` из демо-данных
  * (`db/config/data/*.php`, `db/config/iblocks.php`) и курируемых страниц
  * (`db/search/pages.json`). На живом ядре те же документы берутся из
- * инфоблоков: `nlb_search_documents_from_bitrix()`.
+ * инфоблоков: `nlb_search_documents_from_bitrix()`. После установки индекс
+ * обновляет хук `OnAfterIBlockElement*` — отложенно, в конце запроса.
  *
  * Почему индекс лежит в `db/`: каталог закрыт от веба (`.htaccess` +
  * `robots.txt`), а поисковику индекс не нужен — он нужен только PHP.
@@ -713,7 +714,7 @@ if (!function_exists('nlb_search_save_index')) {
     {
         $path = nlb_search_index_path($root);
         $dir = dirname($path);
-        if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
+        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
             return false;
         }
 
@@ -722,12 +723,14 @@ if (!function_exists('nlb_search_save_index')) {
             return false;
         }
 
-        $temp = $path . '.tmp';
-        if (file_put_contents($temp, $json . "\n") === false) {
+        /* Временное имя с PID: два запроса могут пересобирать индекс
+           одновременно, и общий `index.json.tmp` дал бы половину JSON. */
+        $temp = $path . '.' . getmypid() . '.tmp';
+        if (@file_put_contents($temp, $json . "\n") === false) {
             return false;
         }
 
-        if (!rename($temp, $path)) {
+        if (!@rename($temp, $path)) {
             @unlink($temp);
             return false;
         }
@@ -983,4 +986,287 @@ if (!function_exists('nlb_search_api')) {
             ],
         ];
     }
+}
+
+if (!function_exists('nlb_search_page_limit')) {
+    /**
+     * Сколько результатов показывает страница `/search/`. Модалка просит
+     * пять (там выдача — подсказка), странице нужен полноценный список.
+     */
+    function nlb_search_page_limit(): int
+    {
+        return 20;
+    }
+}
+
+if (!function_exists('nlb_search_category_name')) {
+    /**
+     * Подпись раздела для выдачи: код инфоблока → его `name` из
+     * `db/config/iblocks.php`. Курируемые страницы живут под кодом `info`.
+     */
+    function nlb_search_category_name(string $category, ?string $root = null): string
+    {
+        $iblocks = nlb_search_iblocks_config($root);
+        if (isset($iblocks[$category]) && is_array($iblocks[$category])) {
+            return (string)($iblocks[$category]['name'] ?? '');
+        }
+
+        return $category === 'info' ? 'Страницы' : '';
+    }
+}
+
+if (!function_exists('nlb_search_iblock_map')) {
+    /**
+     * ID инфоблока → его код из конфига. Только блоки, которые участвуют
+     * в поиске: `index => 'N'` (заявки, брони, заказы) — персональные данные,
+     * их в индекс не берём и хук на них не подписываем.
+     *
+     * Без ядра (CLI-сборка, самопроверка) карта пустая: событий там нет.
+     */
+    function nlb_search_iblock_map(?string $root = null): array
+    {
+        $iblocks = nlb_search_iblocks_config($root);
+        if ($iblocks === [] || !class_exists('CIBlock')) {
+            return [];
+        }
+
+        $map = [];
+        foreach ($iblocks as $code => $iblock) {
+            if (!is_array($iblock) || (string)($iblock['index'] ?? 'Y') === 'N') {
+                continue;
+            }
+
+            $code = (string)$code;
+            $type = (string)($iblock['type'] ?? 'nlb_content');
+            $found = CIBlock::GetList([], ['=CODE' => $code, '=TYPE' => $type])->Fetch();
+            if (!is_array($found) || empty($found['ID'])) {
+                continue;
+            }
+
+            $map[(int)$found['ID']] = $code;
+        }
+
+        return $map;
+    }
+}
+
+if (!function_exists('nlb_search_index_state')) {
+    /**
+     * Состояние отложенной пересборки. Живёт в `$GLOBALS`, чтобы тест мог
+     * сбросить его между сценариями: статик внутри функции сбросить нельзя.
+     *
+     * `pending` — индекс устарел, `runs` — сколько пересборок выполнено,
+     * `scheduled` — обработчик конца запроса уже зарегистрирован,
+     * `root` — корень, для которого назначена пересборка (его запомнили
+     * в момент события, чтобы `DOCUMENT_ROOT` дальше не влиял).
+     */
+    function &nlb_search_index_state(): array
+    {
+        if (!isset($GLOBALS['NLB_SEARCH_INDEX_STATE']) || !is_array($GLOBALS['NLB_SEARCH_INDEX_STATE'])) {
+            $GLOBALS['NLB_SEARCH_INDEX_STATE'] = [
+                'pending' => false,
+                'runs' => 0,
+                'scheduled' => false,
+                'root' => null,
+            ];
+        }
+
+        return $GLOBALS['NLB_SEARCH_INDEX_STATE'];
+    }
+}
+
+if (!function_exists('nlb_search_index_pending')) {
+    function nlb_search_index_pending(): bool
+    {
+        $state = &nlb_search_index_state();
+        return (bool)$state['pending'];
+    }
+}
+
+if (!function_exists('nlb_search_index_runs')) {
+    function nlb_search_index_runs(): int
+    {
+        $state = &nlb_search_index_state();
+        return (int)$state['runs'];
+    }
+}
+
+if (!function_exists('nlb_search_index_reset')) {
+    function nlb_search_index_reset(): void
+    {
+        $state = &nlb_search_index_state();
+        $state = ['pending' => false, 'runs' => 0, 'scheduled' => false, 'root' => null];
+    }
+}
+
+if (!function_exists('nlb_search_index_schedule')) {
+    /**
+     * Пометить индекс устаревшим и один раз за запрос подписаться на
+     * `register_shutdown_function`. Пересборка идёт после ответа: правка
+     * элемента в админке не должна ждать пересборки всех документов.
+     */
+    function nlb_search_index_schedule(?string $root = null): void
+    {
+        $state = &nlb_search_index_state();
+        $state['pending'] = true;
+        $state['root'] = nlb_search_data_root($root);
+
+        if ($state['scheduled'] || !function_exists('register_shutdown_function')) {
+            return;
+        }
+
+        register_shutdown_function('nlb_search_index_finish');
+        $state['scheduled'] = true;
+    }
+}
+
+if (!function_exists('nlb_search_index_finish')) {
+    /**
+     * Конец запроса: одна пересборка на все правки. Ошибку не поднимаем —
+     * страница уже отдана, а устаревший индекс лучше упавшего ответа.
+     */
+    function nlb_search_index_finish(): void
+    {
+        try {
+            nlb_search_index_run();
+        } catch (\Throwable $error) {
+            nlb_search_index_reset();
+        }
+    }
+}
+
+if (!function_exists('nlb_search_index_run')) {
+    /**
+     * Выполнить отложенную пересборку. Возвращает false, если пересобирать
+     * нечего или запись не удалась; счётчик `runs` считает попытки, чтобы
+     * тест видел «одна пересборка на пачку событий».
+     */
+    function nlb_search_index_run(?string $root = null): bool
+    {
+        $state = &nlb_search_index_state();
+        if (empty($state['pending'])) {
+            return false;
+        }
+
+        $state['pending'] = false;
+        $state['runs'] = (int)$state['runs'] + 1;
+
+        return nlb_search_index_rebuild($root ?? ($state['root'] ?? null));
+    }
+}
+
+if (!function_exists('nlb_search_collect_documents')) {
+    /**
+     * Документы для индекса: на живом ядре — инфоблоки, без ядра — демо-данные;
+     * страницы `db/search/pages.json` добавляются в обоих случаях. Отдельная
+     * функция, чтобы CLI `tools/build-search-index.php` и хук пересборки
+     * собирали один и тот же индекс, а не два похожих.
+     *
+     * @param string|null $root
+     * @param string|null $source сюда пишется источник: «инфоблоки» или «демо-данные»
+     * @return array<int,array<string,string>>
+     */
+    function nlb_search_collect_documents(?string $root = null, ?string &$source = null): array
+    {
+        $root = nlb_search_data_root($root);
+
+        $documents = nlb_search_documents_from_bitrix($root);
+        $source = 'инфоблоки';
+        if ($documents === []) {
+            $documents = nlb_search_documents_from_data($root);
+            $source = 'демо-данные';
+        }
+
+        return array_merge($documents, nlb_search_documents_from_pages($root));
+    }
+}
+
+if (!function_exists('nlb_search_index_rebuild')) {
+    /**
+     * Полная пересборка индекса. 99 документов — доли секунды, поэтому
+     * обновление «затронутого документа» не делаем: частичный индекс
+     * пришлось бы сверять с длиной и средней длиной, а это новый класс
+     * расхождений ради экономии, которой на этих объёмах не видно.
+     */
+    function nlb_search_index_rebuild(?string $root = null): bool
+    {
+        $documents = nlb_search_collect_documents($root);
+        if ($documents === []) {
+            return false;
+        }
+
+        return nlb_search_save_index(nlb_search_build_index($documents, $root), $root);
+    }
+}
+
+if (!function_exists('nlb_search_index_event')) {
+    /**
+     * Обработчик `OnAfterIBlockElementAdd/Update/Delete`. Событие приходит
+     * с полями элемента, поэтому инфоблок берём из `IBLOCK_ID`, а не из
+     * глобального состояния. Персональные инфоблоки (`index => 'N'`)
+     * пропускаем: их правки индекс не меняют.
+     *
+     * @param mixed $fields
+     */
+    function nlb_search_index_event($fields): void
+    {
+        $iblockId = is_array($fields) ? (int)($fields['IBLOCK_ID'] ?? 0) : 0;
+        if ($iblockId <= 0) {
+            return;
+        }
+
+        if (!isset(nlb_search_iblock_map()[$iblockId])) {
+            return;
+        }
+
+        nlb_search_index_schedule();
+    }
+}
+
+if (!function_exists('nlb_search_page_state')) {
+    /**
+     * Состояние страницы `/search/` без HTML: что показывать.
+     *
+     * Режимы:
+     *  - `empty`    — запроса нет, показываем подсказку;
+     *  - `results`  — BM25 нашёл документы;
+     *  - `none`     — индекс цел, но совпадений нет;
+     *  - `fallback` — индекса нет или он битый, отдаём штатный `search.page`.
+     *
+     * Порядок важен: пустой запрос не должен читать индекс, а сломанный
+     * индекс не должен выглядеть как «ничего не найдено».
+     */
+    function nlb_search_page_state(string $query, ?string $root = null): array
+    {
+        $query = trim($query);
+        $state = [
+            'mode' => 'empty',
+            'query' => $query,
+            'results' => [],
+            'count' => 0,
+        ];
+
+        if ($query === '') {
+            return $state;
+        }
+
+        $index = nlb_search_load_index($root);
+        if ($index === null) {
+            $state['mode'] = 'fallback';
+            return $state;
+        }
+
+        $results = nlb_search_query($index, $query, nlb_search_page_limit());
+        $state['results'] = $results;
+        $state['count'] = count($results);
+        $state['mode'] = $results === [] ? 'none' : 'results';
+
+        return $state;
+    }
+}
+
+if (function_exists('AddEventHandler')) {
+    AddEventHandler('iblock', 'OnAfterIBlockElementAdd', 'nlb_search_index_event');
+    AddEventHandler('iblock', 'OnAfterIBlockElementUpdate', 'nlb_search_index_event');
+    AddEventHandler('iblock', 'OnAfterIBlockElementDelete', 'nlb_search_index_event');
 }

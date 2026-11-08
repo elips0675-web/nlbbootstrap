@@ -69,16 +69,9 @@ if ($checkOnly) {
     exit(0);
 }
 
-$documents = nlb_search_documents_from_bitrix($root);
-$source = 'инфоблоки';
-
-if ($documents === []) {
-    $documents = nlb_search_documents_from_data($root);
-    $source = 'демо-данные';
-}
-
+$source = '';
+$documents = nlb_search_collect_documents($root, $source);
 $pages = nlb_search_documents_from_pages($root);
-$documents = array_merge($documents, $pages);
 
 if ($documents === []) {
     fwrite(STDERR, "Нет документов для индекса: проверьте db/config/data/ и db/search/pages.json.\n");

@@ -59,7 +59,7 @@ bitrix/                        ← этот репозиторий = DOCUMENT_RO
 | Контакты | `/contacts/` | `contacts/index.php` | — |
 | Обратная связь | `/feedback/` | `feedback/index.php` | `bitrix:iblock.element.add.form`, `requests` |
 | Подписка | `/subscribe/` | `subscribe/index.php` | `bitrix:subscribe.*` |
-| Поиск | `/search/` | `search/index.php` | `bitrix:search.page` |
+| Поиск | `/search/` | `search/index.php` | BM25 по `db/search/index.json`, `bitrix:search.page` — запасной |
 | Вход / регистрация / пароль | `/auth/…` | `auth/*/index.php` | `bitrix:system.auth.*` |
 | Личный кабинет | `/personal/` | `personal/index.php` | `bitrix:main.profile` |
 | Карта сайта | `/sitemap/` | `sitemap/index.php` | — |
@@ -90,7 +90,7 @@ php db/check.php           # что реально в базе (нужно яд�
 php db/run.php             # накатить миграции
 php db/run.php --only=005  # выборочно
 php db/rollback.php        # откат демо-контента
-php db/tests/run.php       # автотест на заглушках ядра (63 проверки)
+php db/tests/run.php       # автотест на заглушках ядра (64 проверки)
 ```
 
 Конфигурация — `db/config/iblocks.php` и `db/config/data/*.php`. Даты событий
@@ -108,12 +108,12 @@ Python на shared-хостинге Битрикса нет, а сам BM25 — 
 
 | Файл | Роль |
 |---|---|
-| `local/php_interface/include/nlb_search.php` | токенизация, усечение окончаний, сборка индекса, ранжирование, сниппет |
+| `local/php_interface/include/nlb_search.php` | токенизация, усечение окончаний, сборка индекса, ранжирование, сниппет, хук обновления и режимы страницы `/search/` |
 | `local/ajax/search.php` | JSON-эндпоинт для мгновенной выдачи: `GET q`, `limit` |
 | `db/search/pages.json` | курируемые страницы (часы работы, контакты, запись, сувениры) — то, чего нет в инфоблоках |
 | `db/search/index.json` | собранный индекс: 99 документов, 1340 термов, ~333 КБ |
 | `tools/build-search-index.php` | сборка индекса, `--check` — проверка свежести |
-| `tools/search-selftest.php` | самопроверка: индекс, математика, 29 запросов, контракт API (116 проверок) |
+| `tools/search-selftest.php` | самопроверка: индекс, математика, 29 запросов, контракт API, режимы страницы (129 проверок) |
 | `db/tests/fixtures/search-cases.json` | ожидаемое поведение запросов |
 
 Формула — Okapi BM25, `k1 = 1.5`, `b = 0.75`, idf в варианте Lucene
@@ -125,7 +125,7 @@ Python на shared-хостинге Битрикса нет, а сам BM25 — 
 ```bash
 php tools/build-search-index.php          # пересобрать индекс
 php tools/build-search-index.php --check  # свежий ли индекс
-php tools/search-selftest.php             # 116 проверок
+php tools/search-selftest.php             # 129 проверок
 ```
 
 Индекс обязан пересобираться после правки `db/config/data/*.php`,
@@ -133,14 +133,20 @@ php tools/search-selftest.php             # 116 проверок
 пофайловым sha256, а не по дате файла (дата врёт после клона). Расхождение
 ловит `node tools/check-template.mjs` (§11.2) и `--check`.
 
+После установки индекс обновляется сам: `init.php` подключает библиотеку, а
+она подписывает `OnAfterIBlockElement*` на отложенную пересборку в конце
+запроса (одна пересборка на все правки). Инфоблоки заявок, броней и заказов
+(`index => 'N'`) в индекс не входят. Файлу нужна запись у веб-пользователя
+(`db/search/`, в контейнере `www-data`); без неё остаётся ручная команда.
+
 В интерфейсе поиск живёт в модальном окне шапки: пока набирается запрос,
 `script.js` ходит в `/local/ajax/search.php` и показывает до пяти ссылок
 с заголовком и сниппетом. Это прогрессивное улучшение: без индекса, без PHP
 или при 503 список просто не появляется, а форма отправляется в `/search/`
-как обычно. В статическом превью страница `/search/` собирается (форма и
-популярные запросы), но выдачи в ней нет: её строит компонент
-`bitrix:search.page` на живом ядре. Кнопка «Найти» в превью ведёт на
-`/search/`.
+как обычно. Сама страница `/search/` отдаёт BM25-выдачу тем же индексом;
+`bitrix:search.page` подключается только как запасной вариант, когда индекса
+нет. В статическом превью страница `/search/` собирается без выдачи (форма и
+популярные запросы): кнопка «Найти» ведёт на `/search/` живого сайта.
 
 ---
 
@@ -381,11 +387,11 @@ node tools/check-doc-refs.mjs    # ссылки file:line: файл, строк�
 node tools/check-filter-parity.mjs # фильтр чата: браузер ↔ сервер
 ```
 
-Текущий результат: `php -l` — 0 ошибок (104 файла вне `preview/`, проверено
-на PHP 8.3.30 и 8.5.12), `db/lint.php` — 0 ошибок, `db/tests/run.php` — 63 из 63
+Текущий результат: `php -l` — 0 ошибок (105 файлов вне `preview/`, проверено
+на PHP 8.3.30 и 8.5.12), `db/lint.php` — 0 ошибок, `db/tests/run.php` — 64 из 64
 проверок пройдено (193 объекта, повторный запуск — 0 новых, книжная база
 переводится шагами 009/010), `filter-selftest.php` — 105 из 105,
-`search-selftest.php` — 116 из 116, `build-search-index.php --check` — индекс
+`search-selftest.php` — 129 из 129, `build-search-index.php --check` — индекс
 соответствует источникам, `check-filter-parity.mjs` — 0 расхождений
 на 95 фразах, `check-doc-numbers.mjs` — расхождений с кодом нет,
 `check-doc-refs.mjs` — мёртвых ссылок нет (сколько проверено, каждый гейт

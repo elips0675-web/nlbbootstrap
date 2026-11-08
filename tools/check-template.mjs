@@ -860,12 +860,44 @@ if (filterFixture) {
 
 const searchLib = read('local/php_interface/include/nlb_search.php');
 if (searchLib) {
-    for (const fn of ['nlb_search_query', 'nlb_search_tokenize', 'nlb_search_build_index', 'nlb_search_source_hashes', 'nlb_search_load_index']) {
+    for (const fn of ['nlb_search_query', 'nlb_search_tokenize', 'nlb_search_build_index', 'nlb_search_source_hashes', 'nlb_search_load_index', 'nlb_search_page_state', 'nlb_search_index_event', 'nlb_search_index_run', 'nlb_search_collect_documents', 'nlb_search_iblock_map']) {
         if (!searchLib.includes(`function ${fn}(`)) {
             fail(`nlb_search.php: нет ${fn}()`);
         }
     }
-    ok('nlb_search.php: ранжирование и сборка индекса на месте');
+    for (const event of ['OnAfterIBlockElementAdd', 'OnAfterIBlockElementUpdate', 'OnAfterIBlockElementDelete']) {
+        if (!searchLib.includes(`'${event}', 'nlb_search_index_event'`)) {
+            fail(`nlb_search.php: ${event} не подписан на пересборку индекса`);
+        }
+    }
+    if (!searchLib.includes("'index'] ?? 'Y'")) {
+        fail('nlb_search.php: пересборка не отличает персональные инфоблоки (index => N)');
+    }
+    ok('nlb_search.php: ранжирование, сборка и обновление индекса на месте');
+}
+
+const searchInit = read('local/php_interface/init.php') || '';
+if (!searchInit.includes('nlb_search.php')) {
+    fail('local/php_interface/init.php: не подключает nlb_search.php — хук обновления индекса не зарегистрируется');
+} else {
+    ok('init.php: библиотека поиска и хук индекса подключены');
+}
+
+const searchPage = read('search/index.php') || '';
+if (searchPage) {
+    if (!searchPage.includes('nlb_search_page_state(')) {
+        fail('search/index.php: не спрашивает состояние у nlb_search_page_state() — страница осталась на штатном компоненте');
+    }
+    if (!searchPage.includes('search-instant__item')) {
+        fail('search/index.php: нет разметки BM25-выдачи .search-instant__item');
+    }
+    if (!searchPage.includes('bitrix:search.page')) {
+        fail('search/index.php: нет штатного поиска как запасного варианта');
+    }
+    if (!searchPage.includes("'fallback'")) {
+        fail("search/index.php: штатный компонент не привязан к режиму fallback");
+    }
+    ok('search/index.php: выдача BM25 с запасным штатным поиском');
 }
 
 const searchAjax = read('local/ajax/search.php');

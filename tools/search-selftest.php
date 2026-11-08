@@ -12,7 +12,9 @@
  *  - математика BM25: редкое слово весит больше частого, длинный документ
  *    при той же частоте получает меньше, пустой запрос — пустая выдача;
  *  - запросы из `db/tests/fixtures/search-cases.json` дают ожидаемый
- *    первый результат, ожидаемый документ в выдаче или пустую выдачу.
+ *    первый результат, ожидаемый документ в выдаче или пустую выдачу;
+ *  - страница `/search/` выбирает режим (`empty`, `results`, `none`,
+ *    `fallback`) и не выдумывает выдачу, когда индекса нет.
  *
  * Выход: 0 — все проверки прошли, 1 — есть падения.
  */
@@ -386,6 +388,33 @@ $check(count($many['body']['results'] ?? []) <= nlb_search_max_limit(), 'limit �
 $missing = $api(['q' => 'часы работы'], 'GET', rtrim(sys_get_temp_dir(), '/\\') . '/nlb-search-no-index');
 $check($missing['status'] === 503, 'нет индекса → 503');
 $check(($missing['body']['error'] ?? '') === 'index_unavailable', 'нет индекса → index_unavailable');
+
+/* ------------------------------------------------------------------ */
+/* 7. Страница /search/: режимы выдачи (P1-18)                        */
+/* ------------------------------------------------------------------ */
+
+$check(nlb_search_page_limit() === 20, 'страница поиска показывает 20 результатов');
+
+$emptyPage = nlb_search_page_state('', $root);
+$check($emptyPage['mode'] === 'empty', 'пустой запрос — режим empty');
+$check($emptyPage['results'] === [] && $emptyPage['count'] === 0, 'пустой запрос не читает индекс');
+
+$foundPage = nlb_search_page_state('часы работы', $root);
+$check($foundPage['mode'] === 'results', 'запрос с совпадениями — режим results');
+$check(($foundPage['results'][0]['id'] ?? '') === 'page:hours', 'страница отдаёт тот же первый результат, что и эндпоинт');
+$check($foundPage['count'] === count($foundPage['results']), 'count страницы совпадает с числом результатов');
+$check($foundPage['count'] <= nlb_search_page_limit(), 'страница не отдаёт больше своего лимита');
+
+$missingPage = nlb_search_page_state('часы работы', rtrim(sys_get_temp_dir(), '/\\') . '/nlb-search-no-index');
+$check($missingPage['mode'] === 'fallback', 'без индекса — режим fallback (штатный поиск)');
+$check($missingPage['results'] === [], 'fallback не выдумывает результаты');
+
+$nonePage = nlb_search_page_state('ываыва', $root);
+$check($nonePage['mode'] === 'none', 'запрос без совпадений — режим none');
+
+$check(nlb_search_category_name('news', $root) === 'Новости', 'подпись раздела берётся из конфига инфоблока');
+$check(nlb_search_category_name('info', $root) === 'Страницы', 'курируемые страницы подписаны «Страницы»');
+$check(nlb_search_category_name('unknown', $root) === '', 'незнакомый раздел не получает выдуманную подпись');
 
 /* ------------------------------------------------------------------ */
 /* Итог                                                               */
