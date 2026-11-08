@@ -97,7 +97,7 @@ SCHEDULE, PHONE, EMAIL, TARIFFS). Оба шага идемпотентны: по
     Бронь услуги   /services/<код>/#booking        bookings   booking
     Заказ сувенира /books/<код>/#order             orders     order
 
-Подключение: feedback/index.php:48-65, services/detail.php:80-98,
+Подключение: feedback/index.php:49-66, services/detail.php:80-98,
 books/detail.php:91-110.
 
 ПУТЬ ОДНОГО ОТПРАВЛЕНИЯ

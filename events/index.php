@@ -36,6 +36,7 @@ $APPLICATION->SetPageProperty(
     'description',
     'Афиша библиотеки: лекции, мастер-классы, встречи с авторами и детские занятия.'
 );
+$APPLICATION->AddChainItem($past ? 'Прошедшие события' : 'События');
 
 ?>
 

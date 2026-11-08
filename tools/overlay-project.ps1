@@ -25,7 +25,8 @@ if (!(Test-Path (Join-Path $Source 'index.php'))) {
 
 $files = @(
     'index.php', '404.php', 'urlrewrite.php', 'robots.txt',
-    'sitemap.php', 'sw.js', 'offline.html', 'manifest.webmanifest'
+    'sitemap.php', 'sw.js', 'offline.html', 'manifest.webmanifest',
+    '.section.php'
 )
 $dirs = @(
     'about', 'api', 'auth', 'books', 'collections', 'contacts', 'demo',

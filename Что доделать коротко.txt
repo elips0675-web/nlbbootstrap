@@ -17,7 +17,7 @@ D:\nlbbootstrap-main → tools/overlay-project.ps1 → D:\bitrix doker\www
 powershell -File tools\overlay-project.ps1 -Destination "D:\bitrix doker\www"
 ```
 
-Копируется белый список: 8 файлов корня, 22 каталога и `preview/`
+Копируется белый список: 9 файлов корня, 22 каталога и `preview/`
 (отключается `-SkipPreview`). Не трогаются `bitrix/`, `upload/`, `.htaccess`,
 `.settings.php`, `dbconn.php`, `nlb_push_keys.php`; каталога `menu/`
 в репозитории нет, поэтому сгенерированное меню не перезаписывается.
@@ -39,8 +39,7 @@ powershell -File tools\overlay-project.ps1 -Destination "D:\bitrix doker\www"
 
 ## Шаблон: D:\nlbbootstrap-main
 
-- **Быстро:** P1-29 (крошки на несуществующие разделы), P1-24 (фильтр по
-  типу инфоблока), P1-23 (порог CSS).
+- **Быстро:** P1-24 (фильтр по типу инфоблока), P1-23 (порог CSS).
 - **Средне:** P1-19 (источник заявки), P1-18 (хук индекса), P1-28 (превью),
   P1-8 (форма без JS), P1-6 (кеш), P1-10 (миграции на заполненной базе),
   P1-4 (CSP на nginx).
@@ -61,3 +60,7 @@ Stage 60 (08.11.2026): P1-27 и P1-26 закрыты — фильтр «Прош
 в `nlb_events_filter()`, `sort` задан всем 91 демо-элементу; проверено на
 стенде на живом ядре (`/events/`, `/events/?past=1`, `/printing/`,
 `/services/`).
+
+Stage 62 (08.11.2026): P1-29 и P0-3 закрыты — `SECTION_PAGE_URL` ведёт на
+список с `?section=`, корень «Главная» объявлен `.section.php`, крошки есть
+на 15 страницах; на стенде цепочка «Главная → Афиша → Литература → событие».

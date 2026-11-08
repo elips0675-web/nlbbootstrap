@@ -213,6 +213,38 @@ nlb_test_assert(
 );
 
 /* ------------------------------------------------------------------ */
+/* 3c. Хлебные крошки: ссылки разделов и корень (P1-29, P0-3)          */
+/* ------------------------------------------------------------------ */
+
+$iblocksConfig = include $package . '/db/config/iblocks.php';
+foreach (['news', 'events', 'books'] as $crumbIblock) {
+    $sectionUrl = (string)($iblocksConfig['iblocks'][$crumbIblock]['section_page_url'] ?? '');
+    nlb_test_assert(
+        str_contains($sectionUrl, '?section=#SECTION_CODE#'),
+        "крошки {$crumbIblock}: SECTION_PAGE_URL ведёт на список с фильтром, а не на 404"
+    );
+}
+
+$rootSectionFile = $package . '/.section.php';
+nlb_test_assert(is_file($rootSectionFile), 'корень сайта объявлен файлом .section.php');
+nlb_test_assert(
+    is_file($rootSectionFile) && str_contains((string)file_get_contents($rootSectionFile), 'sSectionName'),
+    '.section.php задаёт звено «Главная» для навигационной цепочки'
+);
+
+foreach ([
+    'news', 'events', 'books', 'services', 'printing', 'collections',
+    'about', 'contacts', 'feedback', 'rules', 'privacy', 'terms',
+    'subscribe', 'search', 'personal',
+] as $listDir) {
+    $listPage = (string)file_get_contents($package . '/' . $listDir . '/index.php');
+    nlb_test_assert(
+        str_contains($listPage, 'AddChainItem('),
+        "список /{$listDir}/ добавляет звено в навигационную цепочку"
+    );
+}
+
+/* ------------------------------------------------------------------ */
 /* 4. Идемпотентность и привязка шаблона                              */
 /* ------------------------------------------------------------------ */
 
