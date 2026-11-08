@@ -1368,6 +1368,10 @@
      * 8. Bootstrap-валидация форм
      * ------------------------------------------------------------------ */
     doc.querySelectorAll('form.needs-validation').forEach(function (form) {
+        /* Без JavaScript в разметке нет novalidate, поэтому пустые required-
+           поля отбивает сам браузер. Здесь проверку берёт на себя Bootstrap:
+           он показывает .was-validated вместо нативных подсказок. */
+        form.noValidate = true;
         form.addEventListener('submit', function (event) {
             if (!form.checkValidity()) {
                 event.preventDefault();

@@ -984,7 +984,7 @@ function service_page(string $previewDir, array $item, int $depth): string
         . '<p class="section-lead mb-0">Заполните форму, и мы свяжемся с вами для подтверждения брони.</p>'
         . '</div>'
         . '<form class="feedback-form needs-validation booking-form" action="' . e($feedbackHref)
-        . '" method="post" novalidate data-nlb-form="booking" data-nlb-slots="{}">'
+        . '" method="post" data-nlb-form="booking" data-nlb-slots="{}">'
         . '<input type="hidden" name="NAME" data-nlb-field="NAME" value="Бронь: ' . $name . '">'
         . '<input type="hidden" name="PROPERTY[SERVICE][0]" data-nlb-field="SERVICE" value="' . $name . '">'
         . '<input type="hidden" name="PROPERTY[SERVICE_CODE][0]" data-nlb-field="SERVICE_CODE" value="' . $code . '">'
@@ -1808,7 +1808,7 @@ function build_feedback(string $previewDir): string
             <div class="col-lg-7" data-reveal>
                 <div class="info-card">
                     <h2 class="h4 mb-3">Форма сообщения</h2>
-                    <form class="needs-validation" action="./" method="post" novalidate data-nlb-form="request">
+                    <form class="needs-validation" action="./" method="post" data-nlb-form="request">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label" for="nlbFbName">Имя *</label>
@@ -1913,7 +1913,7 @@ function build_subscribe(string $previewDir): string
             <div class="col-lg-7" data-reveal>
                 <div class="info-card">
                     <h2 class="h4 mb-3">Оформить подписку</h2>
-                    <form class="needs-validation" action="./" method="post" novalidate>
+                    <form class="needs-validation" action="./" method="post">
                         <div class="mb-3">
                             <label class="form-label" for="nlbSubEmail">E-mail</label>
                             <input class="form-control" id="nlbSubEmail" type="email" name="EMAIL"
@@ -1984,7 +1984,7 @@ function build_auth(string $previewDir): string
             <div class="col-lg-7" data-reveal>
                 <div class="info-card">
                     <h2 class="h4 mb-3">Вход</h2>
-                    <form class="needs-validation" action="./" method="post" novalidate>
+                    <form class="needs-validation" action="./" method="post">
                         <div class="mb-3">
                             <label class="form-label" for="nlbAuthLogin">E-mail или логин</label>
                             <input class="form-control" id="nlbAuthLogin" type="text" name="USER_LOGIN"
@@ -2401,7 +2401,7 @@ foreach (($books['items'] ?? []) as $item) {
         . '<h2 class="section-title">Заказать «' . e($item['name']) . '»</h2>'
         . '<p class="section-lead mb-0">Оставьте контакты — подтвердим наличие, способ оплаты и получения.</p>'
         . '</div>'
-        . '<form class="feedback-form needs-validation" action="' . e(link_to(2, 'books/')) . '" method="post" novalidate data-nlb-form="order">'
+        . '<form class="feedback-form needs-validation" action="' . e(link_to(2, 'books/')) . '" method="post" data-nlb-form="order">'
         . '<input type="hidden" name="NAME" value="Заказ: ' . e($item['name']) . '">'
         . '<input type="hidden" name="PROPERTY[ITEM][0]" value="' . e($item['name']) . '">'
         . '<input type="hidden" name="PROPERTY[ARTICLE][0]" value="' . e($article) . '">'

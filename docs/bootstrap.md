@@ -124,8 +124,8 @@ Bootstrap 5 сам инициализирует всё по `data-bs-*`. Сво�
 |---|---|---|
 | Carousel | `data-bs-ride="carousel"` на `.carousel` | не нужен |
 | Collapse (navbar) | `data-bs-toggle="collapse" data-bs-target="#nlbNav"` | закрытие после клика (`script.js:1256`) |
-| Modal | `data-bs-toggle="modal" data-bs-target="#searchModal"` | автофокус (`script.js:1269`), Ctrl+K (`script.js:1481`) |
-| Validation | класс `needs-validation` | обработчик submit (`script.js:1370`) |
+| Modal | `data-bs-toggle="modal" data-bs-target="#searchModal"` | автофокус (`script.js:1269`), Ctrl+K (`script.js:1485`) |
+| Validation | класс `needs-validation` | `form.noValidate = true` и обработчик submit (`script.js:1374`) |
 
 Программный вызов — только через `getOrCreateInstance`, не `new bootstrap.Modal(...)`:
 
@@ -160,7 +160,7 @@ bootstrap.Collapse.getOrCreateInstance(document.getElementById('nlbNav')).hide()
 ## 8. Формы
 
 ```html
-<form class="feedback-form needs-validation" action="/feedback/" method="post" novalidate>
+<form class="feedback-form needs-validation" action="/feedback/" method="post">
     <label class="form-label" for="nlbFbEmail">E-mail</label>
     <input class="form-control" id="nlbFbEmail" type="email" name="PROPERTY[EMAIL][0]" required>
     <div class="invalid-feedback">Укажите корректный e-mail.</div>
@@ -173,11 +173,15 @@ bootstrap.Collapse.getOrCreateInstance(document.getElementById('nlbNav')).hide()
 контент-менеджер. Вручную такие формы не верстают — подключают
 `bitrix:iblock.element.add.form → bootstrap`.
 
-- `novalidate` + `needs-validation` — валидация берётся из `script.js`;
+- в разметке **нет** `novalidate`: без JavaScript пустое `required`-поле
+  отбивает сам браузер. `script.js:1374` выставляет `form.noValidate = true`
+  только когда скрипт загружен, и дальше проверку ведёт Bootstrap
+  (`.was-validated` + `invalid-feedback`);
 - `invalid-feedback` должен идти **после** поля;
 - у checkbox — `form-check-input` + `form-check-label`;
-- на сервере всё равно проверяйте данные: клиентская валидация — удобство, не
-  безопасность.
+- на сервере всё равно проверяйте данные: `nlb_forms_before_add()` отбивает
+  пустые обязательные поля, кривой e-mail и прошедшую дату независимо от
+  браузера и `required`.
 
 ## 9. Доступность (Bootstrap-часть)
 

@@ -446,6 +446,55 @@ if (!function_exists('nlb_form_required_codes')) {
     }
 }
 
+if (!function_exists('nlb_forms_required_labels')) {
+    /**
+     * Подписи обязательных полей формы: CODE => подпись для сообщения об ошибке.
+     *
+     * @return array<string,string>
+     */
+    function nlb_forms_required_labels(string $type): array
+    {
+        $config = nlb_forms_config();
+        if (!isset($config[$type])) {
+            return [];
+        }
+
+        $labels = [];
+        if (($config[$type]['name_mode'] ?? 'hidden') === 'field') {
+            $labels['NAME'] = (string)($config[$type]['name_label'] ?? 'Имя');
+        }
+        foreach ($config[$type]['fields'] as $code => $field) {
+            if (!empty($field['required'])) {
+                $labels[$code] = (string)($field['label'] ?? $code);
+            }
+        }
+        return $labels;
+    }
+}
+
+if (!function_exists('nlb_forms_missing_required')) {
+    /**
+     * Незаполненные обязательные поля: список подписей.
+     *
+     * Проверка идёт на сервере, поэтому пустая заявка не запишется даже
+     * при отключённом JavaScript и обойдённом `required`.
+     *
+     * @param array<string,string> $values значения свойств: CODE => строка
+     * @return string[]
+     */
+    function nlb_forms_missing_required(string $type, array $values, string $name = ''): array
+    {
+        $missing = [];
+        foreach (nlb_forms_required_labels($type) as $code => $label) {
+            $value = $code === 'NAME' ? $name : (string)($values[$code] ?? '');
+            if (trim($value) === '') {
+                $missing[] = $label;
+            }
+        }
+        return $missing;
+    }
+}
+
 if (!function_exists('nlb_form_success_text')) {
     function nlb_form_success_text(string $type): string
     {
@@ -762,7 +811,7 @@ if (!function_exists('nlb_form_render')) {
         }
         ?>
         <form class="<?= $classes ?>" id="<?= htmlspecialcharsbx($formId) ?>"
-              action="<?= htmlspecialcharsbx($action) ?>" method="post" novalidate
+              action="<?= htmlspecialcharsbx($action) ?>" method="post"
               data-nlb-form="<?= htmlspecialcharsbx($type) ?>"
               <?= $slotsJson !== '' ? 'data-nlb-slots="' . htmlspecialcharsbx($slotsJson) . '"' : '' ?>>
             <?= bitrix_sessid_post() ?>
@@ -1018,16 +1067,36 @@ if (!function_exists('nlb_forms_before_add')) {
             && $_SERVER['REQUEST_METHOD'] === 'POST'
             && isset($_POST['iblock_submit']);
 
-        if ($isFormPost && (string)($_POST['CONSENT'] ?? '') !== 'Y') {
-            if (is_object($APPLICATION)) {
-                $APPLICATION->ThrowException('Подтвердите согласие на обработку персональных данных.');
-            }
-            return false;
-        }
-
         $values = nlb_forms_field_values($iblockId, $arFields);
         $config = nlb_forms_config();
         $properties = nlb_iblock_properties($config[$type]['iblock']);
+
+        if ($isFormPost) {
+            if ((string)($_POST['CONSENT'] ?? '') !== 'Y') {
+                if (is_object($APPLICATION)) {
+                    $APPLICATION->ThrowException('Подтвердите согласие на обработку персональных данных.');
+                }
+                return false;
+            }
+
+            $missing = nlb_forms_missing_required($type, $values, (string)($arFields['NAME'] ?? ''));
+            if ($missing !== []) {
+                if (is_object($APPLICATION)) {
+                    $APPLICATION->ThrowException(
+                        'Заполните обязательные поля: ' . implode(', ', $missing) . '.'
+                    );
+                }
+                return false;
+            }
+
+            $email = trim((string)($values['EMAIL'] ?? ''));
+            if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+                if (is_object($APPLICATION)) {
+                    $APPLICATION->ThrowException('Проверьте e-mail: адрес указан неверно.');
+                }
+                return false;
+            }
+        }
         $sourcePropertyId = (int)($properties['SOURCE']['ID'] ?? 0);
 
         if ($sourcePropertyId > 0 && trim((string)($values['SOURCE'] ?? '')) === '') {

@@ -41,7 +41,7 @@ $isRequired = static function (string $field) use ($required): bool {
 <?php endif; ?>
 
 <form class="feedback-form needs-validation<?= $isBooking ? ' booking-form' : '' ?>"
-      action="<?= POST_FORM_ACTION_URI ?>" method="post" novalidate
+      action="<?= POST_FORM_ACTION_URI ?>" method="post"
       <?= $isBooking ? 'data-booking="Y"' : '' ?>
       data-service="<?= htmlspecialcharsbx($bookingService) ?>">
     <?= bitrix_sessid_post() ?>

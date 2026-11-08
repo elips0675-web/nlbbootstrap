@@ -89,7 +89,7 @@ $nlbTpl = SITE_TEMPLATE_PATH;
                     <a href="mailto:info@example.by">info@example.by</a>
                 </div>
 
-                <form class="newsletter mt-4 needs-validation" action="<?= $nlbSiteDir ?>subscribe/" method="post" novalidate>
+                <form class="newsletter mt-4 needs-validation" action="<?= $nlbSiteDir ?>subscribe/" method="post">
                     <label class="visually-hidden" for="nlbSubscribeEmail">E-mail для подписки</label>
                     <div class="d-flex flex-column flex-sm-row gap-2">
                         <input class="form-control" id="nlbSubscribeEmail" type="email" name="EMAIL"

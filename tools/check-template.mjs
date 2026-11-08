@@ -1024,6 +1024,100 @@ if (searchIndexRaw) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 11.3. Формы отбивают пустые поля и без JavaScript (P1-8)            */
+/* ------------------------------------------------------------------ */
+
+const validationScript = read(`${tplRel}/script.js`) || '';
+if (validationScript) {
+    if (!/form\.noValidate\s*=\s*true/.test(validationScript)) {
+        fail('script.js: не выставляет form.noValidate — Bootstrap-проверка не подменит нативную');
+    } else {
+        ok('script.js: нативную проверку отключает только JavaScript');
+    }
+}
+
+const formsLibrary = read('local/php_interface/include/nlb_forms.php') || '';
+if (formsLibrary) {
+    if (/method="post"\s+novalidate/.test(formsLibrary)) {
+        fail('nlb_forms.php: у формы остался novalidate — без JavaScript пустые поля уйдут на сервер');
+    }
+    if (!formsLibrary.includes("$required ? ' required' : ''")) {
+        fail('nlb_forms.php: обязательные поля размечены без атрибута required');
+    }
+    for (const fn of ['nlb_forms_required_labels', 'nlb_forms_missing_required']) {
+        if (!formsLibrary.includes(`function ${fn}(`)) {
+            fail(`nlb_forms.php: нет ${fn}()`);
+        }
+    }
+    if (!formsLibrary.includes('nlb_forms_missing_required($type')) {
+        fail('nlb_forms.php: before_add не сверяет обязательные поля на сервере');
+    }
+    ok('nlb_forms.php: required в разметке и серверная проверка обязательных полей');
+}
+
+const feedbackForm = read(`${tplRel}/components/bitrix/main.feedback/bootstrap/template.php`) || '';
+if (feedbackForm) {
+    if (/method="post"\s+novalidate/.test(feedbackForm)) {
+        fail('main.feedback/bootstrap: novalidate в разметке — без JavaScript форма отправится пустой');
+    }
+    if (!feedbackForm.includes("' required'")) {
+        fail('main.feedback/bootstrap: ни одно поле не помечено required');
+    }
+    ok('main.feedback/bootstrap: required без novalidate');
+}
+
+const footerForm = read(`${tplRel}/footer.php`) || '';
+if (footerForm && /method="post"\s+novalidate/.test(footerForm)) {
+    fail('footer.php: подписка размечена с novalidate — без JavaScript e-mail уйдёт пустым');
+}
+
+for (const page of ['feedback/index.php', 'services/detail.php', 'books/detail.php']) {
+    const text = read(page) || '';
+    if (text && !text.includes("'PROPERTY_CODES_REQUIRED' => nlb_form_required_codes(")) {
+        fail(`${page}: компонент не получает PROPERTY_CODES_REQUIRED — серверная проверка формы отключена`);
+    }
+}
+ok('страницы форм: PROPERTY_CODES_REQUIRED передан компоненту');
+
+const previewValidity = { forms: 0, novalidate: 0, required: 0, files: 0 };
+const walkPreview = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const abs = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            walkPreview(abs);
+            continue;
+        }
+        if (!entry.name.endsWith('.html')) continue;
+        const text = fs.readFileSync(abs, 'utf8');
+        previewValidity.files++;
+        previewValidity.forms += (text.match(/class="[^"]*needs-validation/g) || []).length;
+        previewValidity.novalidate += (text.match(/novalidate/g) || []).length;
+        previewValidity.required += (text.match(/\srequired[ >]/g) || []).length;
+    }
+};
+if (fs.existsSync(path.join(root, 'preview'))) {
+    walkPreview(path.join(root, 'preview'));
+    if (previewValidity.novalidate > 0) {
+        fail(
+            `preview: novalidate в ${previewValidity.novalidate} местах — без JavaScript пустые поля уйдут на сервер, `
+            + 'пересоберите tools/build-preview-pages.php'
+        );
+    } else if (previewValidity.forms < 5 || previewValidity.required < previewValidity.forms) {
+        fail(
+            `preview: ${previewValidity.forms} форм с needs-validation и ${previewValidity.required} полей required — `
+            + 'обязательные поля не размечены'
+        );
+    } else {
+        ok(`preview: ${previewValidity.forms} форм с required, novalidate нет (${previewValidity.files} страниц)`);
+    }
+}
+
+const previewBuilder = read('tools/build-preview-pages.php') || '';
+if (previewBuilder && previewBuilder.includes('novalidate')) {
+    fail('tools/build-preview-pages.php: генератор всё ещё печатает novalidate');
+}
+
+/* ------------------------------------------------------------------ */
 /* 12. Меню и база данных                                             */
 /* ------------------------------------------------------------------ */
 

@@ -3,6 +3,28 @@
 Журнал этапов шаблона `nlb_bootstrap`. Сверху — свежее. Формат записи: этап,
 дата, что сделано, чем проверено, что не проверено.
 
+(Stage 69 — 08.11.2026) — **Форма не отправляет пустое и без JavaScript: `required` остался в разметке, а сервер отбивает незаполненные обязательные поля (P1-8).**
+
+Повод: Bootstrap-проверку включал `script.js`, а в разметке стоял `novalidate`. При отключённом JavaScript браузер не проверял ничего, и пустая заявка уходила на сервер; серверная проверка обязательных полей существовала только в компоненте `main.feedback`, а не в общем `nlb_forms_before_add()`.
+
+Сделано:
+
+- `local/php_interface/include/nlb_forms.php` — из `<form>` убран `novalidate`; добавлены `nlb_forms_required_labels()` (CODE → подпись из конфига, `NAME` учитывается при `name_mode = field`) и `nlb_forms_missing_required()` (список незаполненных); в `nlb_forms_before_add()` для POST с `iblock_submit` идут проверки согласия, обязательных полей («Заполните обязательные поля: …») и формата e-mail (`filter_var`). Программная запись из админки и миграций не блокируется — проверки живут только в ветке POST-формы;
+- `local/templates/nlb_bootstrap/components/bitrix/main.feedback/bootstrap/template.php` и `footer.php` — `novalidate` убран, `required` остался;
+- `local/templates/nlb_bootstrap/script.js` §8 — `form.noValidate = true` выставляется только загруженным скриптом, дальше проверку ведёт Bootstrap (`.was-validated`); в разметке `novalidate` больше нет;
+- `tools/build-preview-pages.php` (5 форм) и `preview/index.html` (2 формы) — генератор и ручной каркас без `novalidate`; `preview/` пересобран, 110 страниц;
+- `db/tests/forms-validation.php` — новый тест: в разметке нет `novalidate` и есть `required`, подписи обязательных полей у `request` и `booking`, пустая заявка, заявка без согласия, кривой e-mail, валидная заявка, бронь без полей, бронь с прошедшей датой, программная запись и шаблоны/скрипт;
+- `db/tests/run.php` — тест подключён в песочницу: 64 → 65 проверок;
+- `tools/check-template.mjs` §11.3 — гейт: `form.noValidate` в скрипте, отсутствие `novalidate` в `nlb_forms.php`/`main.feedback`/`footer.php`/генераторе, `required` в разметке, функции серверной проверки, `PROPERTY_CODES_REQUIRED` на трёх страницах форм и скан `preview/` (253 формы с `required`, 0 `novalidate`);
+- `docs/bootstrap.md` §6/§8, `docs/bitrix-integration.md` §8 — абзац «Формы без JavaScript» и расширенный список серверных проверок `OnBeforeIBlockElementAdd`; `docs/qa-checklist.md` — новый §A15, пункт в B4, исправлено устаревшее «109» на «129» в A14;
+- `tools/check-doc-numbers.mjs` — утверждение про `search-selftest` в `qa-checklist.md`; форма числа проверок расширена до `провер(?:ка|ки|ок)`, иначе корректное «65 проверок» не находилось и гейт краснел;
+- числа (105 → 106 PHP-файлов, 22 598 → 22 963 строки, 64 → 65 проверок, 1 513 → 1 517 строк `script.js`, 72,0 → 72,3 КБ JS) в `README.md`, `AGENTS.md`, `project-context.md`, `Что доделать.txt`, `docs/roadmap.md`, `docs/db.md`, `docs/security-performance.md` и снимках `test/`; ссылки `file:line` после вставок в `nlb_forms.php` и `script.js` пересчитаны — 35 ссылок в 8 документах;
+- пункт P1-8 удалён из `Что доделать.txt`, абзац Stage 69 добавлен в `Что доделать коротко.txt`.
+
+**Проверено**: `php db/lint.php` — 0 ошибок, 13 миграций; `php db/tests/run.php` — 65 из 65, exit 0; `php db/stats.php --json`: 106 PHP-файлов, 22 963 строки, 1 517 строк `script.js`, 74 080 байт JS, 65 проверок; `php tools/filter-selftest.php` — 105 из 105; `php tools/search-selftest.php` — 129 из 129; `php tools/build-search-index.php --check` — индекс соответствует источникам (99 документов, 1340 термов). Обратная подстановка — два сценария: удаление вызова `nlb_forms_missing_required()` из `before_add` роняет `db/tests/run.php` на `forms-validation.php`; возврат `novalidate` в разметку роняет и §11.3 `check-template.mjs`, и `forms-validation.php`. После откатов файл совпал побайтово (sha256 `d7d32f1aa2ae` у `nlb_forms.php`), гейты снова зелёные. Все 10 гейтов exit 0: `check-doc-numbers` (77 утверждений в 17 файлах), `check-doc-refs` (231 ссылка в 20 документах), `check-docs`, `check-template` (13 миграций; `preview`: 253 формы с `required`, 0 `novalidate`), `check-filter-parity` (95 фраз), `db/lint.php`, `db/tests/run.php` (65), `filter-selftest` (105), `search-selftest` (129), `build-search-index.php --check` (99 документов, отпечаток `9a78e17aaa8a`). Живое ядро на стенде `http://localhost:8080` после `tools/overlay-project.ps1`: `GET /feedback/` — 200, `novalidate` — 0, `required` — 9; CLI-прогон в контейнере `bitrix-web` на живом ядре: пустая заявка → «Заполните обязательные поля: Имя, E-mail, Сообщение.», кривой e-mail → «Проверьте e-mail: адрес указан неверно.», заявка без согласия → «Подтвердите согласие…», бронь с прошедшей датой → «Дата уже прошла…», заполненная заявка и программная запись — проходят.
+
+**Не проверено**: клик по пустой форме в реальном браузере с выключенным JavaScript (проверены разметка `required`/`novalidate` и серверный обработчик на живом ядре, а не сама нативная подсказка браузера); письма и уведомления после успешной отправки; поведение формы в админке.
+
 (Stage 68 — 08.11.2026) — **Индекс поиска обновляется сам, а `/search/` отдаёт ту же BM25-выдачу, что и подсказка в шапке (P1-18).**
 
 Повод: индекс `db/search/index.json` пересобирала только ручная команда, а страница `/search/` продолжала искать по индексу Битрикса. Две точки поиска отвечали по-разному: модалка находила по BM25, штатная страница — по своему индексу, которого на демо-стенде нет. Правка элемента в админке оставляла подсказки на старом содержимом.

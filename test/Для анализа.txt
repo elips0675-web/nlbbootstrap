@@ -108,8 +108,8 @@
     ---------------------------------------------------------------
     Публичных страниц                         28
     Разделов с index.php в корне              17
-    PHP-файлов (без preview)                105
-    Строк PHP                                 22 598
+    PHP-файлов (без preview)                106
+    Строк PHP                                 22 963
     Типов инфоблоков                          3 (nlb_content, nlb_catalog,
                                               nlb_services)
     Инфоблоков                                9 (6 контентных + requests,
@@ -150,7 +150,7 @@
 Готово в коде: шаблон, 28 страниц, слой данных, формы (обращение, бронь,
 заказ), SEO, заголовки безопасности, PWA, статическое превью, документация.
 
-Проверено локально: синтаксис PHP (105 файлов, 0 ошибок на PHP 8.3.30 и 8.5.12),
+Проверено локально: синтаксис PHP (106 файлов, 0 ошибок на PHP 8.3.30 и 8.5.12),
 db/lint.php (конфиги без ядра), db/tests/run.php (63 проверки на заглушках
 ядра), tools/check-template.mjs, tools/check-docs.mjs, статическое превью в
 браузере (0 ошибок консоли на главной), пересборка превью под PHP 8.5 —
@@ -269,7 +269,7 @@ local/templates/nlb_bootstrap/
     header.php          <head>, мета, SEO, JSON-LD, топбар, меню, поиск, крошки
     footer.php          подвал, подписка, модалки (обратная связь, реквизиты), FAB, чат ИИ-помощника
     styles.css          3 785 строк, токены в :root (styles.css:12)
-    script.js           1 513 строк, 10 модулей + формы и слоты (8.1) + чат (4.1)
+    script.js           1 517 строк, 10 модулей + формы и слоты (8.1) + чат (4.1)
     assets/css/bootstrap.min.css        5.3.3, локально
     assets/js/bootstrap.bundle.min.js   5.3.3, локально
     assets/js/pwa.js, push.js, consent.js
@@ -311,7 +311,7 @@ local/templates/nlb_bootstrap/
     db/lib/boot.php             загрузка конфигов без ядра
     db/lib/helpers.php          создание типов, инфоблоков, свойств, элементов
     db/sql/checks.sql           проверки схемы для check.php
-    db/tests/run.php            64 проверки на заглушках ядра
+    db/tests/run.php            65 проверок на заглушках ядра
     db/tests/stub/bitrix.php    заглушка ядра (26 КБ)
     db/run.php                  накат миграций (--only, --set-template)
     db/check.php                что реально в базе (нужно ядро)
@@ -369,7 +369,7 @@ local/templates/nlb_bootstrap/
     CSS-фреймворк   Bootstrap 5.3.3, локально                assets/css
     JS              Bootstrap bundle + vanilla, IIFE         assets/js
     Свой CSS        CSS3 + custom properties, 3 785 строк    styles.css
-    Свой JS         ES5-совместимый, 1 513 строк             script.js
+    Свой JS         ES5-совместимый, 1 517 строк             script.js
     Шрифты          системный стек, внешних запросов нет     styles.css:55
     Иконки          inline SVG <symbol>, спрайт в header     header.php
     Изображения     JPG + WebP + AVIF, ширины 480/960/1280    assets/images
@@ -459,16 +459,16 @@ books/detail.php:91-110.
 
 ПУТЬ ОДНОГО ОТПРАВЛЕНИЯ
 
-1. nlb_form_render() (nlb_forms.php:724-945) рисует форму: bitrix_sessid_post(),
+1. nlb_form_render() (nlb_forms.php:773-994) рисует форму: bitrix_sessid_post(),
    CAPTCHA (USE_CAPTCHA=Y), скрытые PROPERTY[<ID>][0] с предзаполненными
    значениями (SERVICE, SERVICE_CODE, TARIFF, PRICE либо ITEM, ARTICLE, PRICE).
 2. POST уходит на тот же URL; компонент делает CIBlockElement::Add.
-3. OnBeforeIBlockElementAdd → nlb_forms_before_add() (nlb_forms.php:878-937):
+3. OnBeforeIBlockElementAdd → nlb_forms_before_add() (nlb_forms.php:927-986):
    - требует CONSENT=Y (согласие на обработку персональных данных);
    - отклоняет дату в прошлом;
    - отклоняет занятый слот (для booking).
    Проверки серверные, работают и при отключённом JavaScript.
-4. OnAfterIBlockElementAdd → nlb_forms_after_add() (nlb_forms.php:1136-1215):
+4. OnAfterIBlockElementAdd → nlb_forms_after_add() (nlb_forms.php:1205-1284):
    CEvent::Send('NLB_NEW_REQUEST', …) с типом заявки, именем, контактами,
    услугой/товаром, датой/временем и ссылкой на элемент в админке.
    Ошибка почты не ломает сохранение (try/catch).
@@ -478,16 +478,16 @@ books/detail.php:91-110.
 
 Название элемента собирается из данных, чтобы в списке админки не было
 одинаковых «Заявка на услугу»: «Бронь: Сауна — 2026-11-10 14:00»,
-«Заказ: Кружка «Библиотека 2026»» (nlb_forms.php:554-600).
+«Заказ: Кружка «Библиотека 2026»» (nlb_forms.php:603-649).
 
 СЛОТЫ БРОНИ
 
     часы            10:00–21:00, шаг 1 час (nlb_form_time_options)
     занятость       элементы bookings с тем же SERVICE_CODE, не отменённые,
-                    с датой не в прошлом (nlb_form_slots, nlb_forms.php:435-488)
+                    с датой не в прошлом (nlb_form_slots, nlb_forms.php:435-537)
     передача в JS   JSON в data-nlb-slots; script.js гасит занятые <option>
-                    и пишет «Свободных слотов: N» (script.js:1426-1473)
-    серверная защита  nlb_form_slot_taken() (nlb_forms.php:490-524) — двойная проверка
+                    и пишет «Свободных слотов: N» (script.js:1430-1477)
+    серверная защита  nlb_form_slot_taken() (nlb_forms.php:539-573) — двойная проверка
     отмена брони   смена STATUS на «Отменена» в админке освобождает слот
 
 ПРАВА И АНТИСПАМ
@@ -630,10 +630,10 @@ prefers-reduced-motion для анимаций появления.
     Проверка                        Как                  Результат
     ----------------------------------------------------------------
     Синтаксис PHP                   php -l, все файлы    0 ошибок
-                                                          (105 файлов, PHP
+                                                          (106 файлов, PHP
                                                           8.3.30 и 8.5.12)
     Конфиги БД без ядра             php db/lint.php      0 ошибок
-    Миграции на заглушках ядра      php db/tests/run.php 64 из 64
+    Миграции на заглушках ядра      php db/tests/run.php 65 из 65
     Сборка превью                   php tools/build-     110 HTML, вывод
                                     preview-pages.php    побайтово совпал
                                                          с закоммиченным

@@ -339,8 +339,9 @@ $APPLICATION->IncludeComponent('bitrix:iblock.element.add.form', 'bootstrap', [
   (`nlb_form_render()`), проверка слотов, обработчики событий инфоблока;
 - `nlb_form_property_codes()` / `nlb_form_required_codes()` — коды свойств
   для параметров компонента, чтобы не дублировать списки;
-- `OnBeforeIBlockElementAdd` — согласие на обработку данных, дата не в
-  прошлом, занятый слот (серверная проверка, не зависит от JS);
+- `OnBeforeIBlockElementAdd` — согласие на обработку данных, пустые
+  обязательные поля, кривой e-mail, дата не в прошлом, занятый слот
+  (серверная проверка, не зависит от JS);
 - `OnAfterIBlockElementAdd` — письмо `NLB_NEW_REQUEST` через `CEvent::Send`.
   Если почта не настроена, заявка всё равно остаётся в инфоблоке;
 - `OnBeforeIBlockElementAdd` дополнительно пишет `SOURCE` — канал заявки
@@ -367,6 +368,17 @@ $APPLICATION->IncludeComponent('bitrix:iblock.element.add.form', 'bootstrap', [
 обязательность через `nlb_iblock_relax_code()`, а код элемента генерирует
 `OnBeforeIBlockElementAdd` в `nlb_forms.php` — иначе Битрикс отклоняет
 добавление на проверке обязательных полей.
+
+**Формы без JavaScript.** В разметке нет `novalidate`, у обязательных полей
+стоит `required`, поэтому браузер с выключенным JS сам не даёт отправить
+пустую заявку. `script.js:1374` выставляет `form.noValidate = true` только
+при загруженном скрипте — дальше проверку показывает Bootstrap
+(`.was-validated`). Второй рубеж — сервер: `nlb_forms_before_add()` сверяет
+обязательные поля из конфига (`nlb_forms_required_labels()`,
+`nlb_forms_missing_required()`), формат e-mail и дату брони. Проверки —
+`db/tests/forms-validation.php` в общем прогоне `db/tests/run.php`, гейт §11.3
+`tools/check-template.mjs` (форма без `novalidate`, `required` в разметке,
+`noValidate` в скрипте, серверная проверка в библиотеке).
 
 **Колонки списка заявок.** Свойства в списке элементов по умолчанию не
 показываются, поэтому миграция `013_request_source.php` вызывает
