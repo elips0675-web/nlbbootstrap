@@ -181,9 +181,14 @@ $APPLICATION->IncludeComponent('bitrix:menu', 'top_bootstrap', [
 
 `components/bitrix/breadcrumb/bootstrap/template.php`:
 
-- выводит `<nav aria-label="Хлебные крошки"><ol class="breadcrumb-navigation">`;
+- **возвращает** строку `<nav aria-label="Хлебные крошки"><ol class="breadcrumb-navigation">…</ol></nav>`,
+  а не печатает её: компонент подключает шаблон через
+  `$APPLICATION->AddBufferContent()` с `$bIncludeOnce = true`, поэтому
+  `include` возвращает то, что вернул шаблон. Печать ломает и позицию
+  (крошки уезжают в начало документа), и содержимое контейнера — туда
+  попадает `1`, результат `include`;
 - последний элемент без ссылки получает `aria-current="page"`;
-- пустой `$arResult` → компонент ничего не рисует;
+- пустой `$arResult` → возвращается пустая строка, компонент ничего не рисует;
 - вызов — `header.php:228`, только если `GetCurPage(false) !== SITE_DIR`.
 
 ## 7. Серверный слой
