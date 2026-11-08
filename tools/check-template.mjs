@@ -498,6 +498,74 @@ for (const rel of ['demo/index.php', 'preview/index.html']) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 8b. Главная: preview и Bitrix-версия не разошлись (P1-7)           */
+/* ------------------------------------------------------------------ */
+
+const demoHome = read('demo/index.php') || '';
+const previewHomeSource = read('preview/index.html') || '';
+
+const demoBody = demoHome.slice(demoHome.indexOf('?>') + 2, demoHome.lastIndexOf('<?php require'));
+const previewOpen = '<main class="site-main" id="main">';
+const previewBody = previewHomeSource.slice(
+    previewHomeSource.indexOf(previewOpen) + previewOpen.length,
+    previewHomeSource.indexOf('</main>')
+);
+
+if (!demoBody.trim() || !previewBody.trim()) {
+    fail('не удалось выделить разметку главной в demo/index.php или preview/index.html');
+} else {
+    // Разметка у файлов разная по форме (nlb_picture() против <picture>, относительные
+    // ссылки против абсолютных), поэтому сверяется то, что видит посетитель: текст
+    // по порядку и набор картинок. Расхождение формулировок = файлы разъехались.
+    const homeTextLines = (html) => html
+        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<\?[\s\S]*?\?>/g, ' ')
+        .replace(/<[^>]+>/g, '\n')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&mdash;/g, '—')
+        .replace(/&laquo;/g, '«')
+        .replace(/&raquo;/g, '»')
+        .replace(/&amp;/g, '&')
+        .split('\n')
+        .map((line) => line.replace(/\s+/g, ' ').trim())
+        .filter(Boolean);
+
+    const homeImages = (html) => [...new Set(
+        [...html.matchAll(/assets\/images\/([\w.\-]+)\.(?:jpe?g|png|svg|webp|avif)/g)]
+            .map((match) => match[1].replace(/-(?:480|960|1280)$/, ''))
+    )].sort();
+
+    const demoLines = homeTextLines(demoBody);
+    const previewLines = homeTextLines(previewBody);
+    const demoImages = homeImages(demoBody);
+    const previewImages = homeImages(previewBody);
+
+    let homesDiffer = false;
+    if (demoLines.length !== previewLines.length) {
+        homesDiffer = true;
+        fail(`demo/index.php и preview/index.html разошлись: строк текста ${demoLines.length} против ${previewLines.length} — правьте оба файла`);
+    } else {
+        const index = demoLines.findIndex((line, i) => line !== previewLines[i]);
+        if (index >= 0) {
+            homesDiffer = true;
+            fail(`demo/index.php и preview/index.html разошлись на строке ${index + 1}: «${demoLines[index].slice(0, 60)}» против «${previewLines[index].slice(0, 60)}»`);
+        }
+    }
+
+    const missingInDemo = previewImages.filter((name) => !demoImages.includes(name));
+    const missingInPreview = demoImages.filter((name) => !previewImages.includes(name));
+    if (missingInDemo.length || missingInPreview.length) {
+        homesDiffer = true;
+        if (missingInDemo.length) fail(`preview/index.html: картинок нет в demo/index.php — ${missingInDemo.join(', ')}`);
+        if (missingInPreview.length) fail(`demo/index.php: картинок нет в preview/index.html — ${missingInPreview.join(', ')}`);
+    }
+
+    if (!homesDiffer) {
+        ok(`главная: demo/index.php и preview/index.html совпадают (${demoLines.length} строк, ${demoImages.length} картинок)`);
+    }
+}
+
+/* ------------------------------------------------------------------ */
 /* 9. Публичные страницы                                              */
 /* ------------------------------------------------------------------ */
 
