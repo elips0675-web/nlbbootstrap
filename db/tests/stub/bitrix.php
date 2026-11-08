@@ -229,9 +229,13 @@ class CIBlock
             $this->LAST_ERROR = 'пустой CODE';
             return false;
         }
+        /* В Битриксе CODE инфоблока не уникален: индекс b_iblock по CODE
+           обычный, и одинаковый код в разных типах — штатная ситуация
+           (P1-24). Уникальность держим только внутри типа, чтобы GetList
+           по паре «тип + код» оставался однозначным. */
         foreach (NlbStubStore::$iblocks as $iblock) {
-            if ($iblock['CODE'] === $code) {
-                $this->LAST_ERROR = 'инфоблок с таким CODE уже есть';
+            if ($iblock['CODE'] === $code && $iblock['IBLOCK_TYPE_ID'] === (string)($fields['IBLOCK_TYPE_ID'] ?? '')) {
+                $this->LAST_ERROR = 'инфоблок с таким CODE уже есть в этом типе';
                 return false;
             }
         }

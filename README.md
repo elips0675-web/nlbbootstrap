@@ -90,7 +90,7 @@ php db/check.php           # что реально в базе (нужно яд�
 php db/run.php             # накатить миграции
 php db/run.php --only=005  # выборочно
 php db/rollback.php        # откат демо-контента
-php db/tests/run.php       # автотест на заглушках ядра (61 проверка)
+php db/tests/run.php       # автотест на заглушках ядра (62 проверки)
 ```
 
 Конфигурация — `db/config/iblocks.php` и `db/config/data/*.php`. Даты событий
@@ -379,8 +379,8 @@ node tools/check-doc-refs.mjs    # ссылки file:line: файл, строк�
 node tools/check-filter-parity.mjs # фильтр чата: браузер ↔ сервер
 ```
 
-Текущий результат: `php -l` — 0 ошибок (101 файл вне `preview/`, проверено
-на PHP 8.3.30 и 8.5.12), `db/lint.php` — 0 ошибок, `db/tests/run.php` — 61 из 61
+Текущий результат: `php -l` — 0 ошибок (102 файла вне `preview/`, проверено
+на PHP 8.3.30 и 8.5.12), `db/lint.php` — 0 ошибок, `db/tests/run.php` — 62 из 62
 проверок пройдено (184 объекта, повторный запуск — 0 новых, книжная база
 переводится шагами 009/010), `filter-selftest.php` — 105 из 105,
 `search-selftest.php` — 116 из 116, `build-search-index.php --check` — индекс

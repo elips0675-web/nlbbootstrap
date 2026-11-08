@@ -13,7 +13,13 @@ if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) {
 
 if (!function_exists('nlb_iblock_id')) {
     /**
-     * ID инфоблока по символьному коду. Кешируется на время запроса.
+     * ID своего инфоблока по символьному коду. Кешируется на время запроса.
+     *
+     * Код в Битриксе не уникален: тот же `CODE` может быть у инфоблока
+     * другого типа (демо-контент другой редакции). Чужие инфоблоки
+     * пропускаются — свой всегда лежит в типе с префиксом `nlb_`.
+     * Конфиг миграций (`db/config/iblocks.php`) здесь недоступен: каталог
+     * `db/` после установки удаляют.
      */
     function nlb_iblock_id(string $code): int
     {
@@ -23,12 +29,16 @@ if (!function_exists('nlb_iblock_id')) {
         }
 
         $id = 0;
-        $res = CIBlock::GetList([], [
+        $res = CIBlock::GetList(['SORT' => 'ASC'], [
             'CODE' => $code,
             'CHECK_PERMISSIONS' => 'N',
         ]);
-        if ($row = $res->Fetch()) {
+        while ($row = $res->Fetch()) {
+            if (!str_starts_with((string)($row['IBLOCK_TYPE_ID'] ?? ''), 'nlb_')) {
+                continue;
+            }
             $id = (int)$row['ID'];
+            break;
         }
 
         // Ноль не кешируем: инфоблок может быть создан позже в этом же запуске.
