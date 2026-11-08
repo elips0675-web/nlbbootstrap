@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1С-Битрикс: Enterprise-руководство (консолидированное)</title>
+<style>
+  :root {
+    --primary: #2b579a;
+    --primary-hover: #1e3f73;
+    --accent: #00a1f1;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #334155;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --sidebar-width: 300px;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --inline-code-bg: #e2e8f0;
+    --inline-code-text: #be123c;
+    --danger: #dc2626;
+    --success: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: #1e293b;
+    color: #f8fafc;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    overflow-y: auto;
+    padding: 1.5rem 1rem 2rem;
+    z-index: 100;
+  }
+  .sidebar h2 {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    padding: 0 0.5rem 0.8rem;
+    border-bottom: 1px solid #334155;
+    margin-bottom: 1rem;
+  }
+  .sidebar .group-title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    padding: 1rem 0.5rem 0.4rem;
+    font-weight: 700;
+  }
+  .sidebar ul { list-style: none; }
+  .sidebar li { margin-bottom: 0.15rem; }
+  .sidebar a {
+    display: block;
+    padding: 0.45rem 0.75rem;
+    color: #cbd5e1;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    transition: all 0.15s ease;
+    border-left: 2px solid transparent;
+  }
+  .sidebar a:hover {
+    background: #334155;
+    color: #fff;
+    border-left-color: var(--accent);
+    padding-left: 1rem;
+  }
+  .sidebar a.active {
+    background: #334155;
+    color: #fff;
+    border-left-color: var(--accent);
+  }
+
+  /* Main */
+  .main {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 2.5rem 4rem;
+    max-width: 1100px;
+    width: calc(100% - var(--sidebar-width));
+  }
+  h1 {
+    font-size: 2.1rem;
+    color: var(--primary);
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: 0.8rem;
+    margin-bottom: 1.2rem;
+  }
+  h2 {
+    font-size: 1.55rem;
+    color: #0f172a;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    scroll-margin-top: 1rem;
+  }
+  h2.section-start {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 3px solid var(--primary);
+  }
+  h3 {
+    font-size: 1.15rem;
+    color: #1e293b;
+    margin-top: 1.6rem;
+    margin-bottom: 0.6rem;
+  }
+  h4 {
+    font-size: 1rem;
+    color: #334155;
+    margin-top: 1.2rem;
+    margin-bottom: 0.4rem;
+  }
+  p { margin-bottom: 0.9rem; color: #475569; }
+  ul, ol { margin: 0.8rem 0 1rem 1.6rem; }
+  li { margin-bottom: 0.4rem; color: #475569; }
+  strong { color: #1e293b; }
+
+  /* Alerts */
+  .alert {
+    background: #e0f2fe;
+    border-left: 4px solid var(--accent);
+    padding: 0.9rem 1.2rem;
+    margin: 1.2rem 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.95rem;
+  }
+  .alert.warn {
+    background: #fef3c7;
+    border-left-color: #d97706;
+  }
+  .alert.danger {
+    background: #fee2e2;
+    border-left-color: var(--danger);
+  }
+  .alert .title {
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.3rem;
+    display: block;
+  }
+  .alert.warn .title { color: #92400e; }
+  .alert.danger .title { color: #991b1b; }
+
+  /* Code */
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    background: var(--inline-code-bg);
+    color: var(--inline-code-text);
+    padding: 0.12rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.88em;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1.1rem 1.3rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    margin: 1rem 0;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+  }
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0;
+    background: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    font-size: 0.93rem;
+  }
+  th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: #f1f5f9;
+    color: #1e293b;
+    font-weight: 600;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* Cards */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.2rem;
+    margin: 1.2rem 0;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .card.danger { border-top: 4px solid var(--danger); }
+  .card.success { border-top: 4px solid var(--success); }
+  .card h3 { margin-top: 0; }
+
+  /* Lists with icons */
+  ul.styled-list { list-style: none; margin-left: 0; }
+  ul.styled-list li {
+    position: relative;
+    padding-left: 1.8rem;
+    margin-bottom: 0.5rem;
+  }
+  ul.styled-list li::before {
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+  }
+  ul.styled-list.plus li::before { content: "✅"; }
+  ul.styled-list.minus li::before { content: "❌"; }
+  ul.styled-list.speed li::before { content: "⚡"; }
+  ul.styled-list.shield li::before { content: "🛡️"; }
+  ul.styled-list.check li::before { content: "☑️"; }
+
+  /* Back to top */
+  .back-top {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    background: var(--primary);
+    color: #fff;
+    text-decoration: none;
+    padding: 0.6rem 0.9rem;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    opacity: 0.85;
+    transition: opacity 0.2s;
+  }
+  .back-top:hover { opacity: 1; }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    body { flex-direction: column; }
+    .sidebar {
+      position: relative;
+      width: 100%;
+      height: auto;
+      max-height: 50vh;
+      padding: 1rem;
+    }
+    .main {
+      margin-left: 0;
+      width: 100%;
+      padding: 1.5rem;
+    }
+  }
+  @media (max-width: 600px) {
+    .main { padding: 1rem; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.3rem; }
+    pre { font-size: 0.78rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================================================== -->
+<!-- SIDEBAR                                                  -->
+<!-- ======================================================== -->
+<nav class="sidebar">
+  <h2>1С-Битрикс Enterprise</h2>
+
+  <div class="group-title">Введение</div>
+  <ul>
+    <li><a href="#intro">Введение</a></li>
+    <li><a href="#status">Что есть в проекте, чего нет</a></li>
+  </ul>
+
+  <div class="group-title">Архитектура и код</div>
+  <ul>
+    <li><a href="#arch-quality">1. Архитектура и качество кода</a></li>
+    <li><a href="#comparison">2. Сравнение с фреймворками</a></li>
+    <li><a href="#structure">3. Стандарты и файловая структура</a></li>
+    <li><a href="#modularity">4. Модульность ядра</a></li>
+  </ul>
+
+  <div class="group-title">Данные</div>
+  <ul>
+    <li><a href="#d7orm">5. API D7 и ORM</a></li>
+    <li><a href="#highload">6. Highload-блоки и Big Data</a></li>
+    <li><a href="#migrations">7. Миграции БД и CI/CD</a></li>
+  </ul>
+
+  <div class="group-title">Безопасность</div>
+  <ul>
+    <li><a href="#security-input">8. Валидация входящих данных</a></li>
+    <li><a href="#security-checklist">9. Чек-лист: безопасность</a></li>
+    <li><a href="#security-enterprise">10. Безопасность Enterprise-уровня</a></li>
+  </ul>
+
+  <div class="group-title">Производительность</div>
+  <ul>
+    <li><a href="#caching">11. Кэширование</a></li>
+    <li><a href="#speed-checklist">12. Чек-лист: ускорение</a></li>
+  </ul>
+
+  <div class="group-title">Шаблоны и вёрстка</div>
+  <ul>
+    <li><a href="#templates">13. Разработка шаблонов</a></li>
+    <li><a href="#ai-transfer">14. Перенос ИИ-вёрстки</a></li>
+  </ul>
+
+  <div class="group-title">Асинхронность и API</div>
+  <ul>
+    <li><a href="#ajax">15. AJAX и асинхронность</a></li>
+    <li><a href="#rest">16. Проектирование REST API</a></li>
+  </ul>
+
+  <div class="group-title">Окружение и качество</div>
+  <ul>
+    <li><a href="#server">17. Серверное окружение</a></li>
+    <li><a href="#docker">18. Docker и локальная среда</a></li>
+    <li><a href="#static-analysis">19. Статический анализ</a></li>
+    <li><a href="#testing">20. Тестирование</a></li>
+    <li><a href="#observability">21. Мониторинг и Observability</a></li>
+  </ul>
+
+  <div class="group-title">Инструменты</div>
+  <ul>
+    <li><a href="#audit">22. Встроенные инструменты аудита</a></li>
+  </ul>
+</nav>
+
+<!-- ======================================================== -->
+<!-- MAIN CONTENT                                             -->
+<!-- ======================================================== -->
+<main class="main">
+
+  <!-- ========== INTRO ========== -->
+  <h1 id="intro">1С-Битрикс: Enterprise-руководство</h1>
+  <p>Консолидированное руководство по архитектуре, безопасности, оптимизации и качеству кода на платформе <strong>1С-Битрикс: Управление сайтом</strong>. Сведено из трёх источников: <code>Bitrix_Enterprise_Guide.html</code>, <code>bitrix_architecture (2).html</code> и <code>Bitrix_Enterprise_Guide (1).md</code>.</p>
+
+  <div class="alert">
+    <span class="title">Назначение документа</span>
+    Руководство ориентировано на <strong>enterprise-стандарт</strong> разработки: D7 ORM, контейнеризация, CI/CD, статический анализ, автотесты, централизованное логирование. Оно описывает <em>целевое состояние</em>, а не текущее состояние какого-либо проекта.
+  </div>
+
+  <h2 id="status">Что есть в проекте, чего нет</h2>
+  <p>Руководство описывает зрелый enterprise-подход. Если применять его к типовому «лёгкому» шаблону (например, к шаблону сайта библиотеки <code>nlb_bootstrap</code>), нужно понимать разрыв между целевым и фактическим состоянием.</p>
+
+  <table>
+    <thead>
+      <tr><th>Практика</th><th>Есть в enterprise-стандарте</th><th>Типично отсутствует в «лёгком» шаблоне</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>D7 ORM</td><td>Да</td><td>Часто процедурный API (<code>CIBlockElement::GetList</code>)</td></tr>
+      <tr><td>Docker-окружение</td><td>Да</td><td>Нет</td></tr>
+      <tr><td>.env для секретов</td><td>Да</td><td>Ключи в конфигах/коде</td></tr>
+      <tr><td>Mailhog / Mailcatcher</td><td>Да</td><td>Нет, письма не тестируются</td></tr>
+      <tr><td>PHPStan / Psalm / PHPCS</td><td>Да</td><td>Только <code>php -l</code></td></tr>
+      <tr><td>PHPUnit (юнит-тесты)</td><td>Да</td><td>Нет или самописные проверки</td></tr>
+      <tr><td>E2E (Codeception / Cypress / Playwright)</td><td>Да</td><td>Нет</td></tr>
+      <tr><td>CI/CD (GitLab CI / GitHub Actions)</td><td>Да</td><td>Ручные гейты, иногда без git</td></tr>
+      <tr><td>sprint.migration</td><td>Да</td><td>Свои PHP-миграции</td></tr>
+      <tr><td>Redis / Memcached</td><td>Да</td><td>Файловый кеш</td></tr>
+      <tr><td>Highload-блоки</td><td>Да</td><td>Только стандартные инфоблоки</td></tr>
+      <tr><td>Композитный сайт</td><td>Да</td><td>Нет</td></tr>
+      <tr><td>WAF (Проактивная защита)</td><td>Да</td><td>Нет, только CAPTCHA и заголовки</td></tr>
+      <tr><td>2FA для админов</td><td>Да</td><td>Нет</td></tr>
+      <tr><td>Sentry / Monolog / ELK</td><td>Да</td><td>Нет</td></tr>
+      <tr><td>APM (New Relic / OpenTelemetry)</td><td>Да</td><td>Нет</td></tr>
+      <tr><td>D7 REST API контроллеры</td><td>Да</td><td>Хаотичные PHP-файлы в корне</td></tr>
+      <tr><td>Swagger / OpenAPI</td><td>Да</td><td>Нет</td></tr>
+    </tbody>
+  </table>
+
+  <div class="alert warn">
+    <span class="title">Чего нет в самих руководствах</span>
+    Руководства <strong>не привязаны к конкретному проекту</strong>: нет исходного кода, скриншотов, Git-истории, логов, результатов Lighthouse/PSI, конфигов сервера. Все выводы о поведении — гипотезы, требующие запуска на живом ядре.
+  </div>
+
+  <!-- ========== SECTION 1: ARCH QUALITY ========== -->
+  <h2 id="arch-quality" class="section-start">1. Архитектура и качество кода</h2>
+  <p>С точки зрения современной программной инженерии, «1С-Битрикс: Управление сайтом» — это <strong>тяжёлое монолитное легаси</strong>, но с уникальным коммерческим статусом в СНГ-сегменте.</p>
+
+  <div class="grid">
+    <div class="card danger">
+      <h3>Критикуемые стороны</h3>
+      <ul class="styled-list minus">
+        <li><strong>Два ядра одновременно:</strong> процедурное старое ядро и ООП D7 уживаются из-за требований обратной совместимости.</li>
+        <li><strong>Отсутствие жёстких рамок:</strong> платформа не навязывает DI и Middleware — руки плохим практикам развязаны.</li>
+        <li><strong>Смешанная шаблонизация:</strong> нет компилируемого шаблонизатора (Twig / Blade) — обилие PHP в вёрстке.</li>
+      </ul>
+    </div>
+    <div class="card success">
+      <h3>Сильные инженерные решения</h3>
+      <ul class="styled-list plus">
+        <li><strong>Компонентный подход:</strong> бизнес-логика и представление разделены, обновления ядра не ломаются.</li>
+        <li><strong>Современная ORM в D7:</strong> декларативное описание схем, встроенное кеширование.</li>
+        <li><strong>Преемственность:</strong> проекты 10-летней давности обновляются до актуальных сборок.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 2: COMPARISON ========== -->
+  <h2 id="comparison">2. Сравнение с чистыми фреймворками</h2>
+  <table>
+    <thead>
+      <tr><th>Критерий</th><th>1С-Битрикс (CMS / CMF)</th><th>Laravel / Symfony (Frameworks)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Базовая концепция</strong></td><td>Монолитная экосистема, модули из коробки</td><td>Конструктор системного уровня</td></tr>
+      <tr><td><strong>Архитектурный шаблон</strong></td><td>Компонентно-модульный, элементы MVC</td><td>Строгий MVC / Domain Driven</td></tr>
+      <tr><td><strong>Качество кодовой базы</strong></td><td>Смешанное: легаси-процедуры + ООП</td><td>Высокое, PSR и SOLID</td></tr>
+      <tr><td><strong>Интеграция с СУБД</strong></td><td>D7 ORM + инфоблоки (EAV)</td><td>Eloquent / Doctrine (реляционные схемы)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ========== SECTION 3: STRUCTURE ========== -->
+  <h2 id="structure">3. Архитектурные стандарты и файловая структура</h2>
+  <p>Все кастомные наработки должны быть изолированы в <code>/local/</code>. Изменения в <code>/bitrix/</code> строго запрещены.</p>
+  <ul>
+    <li><code>/local/templates/</code> — шаблоны сайтов.</li>
+    <li><code>/local/components/</code> — кастомные компоненты (ООП-подход, <code>class.php</code>).</li>
+    <li><code>/local/modules/</code> — собственные модули бизнес-логики.</li>
+    <li><code>/local/php_interface/init.php</code> — только подключение автозагрузчиков и конфигов. Логика выносится в модули.</li>
+  </ul>
+
+  <!-- ========== SECTION 4: MODULARITY ========== -->
+  <h2 id="modularity">4. Модульность ядра проекта</h2>
+  <p>Вся уникальная бизнес-логика крупного проекта (интеграции с ERP, программа лояльности) пишется в виде собственных модулей, регистрируемых в <code>/local/modules/vendor.project/</code>. Подключение — через стандартный <code>Loader::includeModule</code>.</p>
+
+  <!-- ========== SECTION 5: D7 ORM ========== -->
+  <h2 id="d7orm" class="section-start">5. Современный API D7 и ORM</h2>
+  <p>Старые глобальные методы (<code>CIBlockElement::GetList</code>) не рекомендуются. Используется типизированный ORM-подход D7:</p>
+  <pre><code>use Bitrix\Main\Loader;
+use Bitrix\Iblock\Elements\ElementCatalogTable;
+
+Loader::includeModule('iblock');
+
+$elements = ElementCatalogTable::getList([
+    'select' => ['ID', 'NAME', 'PRICE_VALUE' => 'PRICE.PRICE'],
+    'filter' => ['=ACTIVE' => 'Y'],
+    'runtime' => [
+        'PRICE' => [
+            'data_type' => '\Bitrix\Catalog\PriceTable',
+            'reference' => ['=this.ID' => 'ref.PRODUCT_ID'],
+            'join_type' => 'left'
+        ]
+    ],
+    'cache' => ['ttl' => 3600]
+])->fetchAll();</code></pre>
+
+  <!-- ========== SECTION 6: HIGHLOAD ========== -->
+  <h2 id="highload">6. Highload-блоки и Big Data</h2>
+  <p>Стандартные инфоблоки используют схему <strong>EAV</strong> (Entity-Attribute-Value). При десятках свойств СУБД выполняет множество JOIN, что резко снижает производительность на больших массивах. Для каталогов с миллионами позиций и логов используются <strong>Highload-блоки</strong> — плоские реляционные таблицы с прямой индексацией.</p>
+  <pre><code>use Bitrix\Main\Loader;
+use Bitrix\Highloadblock\HighloadBlockTable;
+
+Loader::includeModule("highloadblock");
+
+$hlblock = HighloadBlockTable::getById(2)->fetch();
+$entity = HighloadBlockTable::compileEntity($hlblock);
+$entityDataClass = $entity->getDataClass();
+
+$rsData = $entityDataClass::getList([
+    "select" => ["ID", "UF_NAME", "UF_CODE"],
+    "filter" => ["=UF_ACTIVE" => 1],
+    "order"  => ["ID" => "DESC"],
+    "limit"  => 20,
+    "cache"  => ["ttl" => 3600]
+]);
+
+while ($arItem = $rsData->fetch()) {
+    // Безопасная обработка
+}</code></pre>
+  <div class="alert warn">
+    <span class="title">Когда Highload не нужен</span>
+    Для каталогов с десятками–сотнями элементов стандартные инфоблоки работают нормально. Highload оправдан при <strong>миллионах записей</strong> или логах. Не путайте «много полей» с «много записей».
+  </div>
+
+  <!-- ========== SECTION 7: MIGRATIONS ========== -->
+  <h2 id="migrations">7. Миграции БД и CI/CD</h2>
+  <p>Главная проблема Битрикса в командной разработке — хранение настроек (структуры инфоблоков, свойств, модулей) в базе данных, а не в коде. Решение — система миграций <code>sprint.migration</code>.</p>
+
+  <h3>Git-Flow пайплайн</h3>
+  <ol>
+    <li>Разработчик создаёт сущность локально в админке.</li>
+    <li>Генерирует файл миграции через CLI: <code>php migrate.php add</code>.</li>
+    <li>Пушит код и файл миграции в Git.</li>
+    <li>Пайплайн (GitLab CI / GitHub Actions) собирает артефакты, делает деплой через rsync и автоматически накатывает изменения в БД.</li>
+  </ol>
+
+  <pre><code># Деплой на целевом сервере
+cd /var/www/bitrix_project/
+git pull origin main
+
+## Проверка статуса и автоматический накат миграций без веб-интерфейса
+php local/php_interface/migrate.php up --all</code></pre>
+
+  <div class="alert">
+    <span class="title">Альтернатива</span>
+    Если в проекте уже есть свои идемпотентные миграции на API Битрикса (как в <code>nlb_bootstrap</code> — 12 шагов <code>db/migrations/001–012.php</code>), sprint.migration может дублировать функциональность. Выбор зависит от зрелости проекта и команды.
+  </div>
+
+  <!-- ========== SECTION 8: SECURITY INPUT ========== -->
+  <h2 id="security-input" class="section-start">8. Безопасность и валидация входящих данных</h2>
+  <p>Все входящие запросы проходят фильтрацию через объект <code>Context</code>. Прямое использование <code>$_POST</code> / <code>$_GET</code> запрещено.</p>
+  <pre><code>use Bitrix\Main\Application;
+
+$request = Application::getInstance()->getContext()->getRequest();
+$userId = $request->getPost('user_id');
+
+$userId = intval($userId);
+if ($userId <= 0) {
+    throw new \InvalidArgumentException('Некорректный ID пользователя');
+}</code></pre>
+
+  <!-- ========== SECTION 9: SECURITY CHECKLIST ========== -->
+  <h2 id="security-checklist">9. Чек-лист: комплексная безопасность</h2>
+  <div class="card">
+    <ul class="styled-list shield">
+      <li><strong>Проактивный фильтр (WAF):</strong> включить встроенный экран защиты Битрикса.</li>
+      <li><strong>Защита сессий:</strong> перенос из файлов в Redis с включённой сменой идентификаторов.</li>
+      <li><strong>Блокировка PHP в /upload/:</strong> запрет выполнения скриптов в пользовательских директориях.</li>
+      <li><strong>2FA для админов:</strong> двухфакторная аутентификация для всех административных учёток.</li>
+    </ul>
+  </div>
+
+  <!-- ========== SECTION 10: SECURITY ENTERPRISE ========== -->
+  <h2 id="security-enterprise">10. Безопасность Enterprise-уровня</h2>
+  <p>Обязательное включение модуля «Проактивная защита». Конфигурация веб-серверов (Nginx, PHP-FPM) должна исключать выполнение PHP в пользовательских директориях загрузки (например, в <code>/upload/</code>).</p>
+
+  <!-- ========== SECTION 11: CACHING ========== -->
+  <h2 id="caching" class="section-start">11. Оптимизация и стратегии кэширования</h2>
+  <p>Кастомный код со сложными вычислениями или запросами к БД оборачивается в управляемый или неуправляемый кэш:</p>
+  <pre><code>$cache = \Bitrix\Main\Data\Cache::createInstance();
+$cacheId = 'custom_user_data_' . $userId;
+$cachePath = '/project/user_data/';
+
+if ($cache->initCache(3600, $cacheId, $cachePath)) {
+    $result = $cache->getVars();
+} elseif ($cache->startDataCache()) {
+    $result = ComplexCalculationMethod($userId);
+
+    // Тегированный кэш для инвалидации при изменении данных
+    $taggedCache = \Bitrix\Main\Application::getInstance()->getTaggedCache();
+    $taggedCache->startTagCache($cachePath);
+    $taggedCache->registerTag('user_profile_' . $userId);
+    $taggedCache->endTagCache();
+
+    $cache->endDataCache($result);
+}</code></pre>
+
+  <!-- ========== SECTION 12: SPEED CHECKLIST ========== -->
+  <h2 id="speed-checklist">12. Чек-лист: оптимизация быстродействия</h2>
+  <div class="card">
+    <ul class="styled-list speed">
+      <li><strong>Конвертация СУБД в InnoDB:</strong> перевод всех таблиц с MyISAM на InnoDB с корректным <code>innodb_buffer_pool_size</code>.</li>
+      <li><strong>Кэширование:</strong> автокэш компонентов + перенос файлового кэша на Redis / Memcached.</li>
+      <li><strong>CSS/JS:</strong> объединение, сжатие, минификация в настройках Главного модуля.</li>
+      <li><strong>Композитный сайт:</strong> разделение страницы на статическую (из кэша) и динамическую (асинхронную) зоны.</li>
+    </ul>
+  </div>
+
+  <!-- ========== SECTION 13: TEMPLATES ========== -->
+  <h2 id="templates" class="section-start">13. Разработка быстрых и безопасных шаблонов</h2>
+  <p><strong>Золотое правило:</strong> в <code>template.php</code> запрещены SQL-запросы и <code>GetList</code>. Вся подготовка данных — в контроллере компонента или в <code>result_modifier.php</code>.</p>
+
+  <h3>Защита от XSS (экранирование вывода)</h3>
+  <pre><code>&lt;?// Небезопасно ?&gt;
+&lt;div class="desc"&gt;&lt;?=$arItem["PREVIEW_TEXT"]?&gt;&lt;/div&gt;
+
+&lt;?// Безопасно через D7 API ?&gt;
+&lt;div class="desc"&gt;&lt;?=\Bitrix\Main\Text\HtmlFilter::encode($arItem["PREVIEW_TEXT"])?&gt;&lt;/div&gt;
+
+&lt;?// Либо классический хелпер ?&gt;
+&lt;div class="title"&gt;&lt;?=htmlspecialcharsbx($arItem["NAME"])?&gt;&lt;/div&gt;</code></pre>
+
+  <h3>Динамическая зона в Композите</h3>
+  <pre><code>&lt;div class="basket-block"&gt;
+&lt;?
+$frame = $this-&gt;createFrame()-&gt;begin();
+?&gt;
+Товаров в корзине: &lt;?=$arResult["BASKET_COUNT"]?&gt;
+&lt;?
+$frame-&gt;beginStub();
+?&gt;
+Загрузка корзины...
+&lt;? $frame-&gt;end(); ?&gt;
+&lt;/div&gt;</code></pre>
+
+  <!-- ========== SECTION 14: AI TRANSFER ========== -->
+  <h2 id="ai-transfer">14. Перенос ИИ-вёрстки (DeepSeek, Qwen) на Битрикс</h2>
+  <p>Интеграция сырого HTML/CSS/JS от нейросети требует декомпозиции и приведения к компонентной архитектуре CMS.</p>
+
+  <div class="card">
+    <h3>Алгоритм «натяжки»</h3>
+    <p><strong>Шаг 1. Разрезка шаблона.</strong> Верхняя неизменяемая часть <code>index.html</code> → <code>/local/templates/main/header.php</code>. Нижняя → <code>footer.php</code>.</p>
+    <p><strong>Шаг 2. Подключение системных методов.</strong> В начале <code>header.php</code> — пролог ядра, панель админа, метатеги:</p>
+    <pre><code>&lt;?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;?$APPLICATION-&gt;ShowHead();?&gt;
+    &lt;title&gt;&lt;?$APPLICATION-&gt;ShowTitle();?&gt;&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id="panel"&gt;&lt;?$APPLICATION-&gt;ShowPanel();?&gt;&lt;/div&gt;</code></pre>
+
+    <p><strong>Шаг 3. Регистрация CSS и JS через Менеджер Ассетов.</strong> Замените статические <code>&lt;link&gt;</code> и <code>&lt;script&gt;</code> на системные вызовы D7:</p>
+    <pre><code>&lt;?
+use Bitrix\Main\Page\Asset;
+
+Asset::getInstance()-&gt;addCss(SITE_TEMPLATE_PATH . "/css/deepseek-style.css");
+Asset::getInstance()-&gt;addJs(SITE_TEMPLATE_PATH . "/js/deepseek-core.js");
+?&gt;</code></pre>
+
+    <p><strong>Шаг 4. Декомпозиция в компоненты.</strong> Блоки с динамикой (карточки, слайдеры, отзывы) вырезаются в изолированные шаблоны компонентов (например, <code>bitrix:news.list</code>). Статические тексты ИИ внутри циклов заменяются на безопасный вывод из <code>$arResult</code> / <code>$arItem</code>.</p>
+  </div>
+
+  <!-- ========== SECTION 15: AJAX ========== -->
+  <h2 id="ajax" class="section-start">15. Управление асинхронностью и AJAX</h2>
+  <p>AJAX-интерфейсы опираются на стандартные контроллеры Битрикса, возвращающие JSON, а не на отдельные PHP-файлы в корне сайта. Это гарантирует сессионные проверки и безопасность.</p>
+
+  <!-- ========== SECTION 16: REST API ========== -->
+  <h2 id="rest">16. Проектирование REST API на базе D7</h2>
+  <p>Битрикс часто выступает Headless-платформой для внешних JS-фронтендов (Vue / React) и мобильных приложений.</p>
+  <pre><code>use Bitrix\Main\Engine\Controller;
+
+class OrderApiController extends Controller
+{
+    public function configureActions()
+    {
+        return [
+            'getDetails' => [
+                'prefilters' => [
+                    new \Bitrix\Main\Engine\ActionFilter\Authentication(),
+                    new \Bitrix\Main\Engine\ActionFilter\HttpMethod(['GET'])
+                ]
+            ]
+        ];
+    }
+
+    public function getDetailsAction($orderId)
+    {
+        return [
+            'status' => 'success',
+            'data' => [
+                'orderId' => (int)$orderId,
+                'amount' => 15400.00
+            ]
+        ];
+    }
+}</code></pre>
+  <p>Все эндпоинты документируются через <strong>OpenAPI / Swagger</strong>.</p>
+
+  <!-- ========== SECTION 17: SERVER ========== -->
+  <h2 id="server" class="section-start">17. Оптимальное серверное окружение</h2>
+  <p>Для максимальной скорости рекомендуется отказаться от Apache + Nginx в пользу чистого стека <strong>Nginx + PHP-FPM</strong>.</p>
+
+  <h3>RAM-кэш и сессии на Redis в <code>bitrix/.settings.php</code></h3>
+  <pre><code>&lt;?php
+return [
+    'cache' =&gt; [
+        'value' =&gt; [
+            'type' =&gt; [
+                'class_name' =&gt; '\Bitrix\Main\Data\CacheEngineRedis',
+                'extension' =&gt; 'redis'
+            ],
+            'redis' =&gt; ['host' =&gt; '127.0.0.1', 'port' =&gt; 6379],
+            'sid' =&gt; 'bitrix_prod_site'
+        ],
+        'readonly' =&gt; false,
+    ],
+    'session' =&gt; [
+        'value' =&gt; [
+            'mode' =&gt; 'default',
+            'handlers' =&gt; [
+                'general' =&gt; [
+                    'type' =&gt; 'redis',
+                    'host' =&gt; '127.0.0.1',
+                    'port' =&gt; 6379,
+                ]
+            ]
+        ],
+        'readonly' =&gt; false,
+    ]
+];</code></pre>
+
+  <!-- ========== SECTION 18: DOCKER ========== -->
+  <h2 id="docker">18. Локальное окружение разработки (Docker)</h2>
+  <p>Enterprise-стандарт требует изоляции окружения каждого разработчика. Вместо тяжёлой BitrixVM — Docker-контейнеризация.</p>
+  <ul>
+    <li><strong>Контейнеры:</strong> <code>nginx</code>, <code>php-fpm</code>, <code>percona/mysql</code> (или MariaDB), <code>redis</code>, <code>mailhog</code>.</li>
+    <li><strong>Перехват почты:</strong> Mailhog перехватывает все SMTP-вызовы PHP, исключая отправку тестовых писем реальным клиентам.</li>
+    <li><strong>Изоляция конфигурации:</strong> доступы, ключи API и флаги отладки — в <code>.env</code>. У каждого окружения (Dev, QA, Stage, Production) свои параметры.</li>
+  </ul>
+
+  <!-- ========== SECTION 19: STATIC ANALYSIS ========== -->
+  <h2 id="static-analysis">19. Статический анализ и линтеры</h2>
+  <p>Без автоматического контроля код быстро превращается в хаос. В CI/CD встраиваются:</p>
+  <ul>
+    <li><strong>PHP_CodeSniffer:</strong> проверка оформления кода на соответствие PSR-12 и правилам именования Битрикса.</li>
+    <li><strong>PHPStan / Psalm:</strong> статические анализаторы уровня 1–5 — ловят Null-объекты, неверные типы, ошибки ORM без запуска кода.</li>
+    <li><strong>Git Hooks (Husky / GrumPHP):</strong> проверки запускаются автоматически при коммите. Ошибки — коммит блокируется.</li>
+  </ul>
+
+  <!-- ========== SECTION 20: TESTING ========== -->
+  <h2 id="testing">20. Автоматизированное тестирование</h2>
+  <p>Битрикс сложен для тестирования из-за глобальных переменных (<code>$APPLICATION</code>, <code>$USER</code>, <code>$DB</code>), но для Enterprise это обязательный шаг.</p>
+  <ul>
+    <li><strong>Юнит-тесты (PHPUnit):</strong> покрытие чистых функций и сервисов (калькуляторы скидок, логика лояльности). Изоляция от глобальных объектов — через DI и Service Locator D7.</li>
+    <li><strong>Интеграционные тесты:</strong> проверка работы кода с реальной тестовой БД — создание сущностей через ORM, транзакции, обработчики событий.</li>
+    <li><strong>E2E (Codeception / Cypress):</strong> сквозные сценарии — «зашёл → добавил в корзину → применил купон → оформил заказ».</li>
+  </ul>
+
+  <!-- ========== SECTION 21: OBSERVABILITY ========== -->
+  <h2 id="observability">21. Мониторинг и Observability</h2>
+  <p>Enterprise-система должна сообщать о сбоях раньше, чем клиент напишет в поддержку.</p>
+  <ul>
+    <li><strong>Централизованное логирование (PSR-3):</strong> отказ от разрозненных локальных логов. Библиотека <strong>Monolog</strong> + ELK-стек или Grafana Loki.</li>
+    <li><strong>Трекинг ошибок (Sentry):</strong> SDK в <code>init.php</code> — любое необработанное исключение отправляет алерт со стеком в мессенджеры команды.</li>
+    <li><strong>APM (New Relic / OpenTelemetry):</strong> мониторинг производительности «под нагрузкой» — медленные SQL-запросы и узкие места компонентов на живом трафике.</li>
+  </ul>
+
+  <!-- ========== SECTION 22: AUDIT ========== -->
+  <h2 id="audit" class="section-start">22. Встроенные инструменты аудита Битрикса</h2>
+  <p>В системе отсутствуют публичные визуальные компоненты замера скорости или сканирования безопасности: вывод подобных данных наружу создаёт уязвимость. Анализ — только через административную панель.</p>
+
+  <div class="card">
+    <h3>🏆 Монитор качества (Сервисы → Монитор качества)</h3>
+    <p>Автоматический чек-лист из 65 обязательных тестов: хостинг, безопасность, производительность кода, корректность интеграции с платформой. Используется перед сдачей проекта в эксплуатацию.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Монитор производительности</h3>
+      <ul class="styled-list speed">
+        <li><strong>Панель производительности:</strong> стресс-тест CPU, диска и СУБД с эталонными баллами.</li>
+        <li><strong>Скорость сайта (RUM):</strong> анализ реального пользовательского опыта загрузки.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Проактивная защита</h3>
+      <ul class="styled-list shield">
+        <li><strong>Сканер безопасности:</strong> статический анализ кода на XSS и SQL-инъекции.</li>
+        <li><strong>Контроль целостности:</strong> проверка ядра на модификацию вредоносным ПО.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="alert">
+    <span class="title">Что не покрыто руководствами</span>
+    Руководства сфокусированы на архитектуре и инфраструктуре. За рамками остались: <strong>PWA</strong> (манифест, service worker, офлайн-заглушка), <strong>SEO</strong> (canonical, OG, Twitter, JSON-LD, sitemap, robots), <strong>формы заявок</strong> с CAPTCHA и согласием, <strong>доступность</strong> (aria, focus-trap, contrast), <strong>адаптивные изображения</strong> (WebP/AVIF, srcset). Для сайтов библиотек и культурных учреждений эти разделы критичны — они должны быть добавлены отдельно.
+  </div>
+
+  <p style="margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--border); color: var(--text-muted); font-size:0.88rem;">
+    Консолидированное руководство. Источники: <code>Bitrix_Enterprise_Guide.html</code>, <code>bitrix_architecture (2).html</code>, <code>Bitrix_Enterprise_Guide (1).md</code>. Дублирующиеся разделы объединены, противоречия отмечены, объём сохранён.
+  </p>
+
+</main>
+
+<a href="#intro" class="back-top" title="Наверх">↑</a>
+
+<script>
+  // Подсветка активного пункта меню при скролле
+  const sections = document.querySelectorAll('h1[id], h2[id]');
+  const links = document.querySelectorAll('.sidebar a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        links.forEach(l => {
+          l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
