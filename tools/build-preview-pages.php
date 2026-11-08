@@ -8,6 +8,11 @@
  * что и в Битриксе:
  *
  *   /                     → preview/index.html
+ *   /about/               → preview/about/index.html
+ *   /search/              → preview/search/index.html
+ *   /personal/            → preview/personal/index.html (meta refresh → /auth/)
+ *   /404.html             → preview/404.html
+ *   /sitemap.xml          → preview/sitemap.xml
  *   /services/            → preview/services/index.html
  *   /services/<код>/      → preview/services/<код>/index.html
  *   /news/, /events/, /printing/, /books/, /collections/ — так же
@@ -25,6 +30,36 @@
  * db/config/data/*.php и db/config/iblocks.php, каркас (шапка, подвал,
  * модальные окна) берётся из preview/index.html. Это демо для просмотра:
  * рабочая версия — PHP-страницы в корне репозитория и шаблоны в local/.
+ *
+ * Осознанные расхождения со стендом (P1-28). Превью — не копия сайта:
+ * проверять по нему навигацию, PWA и пагинацию нельзя. Список исчерпывающий,
+ * всё остальное собирается из тех же данных и должно совпадать:
+ *
+ *  - главная (preview/index.html) — ручной снимок вёрстки. На ней нет модалки
+ *    реквизитов (local/templates/nlb_bootstrap/footer.php), полосы
+ *    «Библиотека в цифрах» (index.php) и подключения PWA (manifest.webmanifest,
+ *    sw.js, pwa.js, push.js, consent.js): service worker в статическом превью
+ *    кешировал бы демо-страницы и мешал повторной сборке. Полоса цифр при этом
+ *    есть на /about/ — там она собирается из демо-данных;
+ *  - списки (новости, книги, услуги печати) выводят все карточки разом: на
+ *    стенде у них постраничный вывод и пейджер. Числа в списке исключений не
+ *    дублируются — они меняются вместе с демо-данными;
+ *  - афиша идёт одним списком: переключателя «Предстоящие / Прошедшие»
+ *    (events/index.php, ?past=1) и фильтра по дате в превью нет;
+ *  - /search/ повторяет форму и популярные запросы, но не выдачу: результаты
+ *    строит компонент bitrix:search.page на живом ядре;
+ *  - /personal/ отдаёт meta refresh вместо 302: статический сервер не умеет
+ *    редирект из файла, адрес назначения тот же (/auth/);
+ *  - /auth/register/ не собирается: форму регистрации даёт компонент
+ *    bitrix:main.register, повторять её разметкой в превью нельзя;
+ *  - /404.html собирается, но отдаёт его только тот сервер, который умеет
+ *    свою страницу 404 (nginx, GitHub Pages). `php -S` без роутера ответит
+ *    своей страницей — это ограничение просмотра, а не шаблона;
+ *  - /sitemap.xml повторяет состав разделов sitemap.php; домен условный
+ *    (https://example.by), <lastmod> не ставится, чтобы пересборка была
+ *    побайтово стабильной;
+ *  - формы (обратная связь, подписка) собираются разметкой: обработчика без
+ *    ядра нет, отправка в превью ничего не делает.
  */
 
 declare(strict_types=1);
@@ -346,6 +381,13 @@ function prepare_home(string $previewDir): void
     $html = strip_fonts($html);
     $html = sync_sprite($html, $tplDir);
     $html = rewrite_home_links($html);
+    // Форма поиска в шапке вела на карту сайта (заглушка): /search/ в превью
+    // не собирался. Теперь страница есть, адрес совпадает со стендом.
+    $html = str_replace(
+        'action="sitemap/" method="get" role="search"',
+        'action="search/" method="get" role="search"',
+        $html
+    );
     $html = replace_nav($html, 0, 'home');
     $html = str_replace('../local/templates/nlb_bootstrap/', '', $html);
     $html = upgrade_home_pictures($html);
@@ -1542,15 +1584,195 @@ HTML;
 /* Текстовые страницы из PHP-исходников                                   */
 /* ---------------------------------------------------------------------- */
 
-function static_content(string $root, string $relative, int $depth): string
+function static_content(string $root, string $relative, int $depth, array $replace = []): string
 {
     $source = (string)file_get_contents($root . '/' . $relative);
     $source = (string)preg_replace('~^<\?php.*?\?>\s*~s', '', $source, 1);
     $source = (string)preg_replace('~<\?php\s*require\s+\$_SERVER\[.DOCUMENT_ROOT.\].*?\?>\s*$~s', '', $source);
     $source = str_replace('<?= SITE_DIR ?>', base($depth), $source);
+
+    foreach ($replace as [$from, $to]) {
+        $source = str_replace($from, $to, $source);
+    }
+
     $source = (string)preg_replace('~<\?(?:php|=).*?\?>~s', '', $source);
 
     return trim($source);
+}
+
+/**
+ * Количество демо-элементов инфоблока для страниц, которые считают цифры
+ * на лету (about/index.php вызывает nlb_counts(), здесь ядро не работает).
+ */
+function preview_count(string $root, string $name): int
+{
+    $data = load_data($root, $name);
+
+    return count($data['items'] ?? []);
+}
+
+function build_about(string $root, string $previewDir): string
+{
+    $replace = [];
+    foreach (['books', 'events', 'news', 'services', 'printing', 'collections'] as $name) {
+        $replace[] = ["<?= (int)\$counts['{$name}'] ?>", (string)preview_count($root, $name)];
+    }
+
+    return layout(
+        $previewDir,
+        'О библиотеке — Библиотека 2026',
+        'Библиотека 2026 — современное пространство для чтения, работы и встреч: фонды, услуги, события.',
+        static_content($root, 'about/index.php', 1, $replace),
+        1,
+        'about'
+    );
+}
+
+function build_search(string $previewDir): string
+{
+    $prefix = base(1);
+    $chips = [
+        ['каталог', 'Каталог книг'],
+        ['афиша', 'Афиша'],
+        ['печать', 'Печать'],
+        ['коворкинг', 'Коворкинг'],
+    ];
+    $chipsHtml = '';
+    foreach ($chips as [$query, $label]) {
+        $chipsHtml .= '            <a class="search-chip" href="' . e($prefix . 'search/?q=' . $query) . '">'
+            . e($label) . "</a>\n";
+    }
+
+    $content = <<<HTML
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow eyebrow--green">Поиск</span>
+        <h1 class="page-title">Поиск по сайту</h1>
+
+        <form class="row g-2 align-items-center mb-3" action="{$prefix}search/" method="get" role="search" style="max-width: 640px">
+            <div class="col">
+                <label class="visually-hidden" for="nlbSearchPageInput">Поисковый запрос</label>
+                <div class="search-field">
+                    <svg class="i i-24" aria-hidden="true"><use href="#i-search"/></svg>
+                    <input class="form-control" id="nlbSearchPageInput" type="search" name="q"
+                           value=""
+                           placeholder="Книги, авторы, события, услуги…" autocomplete="off">
+                </div>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-nlb btn-icon" type="submit">
+                    Найти
+                    <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+                </button>
+            </div>
+        </form>
+
+        <div class="d-flex flex-wrap gap-2" aria-label="Популярные запросы">
+{$chipsHtml}        </div>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="empty-state">
+            Введите запрос — на стенде здесь появятся книги, события, новости и услуги.
+            Выдачу собирает компонент <code>bitrix:search.page</code>: в статическом
+            превью без ядра её нет, форма и популярные запросы — как на сайте.
+        </div>
+    </div>
+</section>
+HTML;
+
+    return layout(
+        $previewDir,
+        'Поиск по сайту — Библиотека 2026',
+        'Поиск по книгам, событиям, новостям, услугам и печатному каталогу библиотеки.',
+        $content,
+        1,
+        ''
+    );
+}
+
+/**
+ * /personal/ на стенде отвечает 302 → /auth/ (LocalRedirect в personal/index.php).
+ * Статический сервер не умеет отдавать редирект из файла, поэтому превью
+ * повторяет поведение meta refresh — адрес назначения тот же.
+ */
+function build_personal(string $previewDir): string
+{
+    return <<<'HTML'
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, follow">
+    <meta http-equiv="refresh" content="0; url=../auth/">
+    <title>Личный кабинет — Библиотека 2026</title>
+    <link rel="canonical" href="../auth/">
+</head>
+<body>
+<h1>Личный кабинет</h1>
+<p>Страница доступна после входа. Если переадресация не сработала,
+    откройте <a href="../auth/">вход в личный кабинет</a>.</p>
+</body>
+</html>
+HTML;
+}
+
+function build_404(string $root, string $previewDir): string
+{
+    return layout(
+        $previewDir,
+        'Страница не найдена — Библиотека 2026',
+        'Запрошенная страница не найдена.',
+        static_content($root, '404.php', 0),
+        0,
+        ''
+    );
+}
+
+/**
+ * Статический /sitemap.xml. Состав разделов совпадает с sitemap.php на стенде
+ * (страница поиска исключена — она закрыта в robots.txt). Домен подставлен
+ * условный: в превью его нет, а карта нужна, чтобы адрес не отдавал 404.
+ * <lastmod> не ставится сознательно — дата файла меняется при каждом
+ * клоне репозитория, и повторная сборка давала бы ложные расхождения.
+ */
+function build_sitemap_xml(): string
+{
+    $sections = [
+        '/' => '1.0',
+        '/about/' => '0.6',
+        '/news/' => '0.8',
+        '/events/' => '0.8',
+        '/collections/' => '0.7',
+        '/services/' => '0.8',
+        '/printing/' => '0.8',
+        '/books/' => '0.8',
+        '/contacts/' => '0.7',
+        '/feedback/' => '0.5',
+        '/subscribe/' => '0.4',
+        '/rules/' => '0.3',
+        '/privacy/' => '0.3',
+        '/terms/' => '0.3',
+        '/sitemap/' => '0.3',
+    ];
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+        . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    foreach ($sections as $path => $priority) {
+        $url = htmlspecialchars('https://example.by' . $path, ENT_QUOTES | ENT_XML1, 'UTF-8');
+        $xml .= "  <url>\n"
+            . "    <loc>{$url}</loc>\n"
+            . '    <changefreq>' . ($path === '/' ? 'daily' : 'weekly') . "</changefreq>\n"
+            . "    <priority>{$priority}</priority>\n"
+            . "  </url>\n";
+    }
+    $xml .= "</urlset>\n";
+
+    return $xml;
 }
 
 function build_contacts(string $root, string $previewDir): string
@@ -1813,6 +2035,7 @@ function build_sitemap(string $previewDir): string
 {
     $sections = [
         ['/', 'Главная', 'hero-карусель, услуги, события, новости, коллекции'],
+        ['about/', 'О библиотеке', 'цифры из демо-данных, фонды, пространства, принципы'],
         ['services/', 'Услуги', '8 премиальных услуг и превью каталога печати'],
         ['news/', 'Новости', '10 новостей с рубриками'],
         ['events/', 'События', '6 событий с фильтром по рубрикам'],
@@ -1822,7 +2045,9 @@ function build_sitemap(string $previewDir): string
         ['contacts/', 'Контакты', 'адрес, часы, телефон'],
         ['feedback/', 'Обратная связь', 'форма сообщения'],
         ['subscribe/', 'Подписка', 'форма рассылки'],
+        ['search/', 'Поиск по сайту', 'форма и популярные запросы'],
         ['auth/', 'Вход', 'личный кабинет'],
+        ['personal/', 'Личный кабинет', 'переадресация на форму входа'],
         ['rules/', 'Правила пользования', 'как записаться и брать книги'],
         ['privacy/', 'Политика конфиденциальности', 'документ'],
         ['terms/', 'Условия использования', 'документ'],
@@ -1983,6 +2208,11 @@ foreach (['services', 'news', 'events'] as $legacy) {
 }
 
 $pages = [
+    'about/index.html' => build_about($root, $previewDir),
+    'search/index.html' => build_search($previewDir),
+    'personal/index.html' => build_personal($previewDir),
+    '404.html' => build_404($root, $previewDir),
+    'sitemap.xml' => build_sitemap_xml(),
     'services/index.html' => build_services($root, $previewDir),
     'news/index.html' => build_news($root, $previewDir, $config),
     'events/index.html' => build_events($root, $previewDir, $config),

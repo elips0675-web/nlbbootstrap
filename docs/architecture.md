@@ -240,7 +240,11 @@ AJAX-точки входа `local/ajax/` отвечают только JSON и �
 `preview/` собирается командой `php tools/build-preview-pages.php`: каркас
 берётся из `preview/index.html`, разделы и карточки — из `db/config/data/*.php`.
 Запуск: `php -S 127.0.0.1:8791 -t preview`, меню ведёт на `/services/`,
-`/news/`, `/events/` и остальные разделы.
+`/news/`, `/events/` и остальные разделы. Кроме списков сборщик пишет
+`/about/` (цифры считаются по демо-данным), `/search/` (форма и популярные
+запросы без выдачи — её собирает `bitrix:search.page`), `/personal/`
+(meta refresh на `/auth/`), `/404.html` и `/sitemap.xml`. Чего в превью нет
+сознательно — перечислено в шапке сборщика (P1-28).
 
 Ссылки на `styles.css` и `script.js` получают `?v=<8 символов sha256>`:
 ни `php -S`, ни `python -m http.server` не отдают `Cache-Control`, и после

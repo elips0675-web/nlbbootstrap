@@ -75,6 +75,11 @@ const required = [
     `${tplRel}/components/bitrix/news.detail/nlb_detail/template.php`,
     `${tplRel}/components/bitrix/main.feedback/bootstrap/template.php`,
     'preview/index.html',
+    'preview/about/index.html',
+    'preview/search/index.html',
+    'preview/personal/index.html',
+    'preview/404.html',
+    'preview/sitemap.xml',
     'demo/index.php',
     'manifest.webmanifest',
     'sw.js',
@@ -547,6 +552,33 @@ for (const rel of h1Pages.filter((name) => name.startsWith('preview/'))) {
         h1Problem = true;
         fail(`${rel}: ${count} тега <h1> — в собранной странице нужен один`);
     }
+}
+
+/* Собранные страницы превью не содержат PHP: их отдаёт статический сервер.
+   Если подстановка сломалась, на странице остаётся <?= … ?> и он уходит в
+   браузер как текст. */
+let previewPhpProblem = false;
+for (const rel of h1Pages.filter((name) => name.startsWith('preview/'))) {
+    const text = read(rel) || '';
+    if (/<\?(?:php|=)/.test(text)) {
+        previewPhpProblem = true;
+        fail(`${rel}: остались PHP-теги — подстановка в сборщике превью сломана`);
+    }
+}
+if (!previewPhpProblem) {
+    ok('превью: ни одной PHP-вставки в собранных страницах');
+}
+
+/* Цифры «Библиотеки в цифрах» считаются по демо-данным: about/index.php
+   зовёт nlb_counts(), в превью ядра нет. Шесть плиток — шесть чисел. */
+const aboutPreview = read('preview/about/index.html') || '';
+const aboutStats = [...aboutPreview.matchAll(/<span class="stat-value">(\d+)<\/span>/g)];
+if (aboutStats.length !== 6) {
+    fail(`preview/about/index.html: плиток с цифрами ${aboutStats.length} вместо 6 — сборщик не подставил счётчики`);
+} else if (aboutStats.some((m) => Number(m[1]) <= 0)) {
+    fail('preview/about/index.html: нулевая цифра — счётчики демо-данных не подставились');
+} else {
+    ok(`превью: /about/ показывает цифры демо-данных (${aboutStats.map((m) => m[1]).join(', ')})`);
 }
 for (const rel of ['demo/index.php', 'preview/index.html']) {
     const text = read(rel) || '';

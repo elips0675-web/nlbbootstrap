@@ -12,7 +12,7 @@
                                                           8.3.30 и 8.5.12)
     Конфиги БД без ядра             php db/lint.php      0 ошибок
     Миграции на заглушках ядра      php db/tests/run.php 62 из 62
-    Сборка превью                   php tools/build-     106 HTML, вывод
+    Сборка превью                   php tools/build-     110 HTML, вывод
                                     preview-pages.php    побайтово совпал
                                                          с закоммиченным
     Структура шаблона               node tools/check-    exit 0

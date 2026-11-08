@@ -140,6 +140,8 @@ if (el) {
 3. Network: 404 нет.
 4. Пройти меню: `/services/`, `/news/`, `/events/`, `/printing/`, `/books/`,
    `/collections/`, `/contacts/`; открыть одну детальную страницу.
+   Отдельно открыть `/about/`, `/search/`, `/personal/` (переадресация на
+   `/auth/`), `/404.html` и `/sitemap.xml`.
 5. Responsive: 360 / 768 / 1440.
 6. `Ctrl+K`, модалки, скроллер, FAB, «наверх», фильтры разделов.
 7. `node tools/check-template.mjs` — exit 0.
