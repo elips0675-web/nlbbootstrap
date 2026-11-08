@@ -139,13 +139,13 @@ const claims = [
     { file: 'docs/installation.md', re: /Создаётся (\d+) инфоблоков/, keys: ['iblocks'] },
     {
         file: 'docs/installation.md',
-        re: /, (\d+) свойств, (\d+) разделов, (\d+) демо-элемент/,
+        re: /, (\d+) свойств(?:о|а)?, (\d+) разделов, (\d+) демо-элемент/,
         keys: ['properties', 'sections', 'elements'],
     },
     { file: 'docs/roadmap.md', re: /всех PHP-файлов \((\d+) файл(?:ов|а)?, 0 ошибок\)/, keys: ['php_files'] },
     {
         file: 'docs/roadmap.md',
-        re: /слой БД: (\d+) инфоблоков, (\d+) свойств, (\d+) элемент, (\d+) миграций/,
+        re: /слой БД: (\d+) инфоблоков, (\d+) свойств(?:о|а)?, (\d+) элемент, (\d+) миграций/,
         keys: ['iblocks', 'properties', 'elements', 'migrations'],
     },
     { file: 'docs/security-performance.md', re: /`script\.js`[^\d\n]{0,12}([\d,]+) КБ/, keys: ['js_bytes'], kb: true },

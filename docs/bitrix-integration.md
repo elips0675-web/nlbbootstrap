@@ -342,7 +342,15 @@ $APPLICATION->IncludeComponent('bitrix:iblock.element.add.form', 'bootstrap', [
 - `OnBeforeIBlockElementAdd` — согласие на обработку данных, дата не в
   прошлом, занятый слот (серверная проверка, не зависит от JS);
 - `OnAfterIBlockElementAdd` — письмо `NLB_NEW_REQUEST` через `CEvent::Send`.
-  Если почта не настроена, заявка всё равно остаётся в инфоблоке.
+  Если почта не настроена, заявка всё равно остаётся в инфоблоке;
+- `OnBeforeIBlockElementAdd` дополнительно пишет `SOURCE` — канал заявки
+  (`nlb_form_source_value()`): `utm_source`/`utm_medium` → `utm:<slug>`,
+  внешний `HTTP_REFERER` → `ref:<host>`, свой домен → `site`, ничего →
+  `direct`. Скрытое поле в форме не нужно;
+- `OnAfterIBlockElementUpdate` — при закрытии статуса (`request` → `done`;
+  `booking` → `confirmed`/`cancelled`; `order` → `done`/`cancelled`) ставит
+  `DATE_PROCESSED` и `CREATED_BY` (логин `$USER`, иначе ID). Возврат в
+  открытый статус очищает дату.
 
 Права: у инфоблоков заявок группа 2 «Все пользователи» имеет `W` (запись),
 иначе анонимная форма не создаст элемент. Поисковый индекс выключен, чтобы
@@ -359,6 +367,16 @@ $APPLICATION->IncludeComponent('bitrix:iblock.element.add.form', 'bootstrap', [
 обязательность через `nlb_iblock_relax_code()`, а код элемента генерирует
 `OnBeforeIBlockElementAdd` в `nlb_forms.php` — иначе Битрикс отклоняет
 добавление на проверке обязательных полей.
+
+**Колонки списка заявок.** Свойства в списке элементов по умолчанию не
+показываются, поэтому миграция `013_request_source.php` вызывает
+`CGridOptions::SetDefaultView()` для grid `tbl_iblock_list_` + md5 от
+`<тип>.<ID>` и задаёт набор `ID`, `NAME`, `STATUS`, `SOURCE`, `CREATED_BY`,
+`DATE_PROCESSED`, `TIMESTAMP_X` (сортировка по `ID` вниз, 20 строк). Метод
+пишет настройку в `main.interface.grid.common` и действует, только если у
+сотрудника нет своей сохранённой вьюхи — иначе вернуть набор кнопкой
+«Настроить список → По умолчанию». `SOURCE` заполняется из utm-меток и
+referer, `DATE_PROCESSED`/`CREATED_BY` — при закрытии статуса (см. выше).
 
 Почтовое событие создаёт миграция `008_requests.php`. В админке проверьте:
 **Настройки → Настройки продукта → Почтовые события → Почтовые шаблоны** →

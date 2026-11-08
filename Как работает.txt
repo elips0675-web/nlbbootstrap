@@ -59,7 +59,7 @@ bootstrap/template.php
 
 1. services/detail.php:80-98 (и books/detail.php:91-110) подключают
    компонент с NLB_FORM => 'booking' / 'order'.
-2. nlb_form_render() (local/php_interface/include/nlb_forms.php:602-830)
+2. nlb_form_render() (local/php_interface/include/nlb_forms.php:724-945)
    рисует форму: bitrix_sessid_post(), CAPTCHA (USE_CAPTCHA=Y), скрытые
    PROPERTY[<ID>][0] — SERVICE / SERVICE_CODE / TARIFF / PRICE либо
    ITEM / ARTICLE / PRICE.
@@ -110,7 +110,7 @@ info@example.by — docs/bitrix-integration.md:344-347.
   это новый инфоблок по образцу orders.
 - Живьём не проверено: на машине разработки нет ядра и лицензии Битрикса,
   поэтому реальная запись, CAPTCHA и отправка письма не выполнялись
-  (docs/bitrix-integration.md:354-356).
+  (docs/bitrix-integration.md:391-393).
 
 ================================================================
 4. ЧТО НУЖНО, ЧТОБЫ «ЗАКАЗАТЬ» ЗАРАБОТАЛО ПО-НАСТОЯЩЕМУ

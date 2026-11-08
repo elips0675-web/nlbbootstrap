@@ -108,16 +108,16 @@
     ---------------------------------------------------------------
     Публичных страниц                         28
     Разделов с index.php в корне              17
-    PHP-файлов (без preview)                102
-    Строк PHP                                 21 257
+    PHP-файлов (без preview)                104
+    Строк PHP                                 22 011
     Типов инфоблоков                          3 (nlb_content, nlb_catalog,
                                               nlb_services)
     Инфоблоков                                9 (6 контентных + requests,
                                               bookings, orders)
-    Свойств инфоблоков                        65
+    Свойств инфоблоков                        74
     Разделов каталога                         12
     Элементов демо-контента                   91
-    Миграций                                  12 (001–012)
+    Миграций                                  13 (001–013)
     Шаблонов компонентов                      7
     Строк styles.css                          3 785
     Строк script.js                           610 (+ pwa.js, push.js, consent.js)
@@ -150,8 +150,8 @@
 Готово в коде: шаблон, 28 страниц, слой данных, формы (обращение, бронь,
 заказ), SEO, заголовки безопасности, PWA, статическое превью, документация.
 
-Проверено локально: синтаксис PHP (102 файла, 0 ошибок на PHP 8.3.30 и 8.5.12),
-db/lint.php (конфиги без ядра), db/tests/run.php (28 проверок на заглушках
+Проверено локально: синтаксис PHP (104 файла, 0 ошибок на PHP 8.3.30 и 8.5.12),
+db/lint.php (конфиги без ядра), db/tests/run.php (63 проверки на заглушках
 ядра), tools/check-template.mjs, tools/check-docs.mjs, статическое превью в
 браузере (0 ошибок консоли на главной), пересборка превью под PHP 8.5 —
 побайтово совпала с закоммиченной.
@@ -311,7 +311,7 @@ local/templates/nlb_bootstrap/
     db/lib/boot.php             загрузка конфигов без ядра
     db/lib/helpers.php          создание типов, инфоблоков, свойств, элементов
     db/sql/checks.sql           проверки схемы для check.php
-    db/tests/run.php            62 проверки на заглушках ядра
+    db/tests/run.php            63 проверки на заглушках ядра
     db/tests/stub/bitrix.php    заглушка ядра (26 КБ)
     db/run.php                  накат миграций (--only, --set-template)
     db/check.php                что реально в базе (нужно ядро)
@@ -459,7 +459,7 @@ books/detail.php:91-110.
 
 ПУТЬ ОДНОГО ОТПРАВЛЕНИЯ
 
-1. nlb_form_render() (nlb_forms.php:602-830) рисует форму: bitrix_sessid_post(),
+1. nlb_form_render() (nlb_forms.php:724-945) рисует форму: bitrix_sessid_post(),
    CAPTCHA (USE_CAPTCHA=Y), скрытые PROPERTY[<ID>][0] с предзаполненными
    значениями (SERVICE, SERVICE_CODE, TARIFF, PRICE либо ITEM, ARTICLE, PRICE).
 2. POST уходит на тот же URL; компонент делает CIBlockElement::Add.
@@ -468,7 +468,7 @@ books/detail.php:91-110.
    - отклоняет дату в прошлом;
    - отклоняет занятый слот (для booking).
    Проверки серверные, работают и при отключённом JavaScript.
-4. OnAfterIBlockElementAdd → nlb_forms_after_add() (nlb_forms.php:1003-1088):
+4. OnAfterIBlockElementAdd → nlb_forms_after_add() (nlb_forms.php:1136-1215):
    CEvent::Send('NLB_NEW_REQUEST', …) с типом заявки, именем, контактами,
    услугой/товаром, датой/временем и ссылкой на элемент в админке.
    Ошибка почты не ломает сохранение (try/catch).
@@ -630,10 +630,10 @@ prefers-reduced-motion для анимаций появления.
     Проверка                        Как                  Результат
     ----------------------------------------------------------------
     Синтаксис PHP                   php -l, все файлы    0 ошибок
-                                                          (102 файла, PHP
+                                                          (104 файла, PHP
                                                           8.3.30 и 8.5.12)
     Конфиги БД без ядра             php db/lint.php      0 ошибок
-    Миграции на заглушках ядра      php db/tests/run.php 62 из 62
+    Миграции на заглушках ядра      php db/tests/run.php 63 из 63
     Сборка превью                   php tools/build-     110 HTML, вывод
                                     preview-pages.php    побайтово совпал
                                                          с закоммиченным

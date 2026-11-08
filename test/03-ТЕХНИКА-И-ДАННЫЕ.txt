@@ -29,7 +29,7 @@ MySQL 5.7+ / MariaDB 10.3+, Apache 2.4 или nginx. Node.js на сервере
 ================================================================
 
 3 типа инфоблоков: nlb_content, nlb_catalog, nlb_services.
-9 инфоблоков, 65 свойств, 12 разделов, 91 элемент демо-контента.
+9 инфоблоков, 74 свойства, 12 разделов, 91 элемент демо-контента.
 
     Инфоблок     Тип            Свойств  Элементов  Назначение
     ---------------------------------------------------------------
@@ -102,7 +102,7 @@ books/detail.php:91-110.
 
 ПУТЬ ОДНОГО ОТПРАВЛЕНИЯ
 
-1. nlb_form_render() (nlb_forms.php:602-830) рисует форму: bitrix_sessid_post(),
+1. nlb_form_render() (nlb_forms.php:724-945) рисует форму: bitrix_sessid_post(),
    CAPTCHA (USE_CAPTCHA=Y), скрытые PROPERTY[<ID>][0] с предзаполненными
    значениями (SERVICE, SERVICE_CODE, TARIFF, PRICE либо ITEM, ARTICLE, PRICE).
 2. POST уходит на тот же URL; компонент делает CIBlockElement::Add.
@@ -111,7 +111,7 @@ books/detail.php:91-110.
    - отклоняет дату в прошлом;
    - отклоняет занятый слот (для booking).
    Проверки серверные, работают и при отключённом JavaScript.
-4. OnAfterIBlockElementAdd → nlb_forms_after_add() (nlb_forms.php:1003-1088):
+4. OnAfterIBlockElementAdd → nlb_forms_after_add() (nlb_forms.php:1136-1215):
    CEvent::Send('NLB_NEW_REQUEST', …) с типом заявки, именем, контактами,
    услугой/товаром, датой/временем и ссылкой на элемент в админке.
    Ошибка почты не ломает сохранение (try/catch).

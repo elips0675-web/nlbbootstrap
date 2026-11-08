@@ -93,6 +93,11 @@ if (!function_exists('nlb_forms_config')) {
                         'type' => 'hidden',
                         'default_xml' => 'new',
                     ],
+                    'SOURCE' => [
+                        'label' => 'Источник',
+                        'type' => 'hidden',
+                        'source' => true,
+                    ],
                 ],
             ],
 
@@ -168,6 +173,11 @@ if (!function_exists('nlb_forms_config')) {
                         'type' => 'hidden',
                         'default_xml' => 'new',
                     ],
+                    'SOURCE' => [
+                        'label' => 'Источник',
+                        'type' => 'hidden',
+                        'source' => true,
+                    ],
                 ],
             ],
 
@@ -236,6 +246,11 @@ if (!function_exists('nlb_forms_config')) {
                         'type' => 'hidden',
                         'default_xml' => 'new',
                     ],
+                    'SOURCE' => [
+                        'label' => 'Источник',
+                        'type' => 'hidden',
+                        'source' => true,
+                    ],
                 ],
             ],
         ];
@@ -272,6 +287,104 @@ if (!function_exists('nlb_forms_type_by_name')) {
     {
         $config = nlb_forms_config();
         return isset($config[$name]) ? $name : '';
+    }
+}
+
+if (!function_exists('nlb_form_source_slug')) {
+    /**
+     * Короткое значение источника: только [a-z0-9._-], до 40 символов.
+     */
+    function nlb_form_source_slug(string $value): string
+    {
+        $value = mb_strtolower(trim($value));
+        $value = (string)preg_replace('/[^a-z0-9._-]+/u', '-', $value);
+        $value = trim($value, '-.');
+        return mb_substr($value, 0, 40);
+    }
+}
+
+if (!function_exists('nlb_form_source_value')) {
+    /**
+     * Канал заявки по utm-меткам и referer, нормализованный до короткого вида.
+     *
+     * utm_source, затем utm_medium → utm:<slug>; внешний referer → ref:<host>;
+     * свой сайт → site; ничего не пришло → direct.
+     */
+    function nlb_form_source_value(): string
+    {
+        $utmSource = (string)($_GET['utm_source'] ?? $_POST['utm_source'] ?? '');
+        $utmMedium = (string)($_GET['utm_medium'] ?? $_POST['utm_medium'] ?? '');
+        $candidate = trim($utmSource) !== '' ? $utmSource : $utmMedium;
+
+        if (trim($candidate) !== '') {
+            $slug = nlb_form_source_slug($candidate);
+            if ($slug !== '') {
+                return 'utm:' . $slug;
+            }
+        }
+
+        $referer = (string)($_SERVER['HTTP_REFERER'] ?? '');
+        $host = $referer !== '' ? (string)parse_url($referer, PHP_URL_HOST) : '';
+        if ($host !== '') {
+            $host = mb_strtolower($host);
+            $self = mb_strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+            $self = (string)preg_replace('/:\d+$/', '', $self);
+            if ($host === $self || $host === 'localhost' || $host === '127.0.0.1') {
+                return 'site';
+            }
+            return 'ref:' . nlb_form_source_slug($host);
+        }
+
+        return 'direct';
+    }
+}
+
+if (!function_exists('nlb_forms_status_closed')) {
+    /**
+     * Закрыт ли статус заявки: закрытая заявка получает дату обработки.
+     */
+    function nlb_forms_status_closed(string $type, string $status): bool
+    {
+        $status = trim($status);
+        if ($status === '') {
+            return false;
+        }
+
+        $closed = [
+            'request' => ['done'],
+            'booking' => ['confirmed', 'cancelled'],
+            'order' => ['done', 'cancelled'],
+        ];
+
+        return in_array($status, $closed[$type] ?? [], true);
+    }
+}
+
+if (!function_exists('nlb_forms_current_user')) {
+    /**
+     * Логин сотрудника, который меняет заявку; ID — если логина нет.
+     */
+    function nlb_forms_current_user(): string
+    {
+        global $USER;
+        if (!is_object($USER)) {
+            return '';
+        }
+
+        if (method_exists($USER, 'GetLogin')) {
+            $login = trim((string)$USER->GetLogin());
+            if ($login !== '') {
+                return $login;
+            }
+        }
+        if (method_exists($USER, 'GetID')) {
+            $id = (int)$USER->GetID();
+            if ($id > 0) {
+                return (string)$id;
+            }
+        }
+
+        return '';
     }
 }
 
@@ -713,6 +826,8 @@ if (!function_exists('nlb_form_render')) {
                                 }
                             }
                             $current = $enumValue;
+                        } elseif (!empty($field['source'])) {
+                            $current = nlb_form_source_value();
                         } else {
                             $current = nlb_forms_posted_value($propertyId, $values, $code);
                         }
@@ -910,11 +1025,22 @@ if (!function_exists('nlb_forms_before_add')) {
             return false;
         }
 
+        $values = nlb_forms_field_values($iblockId, $arFields);
+        $config = nlb_forms_config();
+        $properties = nlb_iblock_properties($config[$type]['iblock']);
+        $sourcePropertyId = (int)($properties['SOURCE']['ID'] ?? 0);
+
+        if ($sourcePropertyId > 0 && trim((string)($values['SOURCE'] ?? '')) === '') {
+            $source = nlb_form_source_value();
+            if ($source !== '') {
+                $arFields['PROPERTY_VALUES'][$sourcePropertyId] = [0 => ['VALUE' => $source]];
+            }
+        }
+
         if ($type !== 'booking') {
             return true;
         }
 
-        $values = nlb_forms_field_values($iblockId, $arFields);
         $serviceCode = (string)($values['SERVICE_CODE'] ?? '');
         $date = (string)($values['DATE'] ?? '');
         $time = (string)($values['TIME'] ?? '');
@@ -1088,7 +1214,63 @@ if (!function_exists('nlb_forms_after_add')) {
     }
 }
 
+if (!function_exists('nlb_forms_after_update')) {
+    /**
+     * OnAfterIBlockElementUpdate: дата обработки и ответственный по статусу.
+     *
+     * Закрытие заявки (done/confirmed/cancelled) проставляет DATE_PROCESSED,
+     * если он ещё пуст, и запоминает сотрудника в CREATED_BY. Возврат в
+     * открытый статус очищает дату, чтобы «висящие без ответа» считались
+     * по текущему состоянию, а не по истории.
+     */
+    function nlb_forms_after_update(&$arFields): void
+    {
+        $iblockId = (int)($arFields['IBLOCK_ID'] ?? 0);
+        $type = nlb_forms_type_by_iblock($iblockId);
+        if ($type === '') {
+            return;
+        }
+
+        $elementId = (int)($arFields['ID'] ?? 0);
+        if ($elementId <= 0) {
+            return;
+        }
+
+        $config = nlb_forms_config();
+        $properties = nlb_iblock_properties($config[$type]['iblock']);
+        if (empty($properties['DATE_PROCESSED']) && empty($properties['CREATED_BY'])) {
+            return;
+        }
+
+        $props = nlb_forms_element_props($iblockId, $elementId);
+        $status = (string)($props['xml']['STATUS'] ?? '');
+        $processed = trim((string)($props['values']['DATE_PROCESSED'] ?? ''));
+        $patch = [];
+
+        if (nlb_forms_status_closed($type, $status)) {
+            if ($processed === '' && isset($properties['DATE_PROCESSED'])) {
+                $patch['DATE_PROCESSED'] = date('d.m.Y H:i:s');
+            }
+            if (trim((string)($props['values']['CREATED_BY'] ?? '')) === ''
+                && isset($properties['CREATED_BY'])
+            ) {
+                $user = nlb_forms_current_user();
+                if ($user !== '') {
+                    $patch['CREATED_BY'] = $user;
+                }
+            }
+        } elseif ($processed !== '' && isset($properties['DATE_PROCESSED'])) {
+            $patch['DATE_PROCESSED'] = false;
+        }
+
+        if ($patch) {
+            CIBlockElement::SetPropertyValuesEx($elementId, $iblockId, $patch);
+        }
+    }
+}
+
 if (function_exists('AddEventHandler')) {
     AddEventHandler('iblock', 'OnBeforeIBlockElementAdd', 'nlb_forms_before_add');
     AddEventHandler('iblock', 'OnAfterIBlockElementAdd', 'nlb_forms_after_add');
+    AddEventHandler('iblock', 'OnAfterIBlockElementUpdate', 'nlb_forms_after_update');
 }

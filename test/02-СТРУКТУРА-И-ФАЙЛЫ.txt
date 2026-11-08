@@ -128,7 +128,7 @@ local/templates/nlb_bootstrap/
 7. СЛОЙ ДАННЫХ (db/)
 ================================================================
 
-    db/config/iblocks.php       9 инфоблоков, 65 свойств, 12 разделов
+    db/config/iblocks.php       9 инфоблоков, 74 свойства, 12 разделов
     db/config/data/*.php        6 файлов демо-контента (news, events,
                                 collections, books, services, printing)
     db/migrations/001–011.php   идемпотентные шаги на API Битрикса

@@ -1,7 +1,7 @@
 {
     "version": 1,
-    "built_at": "2026-11-08T05:08:01+00:00",
-    "source_hash": "ceb42b2c9ce12f9f2e0a05f971c1c2c24baf11c346d100012dfaddbcdb0fd4b4",
+    "built_at": "2026-11-08T06:33:42+00:00",
+    "source_hash": "9a78e17aaa8aad0e7ace869d76a5ca5c5bcf8f1aaa48cae0a4f94c601c90f7f8",
     "sources": {
         "db/config/data/books.php": "49d87e64915a3d85980cb59e4e54a4b51c9c5e0592a59a8ed5d7299511171feb",
         "db/config/data/collections.php": "94b944438246c0ca147e84ddea86a70906594aa7ac3675da43417f5c749106bc",
@@ -9,7 +9,7 @@
         "db/config/data/news.php": "215d9bae2e93c19ebc6fb57525e72609ab78ead2f32932ee675e0d356c8c428d",
         "db/config/data/printing.php": "e6c229dd25e90fc8a83f11c340a36c66f0dc389888d62e474cbfb0929175945e",
         "db/config/data/services.php": "72a4efed0541d5c7c05a543a04aca1f2b8f49fa39335f9848959cf31be8e3cbb",
-        "db/config/iblocks.php": "98b970ff77b09858354de348e6a69dc194e9a7bcdbc72ac6dd89654c8b0220bc",
+        "db/config/iblocks.php": "c88ba552a93fe7e306e076d786daf14abf2f88f2f6a5a0e1eab0fa3f8e66a0fb",
         "db/search/pages.json": "498028e070936633991152f13ef9f24dd3547dfb1cc5e6a2a60d6af968c37f1e"
     },
     "k1": 1.5,

@@ -20,6 +20,7 @@ final class NlbStubStore
     public static array $sections = [];
     public static array $elements = [];
     public static array $templates = ['s1' => []];
+    public static array $gridDefaults = [];
     public static array $sequences = [];
     public static int $typeId = 0;
     public static int $iblockId = 0;
@@ -354,6 +355,7 @@ class CIBlockProperty
             'IBLOCK_ID' => $iblockId,
             'CODE' => $code,
             'NAME' => $fields['NAME'] ?? '',
+            'ACTIVE' => $fields['ACTIVE'] ?? 'Y',
             'PROPERTY_TYPE' => $fields['PROPERTY_TYPE'] ?? 'S',
             'MULTIPLE' => $fields['MULTIPLE'] ?? 'N',
             'USER_TYPE' => $fields['USER_TYPE'] ?: '',
@@ -394,7 +396,7 @@ class CIBlockProperty
             $this->LAST_ERROR = 'нет свойства';
             return false;
         }
-        foreach (['NAME', 'PROPERTY_TYPE', 'MULTIPLE', 'USER_TYPE', 'IS_REQUIRED', 'SEARCHABLE', 'FILTRABLE', 'SORT'] as $field) {
+        foreach (['NAME', 'ACTIVE', 'PROPERTY_TYPE', 'MULTIPLE', 'USER_TYPE', 'IS_REQUIRED', 'SEARCHABLE', 'FILTRABLE', 'SORT'] as $field) {
             if (array_key_exists($field, $fields)) {
                 NlbStubStore::$properties[$id][$field] = $field === 'SORT'
                     ? (int)$fields[$field]
@@ -677,8 +679,12 @@ class CIBlockElement
                     continue;
                 }
                 $enumValue = '';
+                $enumId = '';
+                $enumXml = '';
                 if ($type === 'L') {
+                    $enumId = $one;
                     $enumValue = (string)(NlbStubStore::$enums[(int)$one]['VALUE'] ?? '');
+                    $enumXml = (string)(NlbStubStore::$enums[(int)$one]['XML_ID'] ?? '');
                 }
                 $rows[] = [
                     'ID' => 0,
@@ -689,11 +695,67 @@ class CIBlockElement
                     'PROPERTY_TYPE' => $type,
                     'VALUE' => $one,
                     'VALUE_ENUM' => $enumValue,
+                    'VALUE_ENUM_ID' => $enumId,
+                    'VALUE_XML_ID' => $enumXml,
                 ];
             }
         }
 
         return new NlbStubResult($rows);
+    }
+
+    public static function SetPropertyValuesEx($elementId, $iblockId, array $values, array $flags = []): void
+    {
+        $elementId = (int)$elementId;
+        $iblockId = (int)$iblockId;
+        if (!isset(NlbStubStore::$elements[$elementId])
+            || (int)NlbStubStore::$elements[$elementId]['IBLOCK_ID'] !== $iblockId
+        ) {
+            return;
+        }
+
+        $byId = [];
+        foreach (NlbStubStore::$properties as $property) {
+            if ((int)$property['IBLOCK_ID'] === $iblockId) {
+                $byId[(int)$property['ID']] = (string)$property['CODE'];
+            }
+        }
+
+        foreach ($values as $key => $value) {
+            $code = $byId[(int)$key] ?? (is_string($key) ? $key : '');
+            if ($code === '') {
+                continue;
+            }
+            if ($value === false || $value === null || $value === '' || $value === []) {
+                unset(NlbStubStore::$elements[$elementId]['PROPERTY_VALUES'][$code]);
+                continue;
+            }
+            $one = is_array($value) ? reset($value) : $value;
+            if (is_array($one)) {
+                $one = $one['VALUE'] ?? '';
+            }
+            $one = trim((string)$one);
+            if ($one === '') {
+                unset(NlbStubStore::$elements[$elementId]['PROPERTY_VALUES'][$code]);
+                continue;
+            }
+            NlbStubStore::$elements[$elementId]['PROPERTY_VALUES'][$code] = $one;
+        }
+    }
+}
+
+class CGridOptions
+{
+    private string $gridId;
+
+    public function __construct(string $gridId)
+    {
+        $this->gridId = $gridId;
+    }
+
+    public function SetDefaultView(array $settings): void
+    {
+        NlbStubStore::$gridDefaults[$this->gridId] = $settings;
     }
 }
 
@@ -806,7 +868,7 @@ function nlb_stub_load(): void
     if (!is_array($state)) {
         return;
     }
-    foreach (['types', 'iblocks', 'properties', 'enums', 'sections', 'elements', 'templates', 'sequences'] as $key) {
+    foreach (['types', 'iblocks', 'properties', 'enums', 'sections', 'elements', 'templates', 'gridDefaults', 'sequences'] as $key) {
         if (isset($state[$key]) && is_array($state[$key])) {
             NlbStubStore::${$key} = $state[$key];
         }
@@ -832,6 +894,7 @@ function nlb_stub_save(): void
         'sections' => NlbStubStore::$sections,
         'elements' => NlbStubStore::$elements,
         'templates' => NlbStubStore::$templates,
+        'gridDefaults' => NlbStubStore::$gridDefaults,
         'sequences' => NlbStubStore::$sequences,
         'typeId' => NlbStubStore::$typeId,
         'iblockId' => NlbStubStore::$iblockId,

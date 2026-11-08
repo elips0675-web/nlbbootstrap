@@ -181,6 +181,9 @@ bitrix:news.list / news.detail  → шаблоны news_cards, events_cards, art
 | `MESSAGE` | Сообщение | строка | обязательное |
 | `PAGE` | Страница-источник | строка | URI, с которого отправлено |
 | `STATUS` | Статус | список | `new` / `in_progress` / `done` |
+| `SOURCE` | Источник | строка | канал: `utm:telegram`, `ref:t.me`, `site`, `direct` |
+| `CREATED_BY` | Ответственный | строка | логин или ID закрывшего, не имя |
+| `DATE_PROCESSED` | Дата обработки | строка + `DateTime` | `дд.мм.гггг чч:мм:сс` |
 
 **`bookings` — брони услуг (детальная страница услуги, `#booking`):**
 
@@ -197,6 +200,9 @@ bitrix:news.list / news.detail  → шаблоны news_cards, events_cards, art
 | `EMAIL` | E-mail | строка | |
 | `COMMENT` | Комментарий | строка | |
 | `STATUS` | Статус | список | `new` / `confirmed` / `cancelled` |
+| `SOURCE` | Источник | строка | канал: `utm:telegram`, `ref:t.me`, `site`, `direct` |
+| `CREATED_BY` | Ответственный | строка | логин или ID закрывшего, не имя |
+| `DATE_PROCESSED` | Дата обработки | строка + `DateTime` | `дд.мм.гггг чч:мм:сс` |
 
 **`orders` — заказы сувениров (детальная страница товара, `#order`):**
 
@@ -211,6 +217,33 @@ bitrix:news.list / news.detail  → шаблоны news_cards, events_cards, art
 | `EMAIL` | E-mail | строка | |
 | `COMMENT` | Комментарий | строка | |
 | `STATUS` | Статус | список | `new` / `processing` / `done` / `cancelled` |
+| `SOURCE` | Источник | строка | канал: `utm:telegram`, `ref:t.me`, `site`, `direct` |
+| `CREATED_BY` | Ответственный | строка | логин или ID закрывшего, не имя |
+| `DATE_PROCESSED` | Дата обработки | строка + `DateTime` | `дд.мм.гггг чч:мм:сс` |
+
+Три последних свойства есть у всех трёх инфоблоков, но их не передаёт форма —
+их пишут обработчики в `nlb_forms.php`:
+
+- **`SOURCE`** — `OnBeforeIBlockElementAdd` вызывает `nlb_form_source_value()`:
+  `utm_source`, затем `utm_medium` → `utm:<slug>`; внешний `HTTP_REFERER` →
+  `ref:<host>`; свой домен (и `localhost`) → `site`; ничего не пришло →
+  `direct`. Slug собирается из `[a-z0-9._-]` и обрезается до 40 символов,
+  поэтому в базе нет длинных ссылок с параметрами. Скрытое поле в форме не
+  нужно: значение читается из запроса на сервере.
+- **`DATE_PROCESSED` и `CREATED_BY`** — `OnAfterIBlockElementUpdate`. Закрытые
+  статусы: `request` → `done`; `booking` → `confirmed`, `cancelled`; `order` →
+  `done`, `cancelled`. При закрытии ставится дата (если она ещё пуста) и
+  ответственный (если пуст): логин `$USER`, а если логина нет — его ID.
+  Возврат в открытый статус очищает `DATE_PROCESSED`, чтобы «висит без
+  ответа» считалось по текущему состоянию, а не по истории правок.
+
+Колонки списка заявок в админке задаёт `013_request_source.php` через
+`CGridOptions::SetDefaultView()` (grid `tbl_iblock_list_` + md5 от
+`<тип>.<ID>`): `ID`, `NAME`, `STATUS`, `SOURCE`, `CREATED_BY`,
+`DATE_PROCESSED`, `TIMESTAMP_X`. Свойства в списке по умолчанию не видны, а
+без них аналитика остаётся в базе, но не на экране. `SetDefaultView()` пишет
+`main.interface.grid.common` и применяется, только если у сотрудника нет своей
+сохранённой вьюхи; иначе — «Настроить список → По умолчанию».
 
 Серверные проверки — обработчики `OnBeforeIBlockElementAdd` в
 `local/php_interface/include/nlb_forms.php`: согласие на обработку данных,
