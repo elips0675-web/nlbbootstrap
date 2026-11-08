@@ -129,6 +129,12 @@ const claims = [
 
     /* docs/ */
     { file: 'docs/AGENTS-frontend.md', re: /`styles\.css` \(наш, ([\d ]+) строк\)/, keys: ['css_lines'] },
+    {
+        file: 'docs/AGENTS-frontend.md',
+        re: /Текущий размер\s+`styles\.css` — ([\d,]+) КБ/,
+        keys: ['css_bytes'],
+        kb: true,
+    },
     { file: 'docs/installation.md', re: /# (\d+) шагов: типы/, keys: ['migrations'] },
     { file: 'docs/installation.md', re: /Создаётся (\d+) инфоблоков/, keys: ['iblocks'] },
     {
@@ -277,6 +283,27 @@ for (const name of liveDocs()) {
             bannedChecked++;
         }
     });
+}
+
+/* ------------------------------------------------------------------ */
+/* 4b. Порог размера CSS: документ обещает предел, факт его не превышает */
+/* ------------------------------------------------------------------ */
+
+const frontendDoc = 'docs/AGENTS-frontend.md';
+const frontendText = fs.readFileSync(path.join(root, frontendDoc), 'utf8');
+const cssLimitMatch = frontendText.match(/CSS-файл не должен расти больше ~(\d+) КБ/);
+if (!cssLimitMatch) {
+    errors.push(`${frontendDoc}: не найден порог роста CSS — гейт ослабел или правило переписали без сверки`);
+} else {
+    const cssLimit = Number(cssLimitMatch[1]);
+    const cssActual = kbOf(facts.css_bytes);
+    totalChecked++;
+    perFile.set(frontendDoc, (perFile.get(frontendDoc) || 0) + 1);
+    if (cssActual > cssLimit) {
+        errors.push(`${frontendDoc}: styles.css ${String(cssActual).replace('.', ',')} КБ больше порога ${cssLimit} КБ — сокращайте CSS или пересматривайте порог с обоснованием`);
+    } else {
+        checks.push(`порог CSS: ${cssLimit} КБ, факт ${String(cssActual).replace('.', ',')} КБ`);
+    }
 }
 
 /* ------------------------------------------------------------------ */
