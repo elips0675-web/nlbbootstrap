@@ -9,6 +9,7 @@
  *  - проверка db/check.php проходит;
  *  - значения свойств сконвертированы (дата, списки, картинки) и попадают
  *    в документы поиска из инфоблоков;
+ *  - у демо-элементов свой sort, а афиша фильтрует по DATE_ACTIVE_FROM;
  *  - привязка шаблона (шаг 007) записывается;
  *  - на «книжной» базе шаги 009/010 дают сувениры и 0 изменений при повторе;
  *  - откат удаляет всё своё, после него check.php падает.
@@ -182,6 +183,34 @@ nlb_test_assert($code === 0, 'inspect.php: значения свойств и д
 if ($code !== 0) {
     echo "\n--- вывод inspect.php ---\n{$output}\n";
 }
+
+/* ------------------------------------------------------------------ */
+/* 3b. Порядок карточек и фильтр афиши (P1-26, P1-27)                 */
+/* ------------------------------------------------------------------ */
+
+[$output, $code] = nlb_test_run($temp . '/db/tests/sort.php', [], $temp);
+nlb_test_assert($code === 0, 'sort.php: у каждого демо-элемента свой sort из конфига');
+if ($code !== 0) {
+    echo "\n--- вывод sort.php ---\n{$output}\n";
+}
+
+[$output, $code] = nlb_test_run($temp . '/db/tests/events-filter.php', [], $temp);
+nlb_test_assert($code === 0, 'events-filter.php: афиша делит события по DATE_ACTIVE_FROM');
+if ($code !== 0) {
+    echo "\n--- вывод events-filter.php ---\n{$output}\n";
+}
+
+$eventsPage = (string)file_get_contents($package . '/events/index.php');
+$homePage = (string)file_get_contents($package . '/index.php');
+nlb_test_assert(
+    str_contains($eventsPage, 'nlb_events_filter($past)') && str_contains($homePage, 'nlb_events_filter(false)'),
+    'афиша и главная собирают фильтр хелпером nlb_events_filter()'
+);
+nlb_test_assert(
+    !str_contains($eventsPage, "'<ACTIVE_FROM'") && !str_contains($eventsPage, "'>=ACTIVE_FROM'")
+    && !str_contains($homePage, "'<ACTIVE_FROM'") && !str_contains($homePage, "'>=ACTIVE_FROM'"),
+    'ключ ACTIVE_FROM в фильтре афиши не используется'
+);
 
 /* ------------------------------------------------------------------ */
 /* 4. Идемпотентность и привязка шаблона                              */

@@ -366,6 +366,25 @@ if (!function_exists('nlb_collection_class')) {
     }
 }
 
+if (!function_exists('nlb_events_filter')) {
+    /**
+     * Фильтр афиши: прошедшие или предстоящие события.
+     *
+     * Диапазон дат в фильтре задаётся только ключом DATE_ACTIVE_FROM:
+     * ключ ACTIVE_FROM ядро молча игнорирует, и страница «Прошедшие»
+     * показывала те же будущие события, что и «Предстоящие» (P1-27).
+     *
+     * @return array<string,string>
+     */
+    function nlb_events_filter(bool $past, ?string $now = null): array
+    {
+        $now = $now ?? (string)ConvertTimeStamp(time(), 'FULL');
+        return $past
+            ? ['<DATE_ACTIVE_FROM' => $now]
+            : ['>=DATE_ACTIVE_FROM' => $now];
+    }
+}
+
 if (!function_exists('nlb_event_cat_class')) {
     /**
      * XML_ID категории события → класс бейджа.

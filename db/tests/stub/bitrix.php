@@ -58,6 +58,34 @@ final class NlbStubResult
     }
 }
 
+function nlb_stub_timestamp(string $value): ?int
+{
+    if (!preg_match('/^(\d{2})\.(\d{2})\.(\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/', trim($value), $m)) {
+        return null;
+    }
+    return gmmktime(
+        (int)($m[4] ?? 0),
+        (int)($m[5] ?? 0),
+        (int)($m[6] ?? 0),
+        (int)$m[2],
+        (int)$m[1],
+        (int)$m[3]
+    );
+}
+
+function nlb_stub_compare(string $left, string $right): int
+{
+    $leftTs = nlb_stub_timestamp($left);
+    $rightTs = nlb_stub_timestamp($right);
+    if ($leftTs !== null && $rightTs !== null) {
+        return $leftTs <=> $rightTs;
+    }
+    if (is_numeric($left) && is_numeric($right)) {
+        return (float)$left <=> (float)$right;
+    }
+    return strcmp($left, $right);
+}
+
 function nlb_stub_filter(array $row, array $filter): bool
 {
     foreach ($filter as $rawKey => $value) {
@@ -88,6 +116,28 @@ function nlb_stub_filter(array $row, array $filter): bool
         }
         if ($operator === '%') {
             if (mb_stripos($actual, (string)$value) === false) {
+                return false;
+            }
+            continue;
+        }
+        if (in_array($operator, ['<', '>', '<=', '>='], true)) {
+            if (!array_key_exists($key, $row)) {
+                /* Неизвестное поле ядро игнорирует — так ключ ACTIVE_FROM
+                   в фильтре афиши пропускал и прошлые, и будущие (P1-27). */
+                continue;
+            }
+            $actual = trim((string)$row[$key]);
+            if (is_array($value) || $actual === '') {
+                return false;
+            }
+            $compare = nlb_stub_compare($actual, (string)$value);
+            $matches = match ($operator) {
+                '<' => $compare < 0,
+                '>' => $compare > 0,
+                '<=' => $compare <= 0,
+                '>=' => $compare >= 0,
+            };
+            if (!$matches) {
                 return false;
             }
             continue;
