@@ -23,7 +23,7 @@
 | Заявки на услуги | `bookings` | `nlb_content` | 0 (заполняется с сайта) | — |
 | Заказы сувениров | `orders` | `nlb_content` | 0 (заполняется с сайта) | — |
 
-Дополнительно: файлы меню `/menu/top.menu.php` и `/menu/bottom.menu.php`
+Дополнительно: файлы меню `/.top.menu.php` и `/.bottom.menu.php`
 (шаг 006), меню разделов `/services/.left.menu.php` и
 `/printing/.left.menu.php` для второго уровня (шаг 011), по флагу — привязка
 шаблона к сайту (шаг 007), а шаг 008 создаёт инфоблоки заявок и почтовое
@@ -50,7 +50,8 @@
 <корень сайта>/
 ├── bitrix/
 ├── local/
-├── menu/            ← появится после шага 006
+├── .top.menu.php    ← появятся после шага 006
+├── .bottom.menu.php
 ├── services/        ← .left.menu.php после шага 011
 ├── printing/        ← .left.menu.php после шага 011
 └── db/              ← этот каталог
@@ -101,7 +102,7 @@ php tools/build-search-index.php
 ```bash
 php db/run.php --only=003          # только свойства
 php db/run.php --only=005 --force  # контент (force не влияет на 005)
-php db/run.php --force             # перезаписать /menu/*.menu.php
+php db/run.php --force             # перезаписать /.top.menu.php и /.bottom.menu.php
 php db/run.php --set-template      # привязать nlb_bootstrap к сайту
 php db/run.php --help              # список шагов
 ```
@@ -115,7 +116,7 @@ php db/run.php --help              # список шагов
 | 003 | `003_properties.php` | свойства и значения списков (дописывает новые XML_ID) |
 | 004 | `004_sections.php` | разделы новостей, событий, книг |
 | 005 | `005_elements.php` | демо-элементы с картинками и свойствами |
-| 006 | `006_menus.php` | файлы меню в `/menu/` |
+| 006 | `006_menus.php` | файлы меню в корне: `/.top.menu.php` и `/.bottom.menu.php` |
 | 007 | `007_site_template.php` | привязка шаблона (только с `--set-template`) |
 | 008 | `008_requests.php` | инфоблоки заявок и почтовое событие `NLB_NEW_REQUEST` |
 | 009 | `009_iblocks_sync.php` | названия и адреса существующих инфоблоков |
@@ -178,7 +179,7 @@ php db/run.php --help              # список шагов
 
 ```bash
 php db/rollback.php --yes           # удалить инфоблоки, элементы, разделы, типы
-php db/rollback.php --yes --menus   # плюс /menu/*.menu.php
+php db/rollback.php --yes --menus   # плюс /.top.menu.php и /.bottom.menu.php
 ```
 
 Удаляется только своё: элементы и разделы с `XML_ID` на `nlb-`, инфоблоки
@@ -239,7 +240,7 @@ mysqldump --single-transaction --default-character-set=utf8mb4 \
 | `не найдено ядро Битрикса` | `db/` лежит не в корне | переложить или задать `NLB_ROOT` |
 | `модуль iblock` не подключён | нет модуля «Информационные блоки» | установить модуль в админке |
 | 403 в веб-режиме | нет прав администратора | войти под администратором |
-| `каталог /menu недоступен для записи` | права на файлы | создать `/menu/` вручную и дать запись, либо скопировать `db/menu/*.menu.php` руками |
+| `корень сайта недоступен для записи` | права на файлы | дать запись корню сайта, либо скопировать `db/menu/*.menu.php` руками в `/.top.menu.php` и `/.bottom.menu.php` |
 | элемент не создаётся, «раздел не найден» | шаг 004 не выполнен | `php db/run.php --only=004,005` |
 | после импорта пусто на сайте | кеш | очистить кеш, проверить `ACTIVE` и даты активности |
 | 403 на `/db/run.php?run=yes` | `db/.htaccess` закрывает каталог | запускать из CLI |

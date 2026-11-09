@@ -8,7 +8,7 @@
  *
  * CLI:
  *   php db/rollback.php --yes            — удалить структуру и контент
- *   php db/rollback.php --yes --menus    — плюс файлы /menu/*.menu.php
+ *   php db/rollback.php --yes --menus    — плюс файлы /.top.menu.php и /.bottom.menu.php
  *
  * Веб (под администратором): /db/rollback.php?rollback=yes&confirm=yes
  */
@@ -124,9 +124,9 @@ foreach ($config['types'] as $typeId => $type) {
 /* 4. Меню */
 if ($removeMenus) {
     foreach (['top', 'bottom'] as $menuType) {
-        $file = $root . '/menu/' . $menuType . '.menu.php';
+        $file = $root . '/.' . $menuType . '.menu.php';
         if (is_file($file) && @unlink($file)) {
-            nlb_say("  удалён /menu/{$menuType}.menu.php");
+            nlb_say("  удалён /.{$menuType}.menu.php");
         }
     }
     foreach (['services', 'printing'] as $section) {

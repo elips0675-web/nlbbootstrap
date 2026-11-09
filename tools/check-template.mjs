@@ -1157,6 +1157,37 @@ if (!menuTemplate) {
     ok('шаблон меню: второй уровень и выпадающие списки');
 }
 
+const menuMigration = read('db/migrations/006_menus.php') || '';
+for (const rel of ['db/migrations/006_menus.php', 'db/check.php', 'db/rollback.php']) {
+    const text = read(rel) || '';
+    if (!text) {
+        continue;
+    }
+    if (!text.includes(". '/.' . ")) {
+        fail(
+            `${rel}: файл меню не собирается как /.top.menu.php — bitrix:menu читает `
+            + '.<тип>.menu.php в каталоге раздела, а /menu/ не видит'
+        );
+    }
+    if (/['"]\/menu['"]/.test(text)) {
+        fail(`${rel}: остался путь /menu/ — bitrix:menu этот файл не читает`);
+    }
+}
+if (menuMigration) {
+    ok('меню: миграция 006 кладёт /.top.menu.php и /.bottom.menu.php в корень');
+}
+
+if (menuTemplate) {
+    for (const marker of ['$demoChildren', "'Главная'", 'if (empty($items))']) {
+        if (menuTemplate.includes(marker)) {
+            fail(
+                `шаблон меню top_bootstrap: остался демо-фолбэк (${marker}) — `
+                + 'пустой тип top должен давать пустую навигацию, а не демо-пункты'
+            );
+        }
+    }
+}
+
 for (const section of ['services', 'printing']) {
     const rel = `db/menu/${section}.left.menu.php`;
     const text = read(rel);

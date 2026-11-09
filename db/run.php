@@ -5,7 +5,7 @@
  * CLI:
  *   php db/run.php                      — все шаги по порядку
  *   php db/run.php --only=001,002       — только выбранные шаги
- *   php db/run.php --force              — перезаписать menu/*.menu.php
+ *   php db/run.php --force              — перезаписать .top.menu.php и .bottom.menu.php
  *   php db/run.php --set-template       — привязать шаблон к сайту (шаг 007)
  *
  * Веб (если нет CLI):

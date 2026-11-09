@@ -119,9 +119,9 @@ foreach ($config['iblocks'] as $code => $iblock) {
 
 /* 3. Меню */
 foreach (['top', 'bottom'] as $type) {
-    $file = nlb_root() . '/menu/' . $type . '.menu.php';
+    $file = nlb_root() . '/.' . $type . '.menu.php';
     if (!is_file($file)) {
-        nlb_check_fail("нет файла меню /menu/{$type}.menu.php (шаг 006)");
+        nlb_check_fail("нет файла меню /.{$type}.menu.php (шаг 006)");
     }
 }
 foreach (['services', 'printing'] as $section) {

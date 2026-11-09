@@ -3,6 +3,27 @@
 Журнал этапов шаблона `nlb_bootstrap`. Сверху — свежее. Формат записи: этап,
 дата, что сделано, чем проверено, что не проверено.
 
+(Stage 70 — 09.11.2026) — **Кеш проверен на живом ядре, и проверка нашла дефект меню: файл меню лежал не там, где его ищет `bitrix:menu` (P1-6).**
+
+Повод: `CACHE_TYPE => 'A'`, `CACHE_TIME => 3600` стояли в вызовах, но на живом ядре никто не проверял, что правка контента видна после сброса кеша. Проверка правки меню провалилась: пункт, добавленный в `/menu/top.menu.php`, не появлялся даже после сброса кеша. Причина — `CMenu::Init` ищет `.<тип>.menu.php` в каталоге раздела и выше по дереву (`bitrix/modules/main/classes/general/menu.php:35-105`), а миграция 006 клала файл в подкаталог `/menu/`. В шапке рисовался демо-фолбэк из `top_bootstrap/template.php`, который маскировал пустое меню: правка меню в админке не была видна вообще.
+
+Сделано:
+
+- `db/migrations/006_menus.php` — меню пишется в корень сайта как `/.top.menu.php` и `/.bottom.menu.php`; `mkdir /menu/` убран, проверяется запись в корень;
+- `db/check.php` и `db/rollback.php` — проверка и удаление переведены на те же пути; `db/run.php` — подсказка `--force` про новые файлы; docblock'и `db/menu/top.menu.php` и `db/menu/bottom.menu.php` исправлены;
+- `local/templates/nlb_bootstrap/components/bitrix/menu/top_bootstrap/template.php` — демо-фолбэк удалён (64 строки: `$demoChildren` и блок `if (empty($items))`), шаблон рисует только то, что пришло из `$arResult`; пустое меню теперь видно сразу, а не маскируется демо-списком;
+- `db/tests/run.php` — три проверки шага 006 (файлы в корне, каталога `/menu/` нет) и разделённый откат (верхнее и нижнее меню); 65 → 69 проверок;
+- `tools/check-template.mjs` §12 — гейт: миграция 006, `db/check.php` и `db/rollback.php` собирают путь как `/.<тип>.menu.php` и не содержат `/menu/`; в шаблоне меню нет `$demoChildren`, `'Главная'` и `if (empty($items))`;
+- `docs/architecture.md` §6, `docs/installation.md` (дерево, список создаваемого, абзац про тип `top`), `docs/bitrix-integration.md` §1 и §14, `db/README.md` (6 мест), `docs/qa-checklist.md` (B2, B7, F0, раздел про overlay), `Что доделать.txt` (P0-2 переписан по факту), `Установка.txt` — пути `/.top.menu.php`, снято упоминание демо-меню;
+- числа: 22 963 → 22 912 строк PHP, 65 → 69 проверок — в `README.md`, `docs/db.md` и снимках `test/`; `docs/security-performance.md` — ссылка на экранирование `template.php:59` вместо `:123`;
+- пункт P1-6 удалён из `Что доделать.txt`, абзац Stage 70 добавлен в `Что доделать коротко.txt`.
+
+**Проверено**: `php db/lint.php` — 0 ошибок, 13 миграций; `php db/tests/run.php` — 69 из 69, exit 0; `php db/stats.php --json`: 106 PHP-файлов, 22 912 строк, 69 проверок; `php tools/filter-selftest.php` — 105 из 105; `php tools/search-selftest.php` — 129 из 129; `php tools/build-search-index.php --check` — 99 документов, 1340 термов. Обратная подстановка: возврат `006_menus.php` и шаблона меню к версии HEAD роняет `db/tests/run.php` (5 падений: три проверки 006 и `check.php` на двух этапах) и `check-template.mjs` (5 ошибок: `/menu/` в миграции и три маркера демо-фолбэка); после восстановления sha256 файлов совпали побайтово (`722dfd607756c65d` у миграции, `d633ed0a3ebaaee6` у шаблона), гейты снова зелёные. Все 10 гейтов exit 0: `check-doc-numbers` (77 утверждений в 17 файлах), `check-doc-refs` (228 ссылок в 20 документах), `check-docs`, `check-template` (13 миграций), `check-filter-parity` (95 фраз), `db/lint.php`, `db/tests/run.php` (69), `filter-selftest` (105), `search-selftest` (129), `build-search-index.php --check` (99 документов).
+
+Живое ядро на стенде `http://localhost:8080/` после `tools/overlay-project.ps1 -SkipPreview`: `php db/run.php --only=006` создал `/.top.menu.php` и `/.bottom.menu.php` (2 объекта), каталог `/menu/` не появился; `db/check.php` — OK. `GET /` — 200, шапка из 7 пунктов файла `/.top.menu.php`; добавление пункта в файл без сброса кеша не видно, после `BXClearCache(true)` + очистки кеша `bitrix:menu` — видно; пустой `$aMenuLinks` даёт пустой `<ul>` без демо-пунктов. Правка `NAME` новости через `(new CIBlockElement())->Update()` видна на `/news/` сразу (тег `iblock_id_*`), возврат имени — тоже сразу. Тестовые пункты, маркер `[cache-check]`, временные скрипты и старый каталог `/menu/` со стенда удалены. Попутно полный `db/run.php` на стенде догнал отставшую базу: `check.php` падал на `SOURCE`/`CREATED_BY`/`DATE_PROCESSED` (стенд не проходил шаг 013), после прогона — OK.
+
+**Не проверено**: редактор меню в админке (`fileman_menu_edit.php`) — файл менялся напрямую, а не через UI; поведение кеша при `CACHE_TYPE => 'N'` (проверялся штатный `A`); кеш под гостем и под администратором отдельно не сверялся.
+
 (Stage 69 — 08.11.2026) — **Форма не отправляет пустое и без JavaScript: `required` остался в разметке, а сервер отбивает незаполненные обязательные поля (P1-8).**
 
 Повод: Bootstrap-проверку включал `script.js`, а в разметке стоял `novalidate`. При отключённом JavaScript браузер не проверял ничего, и пустая заявка уходила на сервер; серверная проверка обязательных полей существовала только в компоненте `main.feedback`, а не в общем `nlb_forms_before_add()`.

@@ -174,6 +174,19 @@ if ($code !== 0) {
     echo "\n--- вывод run.php ---\n{$output}\n";
 }
 
+nlb_test_assert(
+    is_file($temp . '/.top.menu.php'),
+    '006: верхнее меню лежит в корне как /.top.menu.php'
+);
+nlb_test_assert(
+    is_file($temp . '/.bottom.menu.php'),
+    '006: нижнее меню лежит в корне как /.bottom.menu.php'
+);
+nlb_test_assert(
+    !is_dir($temp . '/menu'),
+    '006: каталог /menu/ не создаётся — bitrix:menu читает .top.menu.php раздела'
+);
+
 /* ------------------------------------------------------------------ */
 /* 3. Значения свойств                                                */
 /* ------------------------------------------------------------------ */
@@ -413,7 +426,8 @@ if ($code !== 0) {
 [$output, $code] = nlb_test_run($temp . '/db/rollback.php', ['--yes', '--menus'], $temp);
 nlb_test_assert($code === 0, 'откат: exit 0');
 nlb_test_assert(str_contains($output, 'элементы 91'), 'откат: удалено 91 элементов');
-nlb_test_assert(!is_file($temp . '/menu/top.menu.php'), 'откат: меню удалено');
+nlb_test_assert(!is_file($temp . '/.top.menu.php'), 'откат: меню удалено');
+nlb_test_assert(!is_file($temp . '/.bottom.menu.php'), 'откат: нижнее меню удалено');
 nlb_test_assert(!is_file($temp . '/services/.left.menu.php'), 'откат: меню раздела удалено');
 
 [$output, $code] = nlb_test_run($temp . '/db/check.php', [], $temp);

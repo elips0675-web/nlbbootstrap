@@ -2,7 +2,7 @@
 /**
  * Нижнее меню сайта (тип bottom) — ссылки в подвале.
  *
- * Копируется миграцией 006_menus.php в /menu/bottom.menu.php.
+ * Копируется миграцией 006_menus.php в /.bottom.menu.php корня сайта.
  * Чтобы шаблон вывел его в подвале, нужно подключить bitrix:menu с
  * ROOT_MENU_TYPE => 'bottom' (см. docs/bitrix-integration.md, §1).
  */

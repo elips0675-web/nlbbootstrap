@@ -26,7 +26,7 @@
 экранирование.
 
 В шаблоне уже экранированы: пункты меню
-(`components/bitrix/menu/top_bootstrap/template.php:123`), крошки
+(`components/bitrix/menu/top_bootstrap/template.php:59`), крошки
 (`components/bitrix/breadcrumb/bootstrap/template.php:24`), ссылки в демо-разметке.
 
 ### 1.2 Файлы и права
