@@ -1536,6 +1536,53 @@ if (previewServer) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 16. Bootstrap собран под фактические классы                        */
+/* ------------------------------------------------------------------ */
+
+const bsSource = `${tplRel}/assets/css/bootstrap.source.min.css`;
+const bsPurged = `${tplRel}/assets/css/bootstrap.min.css`;
+const bsPreview = 'preview/assets/css/bootstrap.min.css';
+
+if (fs.existsSync(path.join(root, bsSource))) {
+    const sourceSize = fs.statSync(path.join(root, bsSource)).size;
+    if (sourceSize < 200_000) {
+        fail(`${bsSource}: меньше 200 КБ — это не полная сборка Bootstrap, пересборка потеряет правила`);
+    } else {
+        ok(`bootstrap.source.min.css: вендорный источник на месте (${Math.round(sourceSize / 1024)} КБ)`);
+    }
+} else {
+    fail(`нет ${bsSource} — tools/purge-css.mjs нечем пересобрать`);
+}
+
+if (fs.existsSync(path.join(root, bsPurged)) && fs.existsSync(path.join(root, bsPreview))) {
+    const purged = fs.readFileSync(path.join(root, bsPurged));
+    const preview = fs.readFileSync(path.join(root, bsPreview));
+    if (!purged.equals(preview)) {
+        fail('preview/assets/css/bootstrap.min.css разошёлся с шаблоном — превью и прод покажут разное');
+    }
+    const purgedText = purged.toString('utf8');
+    for (const [label, re] of [
+        ['баннер «собрано генератором»', /tools\/purge-css\.mjs/],
+        ['@charset первым байтом', /^@charset "UTF-8";/],
+        ['переменные --bs-* на :root', /:root[^{]*\{[^}]*--bs-primary:/],
+    ]) {
+        if (!re.test(purgedText)) {
+            fail(`bootstrap.min.css: нет «${label}» — сборка потеряла обязательную часть`);
+        }
+    }
+    const size = purged.length;
+    if (size < 30_000) {
+        fail(`bootstrap.min.css: ${size} байт — резак выбросил слишком много, стили поедут`);
+    } else if (size > 120_000) {
+        fail(`bootstrap.min.css: ${size} байт — файл вернулся к полной сборке, Performance снова упадёт`);
+    } else if (purged.equals(fs.readFileSync(path.join(root, bsSource)))) {
+        fail('bootstrap.min.css побайтово равен источнику — урезание не применилось');
+    } else {
+        ok(`bootstrap.min.css: ${Math.round(size / 1024)} КБ, шаблон и превью совпадают`);
+    }
+}
+
+/* ------------------------------------------------------------------ */
 /* Итог                                                               */
 /* ------------------------------------------------------------------ */
 
