@@ -141,17 +141,26 @@ function picture_html(
     string $alt,
     string $sizes,
     string $class = '',
-    bool $priority = false
+    bool $priority = false,
+    ?string $loading = null
 ): string {
+    $options = [
+        'class'    => $class,
+        'sizes'    => $sizes,
+        'prefix'   => base($depth),
+        'priority' => $priority,
+    ];
+    if ($loading !== null && !$priority) {
+        $options['loading'] = $loading;
+    }
+    if ($class !== '' && str_contains($class, 'hero-img') && !$priority) {
+        $options['fetchpriority'] = 'low';
+    }
+
     return nlb_picture(
         ltrim($relative, '/'),
         html_entity_decode($alt, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
-        [
-            'class'    => $class,
-            'sizes'    => $sizes,
-            'prefix'   => base($depth),
-            'priority' => $priority,
-        ]
+        $options
     );
 }
 
@@ -396,7 +405,7 @@ function prepare_home(string $previewDir): void
 }
 
 /**
- * Версия у styles.css и script.js: ?v=<8 символов sha256>.
+ * Версия у styles.css, script.js и bootstrap.min.css: ?v=<8 символов sha256>.
  *
  * Без неё браузер держит старый файл после пересборки превью: сервер
  * (python -m http.server, php -S) не отдаёт Cache-Control, и правка
@@ -405,6 +414,16 @@ function prepare_home(string $previewDir): void
  */
 function version_assets(string $html, string $tplDir): string
 {
+    $bootstrap = $tplDir . '/assets/css/bootstrap.min.css';
+    if (is_file($bootstrap)) {
+        $version = substr((string)hash_file('sha256', $bootstrap), 0, 8);
+        $html = (string)preg_replace(
+            '~((?:href|src)="(?:\.\./)*assets/css/)bootstrap\.min\.css(?:\?v=[0-9a-f]+)?"~',
+            '$1bootstrap.min.css?v=' . $version . '"',
+            $html
+        );
+    }
+
     foreach (['styles.css', 'script.js'] as $file) {
         $path = $tplDir . '/' . $file;
         if (!is_file($path)) {
@@ -459,7 +478,10 @@ function upgrade_home_pictures(string $html): string
                 $sizes = PICTURE_SIZES_PRINT;
             }
 
-            return picture_html(0, $relative, $alt, $sizes, $class, str_contains($class, 'hero-img'));
+            $isHero = str_contains($class, 'hero-img');
+            $isLcp = $file === 'hero-1.jpg';
+
+            return picture_html(0, $relative, $alt, $sizes, $class, $isLcp, $isHero ? 'eager' : null);
         },
         $html
     );

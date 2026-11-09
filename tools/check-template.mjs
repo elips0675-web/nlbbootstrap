@@ -532,7 +532,7 @@ if (!demoBody.trim() || !previewBody.trim()) {
 
     const homeImages = (html) => [...new Set(
         [...html.matchAll(/assets\/images\/([\w.\-]+)\.(?:jpe?g|png|svg|webp|avif)/g)]
-            .map((match) => match[1].replace(/-(?:480|960|1280)$/, ''))
+            .map((match) => match[1].replace(/-(?:480|768|960|1280)$/, ''))
     )].sort();
 
     const demoLines = homeTextLines(demoBody);

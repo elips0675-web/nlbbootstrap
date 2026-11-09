@@ -30,7 +30,7 @@ foreach (['imagewebp' => 'WebP', 'imageavif' => 'AVIF'] as $function => $label) 
     }
 }
 
-$widths = [480, 960, 1280];
+$widths = [480, 768, 960, 1280];
 $report = [];
 
 foreach (glob($imagesDir . '/*.jpg') ?: [] as $sourceFile) {

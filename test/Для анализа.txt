@@ -109,7 +109,7 @@
     Публичных страниц                         28
     Разделов с index.php в корне              17
     PHP-файлов (без preview)                106
-    Строк PHP                                 22 945
+    Строк PHP                                 22 972
     Типов инфоблоков                          3 (nlb_content, nlb_catalog,
                                               nlb_services)
     Инфоблоков                                9 (6 контентных + requests,
@@ -269,7 +269,7 @@ local/templates/nlb_bootstrap/
     header.php          <head>, мета, SEO, JSON-LD, топбар, меню, поиск, крошки
     footer.php          подвал, подписка, модалки (обратная связь, реквизиты), FAB, чат ИИ-помощника
     styles.css          3 816 строк, токены в :root (styles.css:12)
-    script.js           1 528 строк, 10 модулей + формы и слоты (8.1) + чат (4.1)
+    script.js           1 550 строк, 10 модулей + формы и слоты (8.1) + чат (4.1)
     assets/css/bootstrap.min.css        5.3.3, локально
     assets/js/bootstrap.bundle.min.js   5.3.3, локально
     assets/js/pwa.js, push.js, consent.js
@@ -369,7 +369,7 @@ local/templates/nlb_bootstrap/
     CSS-фреймворк   Bootstrap 5.3.3, локально                assets/css
     JS              Bootstrap bundle + vanilla, IIFE         assets/js
     Свой CSS        CSS3 + custom properties, 3 816 строк    styles.css
-    Свой JS         ES5-совместимый, 1 528 строк             script.js
+    Свой JS         ES5-совместимый, 1 550 строк             script.js
     Шрифты          системный стек, внешних запросов нет     styles.css:55
     Иконки          inline SVG <symbol>, спрайт в header     header.php
     Изображения     JPG + WebP + AVIF, ширины 480/960/1280    assets/images

@@ -38,7 +38,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                 </div>
 
                 <div class="carousel-item">
-                    <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/hero-2.jpg', 'Коворкинг в библиотеке', ['class' => 'hero-img', 'sizes' => '100vw', 'loading' => 'eager']) ?>
+                    <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/hero-2.jpg', 'Коворкинг в библиотеке', ['class' => 'hero-img', 'sizes' => '100vw', 'loading' => 'eager', 'fetchpriority' => 'low']) ?>
                     <div class="hero-overlay"></div>
                     <div class="hero-body">
                         <div class="container">
@@ -57,7 +57,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                 </div>
 
                 <div class="carousel-item">
-                    <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/hero-3.jpg', 'Лекционный зал', ['class' => 'hero-img', 'sizes' => '100vw', 'loading' => 'eager']) ?>
+                    <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/hero-3.jpg', 'Лекционный зал', ['class' => 'hero-img', 'sizes' => '100vw', 'loading' => 'eager', 'fetchpriority' => 'low']) ?>
                     <div class="hero-overlay"></div>
                     <div class="hero-body">
                         <div class="container">

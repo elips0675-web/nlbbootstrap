@@ -13,12 +13,15 @@
      * 1. Тень у «прилипшей» шапки
      * ------------------------------------------------------------------ */
     const header = doc.getElementById('siteHeader');
+    let headerScrolled = false;
     const onScrollHeader = function () {
         if (!header) return;
-        header.classList.toggle('is-scrolled', window.scrollY > 8);
+        const scrolled = window.scrollY > 8;
+        if (scrolled === headerScrolled) return;
+        headerScrolled = scrolled;
+        header.classList.toggle('is-scrolled', scrolled);
     };
     window.addEventListener('scroll', onScrollHeader, { passive: true });
-    onScrollHeader();
 
     /* ------------------------------------------------------------------
      * 2. Появление блоков при прокрутке
@@ -78,7 +81,21 @@
 
         track.addEventListener('scroll', updateButtons, { passive: true });
         window.addEventListener('resize', updateButtons);
-        updateButtons();
+
+        if (prev || next) {
+            const initButtons = function () {
+                if (typeof window.requestAnimationFrame === 'function') {
+                    window.requestAnimationFrame(updateButtons);
+                } else {
+                    window.setTimeout(updateButtons, 0);
+                }
+            };
+            if (doc.readyState === 'complete') {
+                initButtons();
+            } else {
+                window.addEventListener('load', initButtons, { once: true });
+            }
+        }
     });
 
     /* ------------------------------------------------------------------
@@ -1242,8 +1259,12 @@
      * ------------------------------------------------------------------ */
     const toTop = doc.querySelector('.to-top');
     if (toTop) {
+        let toTopVisible = false;
         const onScrollTop = function () {
-            toTop.classList.toggle('is-visible', window.scrollY > 480);
+            const visible = window.scrollY > 480;
+            if (visible === toTopVisible) return;
+            toTopVisible = visible;
+            toTop.classList.toggle('is-visible', visible);
         };
         window.addEventListener('scroll', onScrollTop, { passive: true });
         onScrollTop();
@@ -1515,14 +1536,15 @@
     };
 
     if (noticeStack) {
-        window.nlbSyncNotices();
         window.addEventListener('resize', window.nlbSyncNotices, { passive: true });
 
         if (typeof window.ResizeObserver === 'function') {
             new window.ResizeObserver(window.nlbSyncNotices).observe(noticeStack);
+        } else if (doc.readyState === 'complete') {
+            window.nlbSyncNotices();
+        } else {
+            window.addEventListener('load', window.nlbSyncNotices, { once: true });
         }
     }
 
-    // Помечаем, что JS загрузился: CSS может опираться на html.js
-    root.classList.add('js');
 })();

@@ -113,7 +113,7 @@ if (!function_exists('nlb_media_variants')) {
         ];
 
         $widths = [];
-        foreach ([480, 960, 1280] as $target) {
+        foreach ([480, 768, 960, 1280] as $target) {
             if ($target >= $width || !is_file($stemFile . '-' . $target . '.jpg')) {
                 continue;
             }
@@ -166,6 +166,7 @@ if (!function_exists('nlb_picture')) {
      *   loading  — lazy (по умолчанию) или eager;
      *   decoding — async (по умолчанию);
      *   priority — true для LCP-картинки: loading=eager + fetchpriority=high.
+     *   fetchpriority — 'high' | 'low' для явной подсказки браузеру.
      */
     function nlb_picture(string $src, string $alt = '', array $options = []): string
     {
@@ -179,6 +180,8 @@ if (!function_exists('nlb_picture')) {
         $decoding = (string)($options['decoding'] ?? 'async');
         $prefix = (string)($options['prefix'] ?? '');
         $priority = !empty($options['priority']);
+
+        $fetchPriority = (string)($options['fetchpriority'] ?? '');
 
         if ($priority) {
             $loading = 'eager';
@@ -194,6 +197,8 @@ if (!function_exists('nlb_picture')) {
         $attrs .= ' decoding="' . nlb_media_escape($decoding) . '"';
         if ($priority) {
             $attrs .= ' fetchpriority="high"';
+        } elseif ($fetchPriority !== '') {
+            $attrs .= ' fetchpriority="' . nlb_media_escape($fetchPriority) . '"';
         }
 
         $variants = nlb_media_variants($src);
