@@ -112,7 +112,7 @@ function resolveFile(reference) {
 /* 3. Ссылки                                                           */
 /* ------------------------------------------------------------------ */
 
-const REF = /([\w./\\-]+\.(?:php|css|js|md|txt|json|html|sql|xml|ps1|bat|webmanifest)):(\d+)(?:\s*[-–]\s*(\d+))?/g;
+const REF = /([\w./\\-]+\.(?:php|css|js|md|txt|json|html|sql|xml|ps1|bat|webmanifest|yml)):(\d+)(?:\s*[-–]\s*(\d+))?/g;
 const CHAIN = /^\s*,\s*:(\d+)(?:\s*[-–]\s*(\d+))?/;
 
 const anchorsOnLine = (line) => {

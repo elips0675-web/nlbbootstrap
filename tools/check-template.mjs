@@ -1436,6 +1436,60 @@ if (vercelRaw) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 14. Автодеплой на Vercel из GitHub Actions                         */
+/* ------------------------------------------------------------------ */
+
+const workflowRel = '.github/workflows/deploy-vercel.yml';
+const workflow = read(workflowRel);
+if (workflow) {
+    if (!/on:\s*\n\s*push:\s*\n\s*branches:\s*\[\s*main\s*\]/.test(workflow)) {
+        fail(`${workflowRel}: нет push в main — прод не обновляется после коммита`);
+    }
+    if (!/workflow_dispatch:/.test(workflow)) {
+        fail(`${workflowRel}: нет workflow_dispatch — деплой нельзя повторить из панели Actions`);
+    }
+    if (!/concurrency:\s*\n\s*group:/.test(workflow)) {
+        fail(`${workflowRel}: нет concurrency — два пуша подряд перетирают деплой друг друга`);
+    }
+    for (const secret of ['VERCEL_TOKEN', 'VERCEL_ORG_ID', 'VERCEL_PROJECT_ID']) {
+        if (!workflow.includes(`\${{ secrets.${secret} }}`)) {
+            fail(`${workflowRel}: секрет ${secret} не читается из secrets — CLI не авторизуется`);
+        }
+    }
+    if (!/vercel@latest deploy --prod/.test(workflow)) {
+        fail(`${workflowRel}: deploy без --prod — сборка уезжает в preview, а корень остаётся старым`);
+    }
+    if (!/vercel@latest deploy [^\n]*--yes/.test(workflow)) {
+        fail(`${workflowRel}: deploy без --yes — CLI ждёт подтверждения и job висит до таймаута`);
+    }
+    if (!/--token "\$VERCEL_TOKEN"/.test(workflow)) {
+        fail(`${workflowRel}: токен не передаётся через env — нужен --token "$VERCEL_TOKEN"`);
+    }
+    if (/--token[^\n]*\${{ secrets\./.test(workflow)) {
+        fail(`${workflowRel}: секрет подставлен прямо в командную строку — утечёт в лог job`);
+    }
+    if (!/status=1/.test(workflow) || !/-ne 0/.test(workflow)) {
+        fail(`${workflowRel}: нет провала при пустых секретах — деплой уйдёт в «зелёный» без сборки`);
+    }
+    for (const marker of [
+        "require-trusted-types-for",
+        'rel="preload" as="image"',
+        'class="fab-menu" role="navigation"',
+        'width: 24px',
+        '.site-footer h2',
+        '#475569',
+    ]) {
+        if (!workflow.includes(marker)) {
+            fail(`${workflowRel}: проверка прода не смотрит «${marker}» — старая сборка пройдёт как свежая`);
+        }
+    }
+    if (!/curl -fsSI/.test(workflow) || !/curl -fsS /.test(workflow)) {
+        fail(`${workflowRel}: после деплоя не проверяются заголовки и HTML — CSP может не примениться`);
+    }
+    ok(`${workflowRel}: push в main → гейт секретов → deploy --prod → проверка CSP, preload, 24×24`);
+}
+
+/* ------------------------------------------------------------------ */
 /* Итог                                                               */
 /* ------------------------------------------------------------------ */
 

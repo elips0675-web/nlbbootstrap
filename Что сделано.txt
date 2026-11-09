@@ -3,6 +3,23 @@
 Журнал этапов шаблона `nlb_bootstrap`. Сверху — свежее. Формат записи: этап,
 дата, что сделано, чем проверено, что не проверено.
 
+(Stage 73 — 09.11.2026) — **Прод на Vercel не обновлялся: панель пересобирает развёрнутый коммит, а не `main`; добавлен автодеплой из GitHub Actions с проверкой результата.**
+
+Повод: пользователь показал отчёт `https://nlbbootstrap-b5y9.vercel.app/` — Performance 88, Accessibility 96. Проверка ответа прода: `/styles.css` 77 509 байт с индикатором 10×10, ссылка на него `?v=0ce1dcfb`, в HTML три `<h4>`, `.fab-menu` без `role`, нет `<link rel="preload">`, нет ни `Content-Security-Policy`, ни месячного кеша из `vercel.json` (`Cache-Control: public, max-age=0, must-revalidate`). Это ровно набор дефектов, закрытых в Stage 71–72, то есть развёрнут снимок старше них.
+
+Сделано:
+
+- `.github/workflows/deploy-vercel.yml` — деплой на push в `main` и по `workflow_dispatch`: `concurrency` не даёт двум пушам перетирать деплой; шаг «Проверить секреты» падает с именем ненайденного секрета, а не деплоит без токена; `--prod` обязателен, иначе сборка уходит в preview, а корень остаётся старым; токен передаётся через `env` (`--token "$VERCEL_TOKEN"`), а не подстановкой `${{ secrets.* }}` в командную строку;
+- тот же workflow после деплоя проверяет прод, а не отчёт CLI: заголовки `Content-Security-Policy` с `require-trusted-types-for 'script'` и `X-Content-Type-Options: nosniff`, в HTML — `preload` первой картинки hero и `role="navigation"` у `.fab-menu` без `<h4>`, в `/styles.css` — `width: 24px`, `.site-footer h2` и `#475569`. Старая сборка такую проверку не проходит, поэтому «зелёный» job теперь значит «опубликовано новое»;
+- `README.md` — раздел «Автодеплой на Vercel из GitHub Actions»: три секрета (`VERCEL_TOKEN` из `vercel.com/account/tokens`, `VERCEL_ORG_ID` и `VERCEL_PROJECT_ID` из `.vercel/project.json` после `vercel link`), почему **Redeploy** не подтягивает `main`, и как проверить прод через `curl -sI`;
+- `tools/check-template.mjs` §14 — 18 проверок workflow: `push` в `main`, `workflow_dispatch`, `concurrency`, три секрета из `secrets`, `--prod`, `--yes`, токен из `env`, отсутствие секрета в командной строке, провал при пустых секретах, шесть маркеров прода и `curl` заголовков;
+- `tools/check-doc-refs.mjs` — ссылки `file:line` теперь проверяются и для `.yml`, иначе цитата на строку workflow была бы недоказуемой;
+- `Что доделать.txt` P1-14 — факт 09.11.2026 и новая приёмка (зелёный job + CSP в заголовках), `Что доделать коротко.txt` — абзац Stage 73.
+
+**Проверено**: YAML разобран парсером `yaml@2` (объект `on` = `push`+`workflow_dispatch`, 6 шагов, три ключа `env`); 10 обратных подстановок красные, каждая со своей ошибкой (push в `master`, без `workflow_dispatch`, без `concurrency`, переименованный секрет, без `--prod`, без `--yes`, токен в командной строке, без провала на пустых секретах, без проверки 24×24, без `curl -fsSI`), sha256 файла до и после `0ac6f961c50800a12feae4c9703aac659bbfc83abf08b2fb8efa7c8ca710cf1f` совпал побайтово; `node tools/check-template.mjs` — 0 ошибок, §14 зелёный; 10 гейтов этапа — exit 0.
+
+**Не проверено**: живой прогон workflow — в репозитории нет `VERCEL_TOKEN`/`VERCEL_ORG_ID`/`VERCEL_PROJECT_ID`, локально нет Vercel CLI, `.vercel/` и токена (`%APPDATA%\com.vercel.cli\auth.json`), поэтому первый зелёный job и есть приёмка; CSP и Lighthouse на проде не подтверждены — прод всё ещё отдаёт старый снимок, это и есть дефект.
+
 (Stage 72 — 09.11.2026) — **Локальные 73 по Performance — это отсутствие сжатия на тестовом сервере, а не дефект шаблона; для LCP добавлен preload.**
 
 Повод: пользователь показал отчёт `http://127.0.0.1:8791//` — Performance 73, Accessibility 97, Best Practices 96. Доступность закрыта в Stage 71. По производительности: Lighthouse открывал превью через локальный `server.cjs`, который отдавал `bootstrap.min.css` (227 КБ) и `styles.css` (79 КБ) без gzip и без `Cache-Control`, поэтому FCP был 3,3 с, а LCP 5,9 с.

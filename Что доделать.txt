@@ -323,15 +323,29 @@ CAPTCHA.
 | `/about/`, `/events/` на проде — исходники PHP | `200 application/x-httpd-php` 8 234 и 5 234 байт |
 | Деплой из `main` создаётся как **preview**, а не production | `nlbbootstrap-git-main-vadims-projects-74cb21aa.vercel.app` → `302` на `vercel.com/sso-api` (Vercel Authentication на preview) |
 
-Вывод: `main` не назначен production-веткой, поэтому `git push` порождает
-preview-деплой за логином, а production-домен продолжает раздавать снимок,
-сделанный до появления `vercel.json`. Код это не лечит: деплой неизменяем,
-production-указатель меняется только в панели.
+Вывод на 08.11.2026: `main` не назначен production-веткой, поэтому `git push`
+порождает preview-деплой за логином, а production-домен продолжает раздавать
+снимок, сделанный до появления `vercel.json`. Кнопка **Redeploy** не помогает:
+она пересобирает уже развёрнутый коммит, а не последний в `main`.
 
-Приёмка: `Settings → Git → Production Branch` = `main` + `Deployments → ⋯ →
-Promote to Production` (или Redeploy). После этого `/` отдаёт `200 text/html`
-с главной, `/index.php` и `/db/config/iblocks.php` — 404, в заголовках есть
-`X-Content-Type-Options: nosniff` и `X-Frame-Options: SAMEORIGIN`, а
+09.11.2026: прод отдаёт `/styles.css` 77 509 байт с индикатором 10×10 и
+ссылкой `?v=0ce1dcfb`, три `<h4>`, `.fab-menu` без `role`, ни `preload`, ни
+`Content-Security-Policy`; `Cache-Control: public, max-age=0` вместо годового
+из `vercel.json`. Lighthouse на проде — Performance 88, Accessibility 96, то
+есть развёрнут снимок старше Stage 71–72. Поэтому деплой переведён на GitHub
+Actions: `.github/workflows/deploy-vercel.yml:52` выполняет
+`vercel deploy --prod --yes` с токеном из `env`, а
+`.github/workflows/deploy-vercel.yml:68` проверяет, что прод реально отдаёт CSP
+с Trusted Types, а не только что CLI ответил «готово». Нужны секреты
+`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` — README, раздел
+«Автодеплой на Vercel из GitHub Actions».
+
+Приёмка: job `Production` в `.github/workflows/deploy-vercel.yml` зелёный на
+push в `main` (или `Run workflow`); `/` отдаёт `200 text/html` с главной,
+`/index.php` и `/db/config/iblocks.php` — 404, в заголовках
+`Content-Security-Policy` с `require-trusted-types-for 'script'` и
+`X-Content-Type-Options: nosniff`, в HTML `preload` первой картинки и
+`role="navigation"` у `.fab-menu`, `/styles.css` содержит индикатор 24×24, а
 `/preview/services/sauna/` редиректит на `/services/sauna/`.
 
 Пока production не переключён, показывать демо по ссылке

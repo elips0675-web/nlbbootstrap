@@ -369,6 +369,41 @@ PWA-баннер и офлайн-режим (в `preview/` нет `manifest.webm
 Это витрина дизайна, а не сайт библиотеки. Боевой сайт — PHP-хостинг с ядром
 Битрикса и MySQL (раздел «Установка»).
 
+### Автодеплой на Vercel из GitHub Actions
+
+Панель Vercel пересобирает **тот** коммит, который уже развёрнут: кнопка
+**Redeploy** не подтягивает свежий `main`. Поэтому прод обновляет workflow
+`.github/workflows/deploy-vercel.yml` — на каждый push в `main` и по кнопке
+**Run workflow** он ставит Vercel CLI, деплоит `--prod` и проверяет, что
+опубликовано именно новое: заголовок CSP с Trusted Types,
+`X-Content-Type-Options`, `<link rel="preload">` для LCP,
+`role="navigation"` у `.fab-menu`, `h2` в подвале и область индикатора
+карусели 24×24. Старая сборка эту проверку не проходит — job краснеет, а не
+рапортует об успехе.
+
+Три секрета добавляются в **Settings → Secrets and variables → Actions → New
+repository secret**:
+
+| Секрет | Где взять |
+|---|---|
+| `VERCEL_TOKEN` | `vercel.com/account/tokens` → Create Token |
+| `VERCEL_ORG_ID` | Team Settings → General → Team ID (или `orgId` в `.vercel/project.json` после `vercel link`) |
+| `VERCEL_PROJECT_ID` | Project → Settings → General → Project ID (или `projectId` там же) |
+
+Пока секретов нет, job падает с сообщением, какого имени не хватает: молча
+«зелёного» деплоя без сборки не бывает. Гейт §14 в `tools/check-template.mjs`
+следит, чтобы workflow не потерял `push` в `main`, `--prod`, `--yes`, токен из
+`env` и проверки прода.
+
+Убедиться, что прод свежий, можно и вручную:
+
+```bash
+curl -sI https://nlbbootstrap-b5y9.vercel.app/ | grep -i content-security-policy
+```
+
+Ответ без `Content-Security-Policy` означает, что развёрнут снимок старше
+Stage 71 — нужен деплой последнего коммита, а не Redeploy старого.
+
 ---
 
 ## Проверки

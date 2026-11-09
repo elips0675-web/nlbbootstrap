@@ -1,0 +1,90 @@
+name: Деплой на Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Проверить секреты
+        run: |
+          status=0
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::секрет $name не задан: Settings → Secrets and variables → Actions → New repository secret"
+              status=1
+            fi
+          done
+          if [ "$status" -ne 0 ]; then
+            echo "Деплой остановлен: без токена Vercel CLI не авторизуется."
+            echo "Кнопка Redeploy в панели пересобирает старый коммит, а не main."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Собрать public/ из preview/
+        run: node tools/vercel-build.mjs
+
+      - name: Деплой production
+        id: deploy
+        run: |
+          url="$(npx --yes vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN" | tail -n 1)"
+          case "$url" in
+            https://*) ;;
+            *) echo "::error::Vercel CLI не вернул адрес деплоя: $url"; exit 1 ;;
+          esac
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Vercel"
+            echo ""
+            echo "Прод: $url"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Проверить, что прод отдаёт свежую сборку
+        run: |
+          url="${{ steps.deploy.outputs.url }}"
+          headers="$(curl -fsSI "$url" | tr -d '\r')"
+          echo "$headers" | grep -qi '^content-security-policy:.*require-trusted-types-for' \
+            || { echo '::error::нет CSP с Trusted Types — vercel.json не применился'; exit 1; }
+          echo "$headers" | grep -qi '^x-content-type-options: *nosniff' \
+            || { echo '::error::нет X-Content-Type-Options — заголовки безопасности не применились'; exit 1; }
+
+          home="$(curl -fsS "$url")"
+          echo "$home" | grep -q 'rel="preload" as="image"' \
+            || { echo '::error::в HTML нет preload для LCP — сборка старше Stage 72'; exit 1; }
+          echo "$home" | grep -q 'class="fab-menu" role="navigation"' \
+            || { echo '::error::у .fab-menu нет role — сборка старше Stage 71'; exit 1; }
+          if echo "$home" | grep -q '<h4>'; then
+            echo '::error::в подвале остались h4 — сборка старше Stage 71'
+            exit 1
+          fi
+
+          css="$(curl -fsS "$url/styles.css")"
+          echo "$css" | grep -q 'width: 24px' \
+            || { echo '::error::styles.css без области индикатора 24×24 — сборка старше Stage 71'; exit 1; }
+          echo "$css" | grep -q '\.site-footer h2' \
+            || { echo '::error::в styles.css нет .site-footer h2 — сборка старше Stage 71'; exit 1; }
+          echo "$css" | grep -q '#475569' \
+            || { echo '::error::в styles.css нет затемнённого .collection-text — сборка старше Stage 71'; exit 1; }
+          echo "Прод проверен: CSP с Trusted Types, preload, роль FAB, h2 в подвале, индикатор 24×24."

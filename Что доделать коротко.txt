@@ -66,6 +66,17 @@ Stage 62 (08.11.2026): P1-29 и P0-3 закрыты — `SECTION_PAGE_URL` ве�
 список с `?section=`, корень «Главная» объявлен `.section.php`, крошки есть
 на 15 страницах; на стенде цепочка «Главная → Афиша → Литература → событие».
 
+Stage 73 (09.11.2026): прод `https://nlbbootstrap-b5y9.vercel.app/` отдавал
+снимок старше Stage 71–72 (CSS 77 509 Б, индикатор 10×10, три `h4`, нет CSP и
+`preload`, Lighthouse 88/96) — панель пересобирает развёрнутый коммит, а не
+`main`. Добавлен workflow `.github/workflows/deploy-vercel.yml`: push в `main` →
+проверка трёх секретов → `vercel deploy --prod --yes` → проверка прода
+(`Content-Security-Policy` с Trusted Types, `X-Content-Type-Options`, `preload`,
+`role` у FAB, `h2` в подвале, индикатор 24×24), то есть старая сборка делает job
+красным. Гейт §14 `check-template.mjs` (18 проверок), ссылки `file:line` теперь
+проверяются и для `.yml`. Открыто: секреты `VERCEL_TOKEN`, `VERCEL_ORG_ID`,
+`VERCEL_PROJECT_ID` — первый зелёный job и есть приёмка.
+
 Stage 72 (09.11.2026): локальные 73 Performance — это отсутствие gzip и
 `Cache-Control` на тестовом сервере, а не шаблон: тот же `preview/` через
 сервер с gzip и кешем даёт 95–96 (FCP 1,1–1,3 с, LCP 2,7 с, CLS 0). Для LCP
