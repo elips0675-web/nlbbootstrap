@@ -1472,10 +1472,10 @@ if (workflow) {
         fail(`${workflowRel}: нет провала при пустых секретах — деплой уйдёт в «зелёный» без сборки`);
     }
     for (const marker of [
-        "require-trusted-types-for",
+        'require-trusted-types-for',
         'rel="preload" as="image"',
         'class="fab-menu" role="navigation"',
-        'width: 24px',
+        'data-bs-target[^}]*width: 24px;[[:space:]]*height: 24px',
         '.site-footer h2',
         '#475569',
     ]) {

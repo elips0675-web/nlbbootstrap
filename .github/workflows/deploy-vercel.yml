@@ -81,8 +81,9 @@ jobs:
           fi
 
           css="$(curl -fsS "$url/styles.css")"
-          echo "$css" | grep -q 'width: 24px' \
-            || { echo '::error::styles.css без области индикатора 24×24 — сборка старше Stage 71'; exit 1; }
+          flat="$(echo "$css" | tr -d '\n\r')"
+          echo "$flat" | grep -q 'data-bs-target[^}]*width: 24px;[[:space:]]*height: 24px' \
+            || { echo '::error::правило индикатора карусели не 24×24 — сборка старше Stage 71'; exit 1; }
           echo "$css" | grep -q '\.site-footer h2' \
             || { echo '::error::в styles.css нет .site-footer h2 — сборка старше Stage 71'; exit 1; }
           echo "$css" | grep -q '#475569' \
