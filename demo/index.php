@@ -156,7 +156,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
 
             <div class="scroller-wrap" data-scroller data-reveal>
                 <div class="scroller" role="list">
-                    <article class="print-card" role="listitem">
+                    <div class="print-card" role="listitem">
                         <div class="print-media">
                             <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-docs.jpg', 'Печать документов', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-primary"><svg class="i" aria-hidden="true"><use href="#i-printer"/></svg></span>
@@ -170,9 +170,9 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
                         </div>
-                    </article>
+                    </div>
 
-                    <article class="print-card" role="listitem">
+                    <div class="print-card" role="listitem">
                         <div class="print-media">
                             <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-scanning.jpg', 'Сканирование документов', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-green"><svg class="i" aria-hidden="true"><use href="#i-scan"/></svg></span>
@@ -186,9 +186,9 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
                         </div>
-                    </article>
+                    </div>
 
-                    <article class="print-card" role="listitem">
+                    <div class="print-card" role="listitem">
                         <div class="print-media">
                             <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-cards.jpg', 'Печать визиток', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-sky"><svg class="i" aria-hidden="true"><use href="#i-card"/></svg></span>
@@ -202,9 +202,9 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
                         </div>
-                    </article>
+                    </div>
 
-                    <article class="print-card" role="listitem">
+                    <div class="print-card" role="listitem">
                         <div class="print-media">
                             <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-brochures.jpg', 'Брошюры и буклеты', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-pink"><svg class="i" aria-hidden="true"><use href="#i-file"/></svg></span>
@@ -218,9 +218,9 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
                         </div>
-                    </article>
+                    </div>
 
-                    <article class="print-card" role="listitem">
+                    <div class="print-card" role="listitem">
                         <div class="print-media">
                             <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-large.jpg', 'Широкоформатная печать', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-orange"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg></span>
@@ -234,9 +234,9 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
                         </div>
-                    </article>
+                    </div>
 
-                    <article class="print-card" role="listitem">
+                    <div class="print-card" role="listitem">
                         <div class="print-media">
                             <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-canvas.jpg', 'Печать на холсте', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-green"><svg class="i" aria-hidden="true"><use href="#i-image"/></svg></span>
@@ -250,9 +250,9 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
                         </div>
-                    </article>
+                    </div>
 
-                    <article class="print-card" role="listitem">
+                    <div class="print-card" role="listitem">
                         <div class="print-media">
                             <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-mug.jpg', 'Печать на кружках', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-orange"><svg class="i" aria-hidden="true"><use href="#i-cup"/></svg></span>
@@ -266,9 +266,9 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
                         </div>
-                    </article>
+                    </div>
 
-                    <article class="print-card" role="listitem">
+                    <div class="print-card" role="listitem">
                         <div class="print-media">
                             <?= nlb_picture(SITE_TEMPLATE_PATH . '/assets/images/print-tshirts.jpg', 'Печать на футболках', ['sizes' => '(max-width: 575px) 100vw, (max-width: 991px) 50vw, 25vw']) ?>
                             <span class="print-badge bg-grad-sky"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg></span>
@@ -282,7 +282,7 @@ $APPLICATION->SetPageProperty('description', 'Современная библи�
                                 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>
                             </a>
                         </div>
-                    </article>
+                    </div>
                 </div>
 
                 <button class="scroller-btn scroller-btn--prev" type="button" data-scroll-prev aria-label="Предыдущие услуги">

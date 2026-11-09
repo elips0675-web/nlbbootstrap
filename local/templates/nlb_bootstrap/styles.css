@@ -667,17 +667,33 @@ img {
 }
 
 .hero .carousel-indicators [data-bs-target] {
-    width: 10px;
-    height: 10px;
+    width: 24px;
+    height: 24px;
     border: 0;
     border-radius: 50%;
-    background: rgba(16, 185, 129, 0.45);
-    margin: 0 5px;
+    background: transparent;
+    margin: 0;
+    padding: 0;
     opacity: 1;
+    display: grid;
+    place-items: center;
+}
+
+.hero .carousel-indicators [data-bs-target]::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.45);
     transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .hero .carousel-indicators .active {
+    background: transparent;
+    transform: none;
+}
+
+.hero .carousel-indicators .active::before {
     background: var(--nlb-accent);
     transform: scale(1.2);
 }
@@ -1180,7 +1196,7 @@ img {
 }
 
 .collection-text {
-    color: var(--nlb-muted);
+    color: #475569;
     font-size: 0.9375rem;
     margin-bottom: 1.25rem;
 }
@@ -1282,11 +1298,15 @@ img {
     position: relative;
 }
 
-.site-footer h4 {
+.site-footer h2 {
     color: #fff;
     font-size: 1rem;
     font-weight: 800;
     margin-bottom: 1.25rem;
+}
+
+.site-footer .form-hint {
+    color: #94a3b8;
 }
 
 .site-footer .brand-tag {
@@ -2447,6 +2467,11 @@ img {
     margin-bottom: 1rem;
 }
 
+.bitrix-content a,
+.form-hint a {
+    text-decoration: underline;
+}
+
 .bitrix-content img {
     border-radius: var(--nlb-radius);
     margin: 1.5rem 0;
@@ -2472,13 +2497,11 @@ img {
    ========================================================================== */
 
 .reveal {
-    opacity: 0;
     transform: translateY(24px);
-    transition: opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .reveal.is-visible {
-    opacity: 1;
     transform: none;
 }
 
@@ -2791,6 +2814,10 @@ img {
     margin-bottom: 0;
 }
 
+.info-card ul a {
+    text-decoration: underline;
+}
+
 .contact-line {
     display: flex;
     align-items: flex-start;
@@ -3055,6 +3082,10 @@ img {
 
 .empty-state a {
     font-weight: 600;
+}
+
+.empty-state code {
+    color: #9d174d;
 }
 
 /* В меню семь пунктов: до 1400px делаем их компактнее, чтобы

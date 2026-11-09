@@ -1256,6 +1256,186 @@ for (const rel of ['db/.htaccess', 'tools/.htaccess']) {
 ok('db/ и tools/ закрыты от веба');
 
 /* ------------------------------------------------------------------ */
+/* 13. Доступность и защита от XSS (CSP + Trusted Types)              */
+/* ------------------------------------------------------------------ */
+
+const a11yStyles = read(`${tplRel}/styles.css`) || '';
+if (a11yStyles) {
+    const revealRule = /\.reveal\s*\{([^}]*)\}/.exec(a11yStyles);
+    if (!revealRule) {
+        fail('styles.css: нет правила .reveal');
+    } else if (/opacity\s*:/.test(revealRule[1])) {
+        fail('styles.css: .reveal скрывает блок через opacity — без JS контент невидим, axe читает контраст как 1:1');
+    }
+    if (!a11yStyles.includes('.site-footer h2')) {
+        fail('styles.css: заголовки подвала не переведены на h2 — порядок h2 → h4 пропускает уровень');
+    }
+    if (/\.site-footer h4\b/.test(a11yStyles)) {
+        fail('styles.css: остался селектор .site-footer h4');
+    }
+    if (!a11yStyles.includes('.site-footer .form-hint')) {
+        fail('styles.css: подсказка подписки в подвале не осветлена до #94a3b8 — контраст 3.93 на #0b1220');
+    }
+    if (!/\.collection-text\s*\{[^}]*color\s*:\s*#475569/.test(a11yStyles)) {
+        fail('styles.css: .collection-text не затемнён до #475569 — контраст 4.33 на тонированных фонах');
+    }
+    if (!/\.bitrix-content a,[\s\S]{0,80}\.form-hint a\s*\{[^}]*text-decoration\s*:\s*underline/.test(a11yStyles)) {
+        fail('styles.css: ссылки в тексте не подчёркнуты — axe link-in-text-block');
+    }
+    if (!/\.info-card ul a\s*\{[^}]*text-decoration\s*:\s*underline/.test(a11yStyles)) {
+        fail('styles.css: ссылки в списках info-card не подчёркнуты — axe link-in-text-block');
+    }
+    const indicatorRule = /\.hero \.carousel-indicators \[data-bs-target\]\s*\{([^}]*)\}/.exec(a11yStyles);
+    if (!indicatorRule) {
+        fail('styles.css: нет правила .hero .carousel-indicators [data-bs-target]');
+    } else {
+        const width = Number((indicatorRule[1].match(/(?:^|[\s;])width\s*:\s*(\d+)px/) || [])[1] || 0);
+        const height = Number((indicatorRule[1].match(/(?:^|[\s;])height\s*:\s*(\d+)px/) || [])[1] || 0);
+        if (width < 24 || height < 24) {
+            fail(
+                `styles.css: область нажатия индикатора карусели ${width}×${height}px — `
+                + 'Lighthouse target-size требует минимум 24×24'
+            );
+        }
+    }
+    ok('styles.css: контраст, скрытые блоки, подчёркивание ссылок и область индикатора 24×24');
+}
+
+const a11yFooter = read(`${tplRel}/footer.php`) || '';
+if (a11yFooter) {
+    if (!/class="fab-menu"[^>]*role="navigation"/.test(a11yFooter)) {
+        fail('footer.php: у .fab-menu нет role="navigation" — aria-label на div запрещён, контент вне ориентиров');
+    }
+    if (!a11yFooter.includes('aria-label="ВКонтакте VK"')) {
+        fail('footer.php: видимый текст VK не входит в доступное имя ссылки — axe label-content-name-mismatch');
+    }
+    if (a11yFooter.includes('<h4>')) {
+        fail('footer.php: остались h4 — порядок заголовков h2 → h4 пропускает уровень');
+    }
+    for (const heading of ['Читателям', 'Услуги', 'Контакты']) {
+        if (!a11yFooter.includes(`<h2>${heading}</h2>`)) {
+            fail(`footer.php: «${heading}» должен быть h2`);
+        }
+    }
+    ok('footer.php: h2 в подвале, ориентир .fab-menu, доступное имя VK');
+}
+
+const previewAuditFiles = [];
+const collectPreview = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const abs = path.join(dir, entry.name);
+        if (entry.isDirectory()) collectPreview(abs);
+        else if (entry.name.endsWith('.html')) previewAuditFiles.push(abs);
+    }
+};
+if (fs.existsSync(path.join(root, 'preview'))) {
+    collectPreview(path.join(root, 'preview'));
+}
+
+for (const rel of ['preview/index.html', 'demo/index.php']) {
+    const text = read(rel) || '';
+    if (/<article[^>]*class="print-card[^"]*"[^>]*role="listitem"/.test(text)) {
+        fail(`${rel}: article с role="listitem" — роль недопустима для article, нужен div`);
+    }
+    if ((text.match(/<div class="print-card/g) || []).length !== 8) {
+        fail(`${rel}: карточки печати должны быть div (8 штук)`);
+    }
+}
+
+const homeA11y = read('preview/index.html') || '';
+if (homeA11y && homeA11y.includes('<h4>')) {
+    fail('preview/index.html: остались h4 в подвале — пересоберите tools/build-preview-pages.php');
+}
+
+for (const rel of [`${tplRel}/script.js`, 'preview/script.js']) {
+    const text = read(rel) || '';
+    if (!text) {
+        continue;
+    }
+    for (const sink of ['innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write']) {
+        if (text.includes(sink)) {
+            fail(`${rel}: DOM-синк ${sink} — при require-trusted-types-for 'script' он бросит TypeError, нужен DOM API`);
+        }
+    }
+}
+ok('script.js: нет DOM-синков, совместим с Trusted Types');
+
+let staleRole = 0;
+let inlineScripts = new Set();
+for (const abs of previewAuditFiles) {
+    const text = fs.readFileSync(abs, 'utf8');
+    if (/<article[^>]*class="print-card[^"]*"[^>]*role="listitem"/.test(text)) {
+        staleRole++;
+    }
+    const re = /<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/gi;
+    let match;
+    while ((match = re.exec(text))) {
+        const type = (match[1].match(/type\s*=\s*["']([^"']+)/) || [])[1] || 'text/javascript';
+        if (type === 'application/ld+json' || type === 'application/json') {
+            continue;
+        }
+        inlineScripts.add('sha256-' + crypto.createHash('sha256').update(match[2], 'utf8').digest('base64'));
+    }
+}
+if (staleRole > 0) {
+    fail(`preview: ${staleRole} страниц с article[role="listitem"] — пересоберите tools/build-preview-pages.php`);
+} else if (previewAuditFiles.length) {
+    ok(`preview: ${previewAuditFiles.length} страниц без недопустимых ARIA-ролей`);
+}
+
+const vercelRaw = read('vercel.json') || '';
+if (vercelRaw) {
+    let vercel = null;
+    try {
+        vercel = JSON.parse(vercelRaw);
+    } catch (error) {
+        fail(`vercel.json: не JSON — ${error.message}`);
+    }
+    if (vercel) {
+        const headers = (vercel.headers || []).flatMap((entry) => entry.headers || []);
+        const cspHeader = headers.find((header) => String(header.key).toLowerCase() === 'content-security-policy');
+        if (!cspHeader) {
+            fail('vercel.json: нет Content-Security-Policy — XSS-аудит Lighthouse красный');
+        } else {
+            const csp = cspHeader.value;
+            if (!csp.includes("require-trusted-types-for 'script'")) {
+                fail("vercel.json CSP: нет require-trusted-types-for 'script' — Trusted Types не включены");
+            }
+            if (!csp.includes("trusted-types 'none'")) {
+                fail("vercel.json CSP: нет trusted-types 'none' — политику можно создать в обход");
+            }
+            const scriptSrc = (csp.match(/script-src([^;]*)/) || [])[1] || '';
+            if (scriptSrc.includes("'unsafe-inline'")) {
+                fail('vercel.json CSP: script-src с unsafe-inline — inline-скрипт обходит защиту');
+            }
+            if (scriptSrc.includes("'unsafe-eval'")) {
+                fail('vercel.json CSP: script-src с unsafe-eval — строка исполняется как код');
+            }
+            for (const part of ["default-src 'self'", "object-src 'none'", "base-uri 'self'", "frame-ancestors 'self'", "form-action 'self'"]) {
+                if (!csp.includes(part)) {
+                    fail(`vercel.json CSP: нет ${part}`);
+                }
+            }
+            const declared = new Set();
+            for (const match of csp.matchAll(/sha256-([A-Za-z0-9+/=]+)/g)) {
+                declared.add(`sha256-${match[1]}`);
+            }
+            for (const hash of inlineScripts) {
+                if (!declared.has(hash)) {
+                    fail(`vercel.json CSP: хэш inline-скрипта ${hash} не объявлен — скрипт заблокируется`);
+                }
+            }
+            for (const hash of declared) {
+                if (!inlineScripts.has(hash)) {
+                    fail(`vercel.json CSP: хэш ${hash} не совпал ни с одним inline-скриптом — протух после пересборки`);
+                }
+            }
+            ok(`CSP: script-src 'self' + ${declared.size} sha256, Trusted Types для script`);
+        }
+    }
+}
+
+/* ------------------------------------------------------------------ */
 /* Итог                                                               */
 /* ------------------------------------------------------------------ */
 

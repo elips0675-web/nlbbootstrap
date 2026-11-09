@@ -36,7 +36,7 @@ $nlbTpl = SITE_TEMPLATE_PATH;
                     <a href="https://t.me/example" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
                         <svg class="i" aria-hidden="true"><use href="#i-send"/></svg>
                     </a>
-                    <a href="https://vk.com/example" target="_blank" rel="noopener noreferrer" aria-label="ВКонтакте">
+                    <a href="https://vk.com/example" target="_blank" rel="noopener noreferrer" aria-label="ВКонтакте VK">
                         <span class="soc-vk">VK</span>
                     </a>
                     <a href="https://instagram.com/example" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
@@ -49,7 +49,7 @@ $nlbTpl = SITE_TEMPLATE_PATH;
             </div>
 
             <div class="col-6 col-lg-2">
-                <h4>Читателям</h4>
+                <h2>Читателям</h2>
                 <ul class="footer-links">
                     <li><a href="<?= $nlbSiteDir ?>collections/">Подарочные наборы</a></li>
                     <li><a href="<?= $nlbSiteDir ?>events/">События</a></li>
@@ -60,7 +60,7 @@ $nlbTpl = SITE_TEMPLATE_PATH;
             </div>
 
             <div class="col-6 col-lg-2">
-                <h4>Услуги</h4>
+                <h2>Услуги</h2>
                 <ul class="footer-links footer-links--green">
                     <li><a href="<?= $nlbSiteDir ?>services/">Читальные залы</a></li>
                     <li><a href="<?= $nlbSiteDir ?>services/">Электронная библиотека</a></li>
@@ -71,7 +71,7 @@ $nlbTpl = SITE_TEMPLATE_PATH;
             </div>
 
             <div class="col-lg-4">
-                <h4>Контакты</h4>
+                <h2>Контакты</h2>
                 <div class="footer-contact">
                     <svg class="i" aria-hidden="true"><use href="#i-pin"/></svg>
                     <span>220114, Минск,<br>пр. Независимости, 116</span>
@@ -167,7 +167,7 @@ $nlbTpl = SITE_TEMPLATE_PATH;
 </div>
 
 <div class="fab" id="nlbFab">
-    <div class="fab-menu" aria-label="Быстрая связь">
+    <div class="fab-menu" role="navigation" aria-label="Быстрая связь">
         <a class="fab-item" href="https://t.me/example" target="_blank" rel="noopener noreferrer">
             <span>Telegram</span>
             <span class="fab-ico fab-ico--tg"><svg class="i" aria-hidden="true"><use href="#i-send"/></svg></span>

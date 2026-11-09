@@ -563,7 +563,7 @@ function chips(array $items, string $allLabel): string
 /* Карточки                                                               */
 /* ---------------------------------------------------------------------- */
 
-function news_cards(array $items, int $depth): string
+function news_cards(array $items, int $depth, int $level = 2): string
 {
     $cards = '';
     foreach ($items as $item) {
@@ -575,7 +575,7 @@ function news_cards(array $items, int $depth): string
             . '</div>'
             . '<div class="nlb-card__body">'
             . '<p class="news-date">' . e(dmy((string)($item['active_from'] ?? ''))) . '</p>'
-            . '<h3 class="news-title">' . e($item['name']) . '</h3>'
+            . '<h' . $level . ' class="news-title">' . e($item['name']) . '</h' . $level . '>'
             . '<p class="news-text clamp-2">' . e($item['preview_text'] ?? '') . '</p>'
             . '</div></a></article></div>';
     }
@@ -583,7 +583,7 @@ function news_cards(array $items, int $depth): string
     return $cards;
 }
 
-function event_cards(array $items, int $depth, array $config): string
+function event_cards(array $items, int $depth, array $config, int $level = 2): string
 {
     $values = $config['iblocks']['events']['properties']['CATEGORY']['values'] ?? [];
     $names = [];
@@ -613,8 +613,8 @@ function event_cards(array $items, int $depth, array $config): string
                 . '<span>' . e(ru_month((int)date('n', $timestamp), true)) . '</span></span>';
         }
         $cards .= '</div><div class="nlb-card__body">'
-            . '<h3 class="event-title"><a class="text-reset" href="' . e($href) . '">'
-            . e($item['name']) . '</a></h3>'
+            . '<h' . $level . ' class="event-title"><a class="text-reset" href="' . e($href) . '">'
+            . e($item['name']) . '</a></h' . $level . '>'
             . '<p class="event-text clamp-2">' . e($item['preview_text'] ?? '') . '</p>'
             . '<div class="event-meta">';
         if ($timestamp) {
@@ -635,7 +635,7 @@ function event_cards(array $items, int $depth, array $config): string
     return $cards;
 }
 
-function service_cards(array $items, int $depth): string
+function service_cards(array $items, int $depth, int $level = 2): string
 {
     $cards = '';
     foreach ($items as $item) {
@@ -671,8 +671,8 @@ function service_cards(array $items, int $depth): string
             . '<span class="service-tile-icon bg-grad-' . e($color) . '">'
             . '<svg class="i" aria-hidden="true"><use href="#i-' . e($icon) . '"/></svg></span>'
             . ($subtitle !== '' ? '<p class="service-tile-eyebrow">' . e($subtitle) . '</p>' : '')
-            . '<h3 class="service-tile-title"><a class="text-reset" href="' . e($href) . '">'
-            . $name . '</a></h3>'
+            . '<h' . $level . ' class="service-tile-title"><a class="text-reset" href="' . e($href) . '">'
+            . $name . '</a></h' . $level . '>'
             . ($preview !== '' ? '<p class="service-tile-text">' . e($preview) . '</p>' : '')
             . '<span class="service-tile-price">' . e($priceLabel) . '</span>'
             . ($features !== '' ? '<ul class="service-tile-points">' . $features . '</ul>' : '')
@@ -686,7 +686,7 @@ function service_cards(array $items, int $depth): string
     return $cards;
 }
 
-function printing_cards(array $items, int $depth, int $limit = 0): string
+function printing_cards(array $items, int $depth, int $limit = 0, int $level = 2): string
 {
     if ($limit > 0) {
         $items = array_slice($items, 0, $limit);
@@ -706,7 +706,7 @@ function printing_cards(array $items, int $depth, int $limit = 0): string
             . '<span class="print-badge bg-grad-' . e($color) . '">'
             . '<svg class="i" aria-hidden="true"><use href="#i-' . e($props['ICON'] ?? 'printer') . '"/></svg>'
             . '</span></div><div class="print-body">'
-            . '<h3 class="print-title">' . $name . '</h3>'
+            . '<h' . $level . ' class="print-title">' . $name . '</h' . $level . '>'
             . '<p class="print-text">' . e($item['preview_text'] ?? '') . '</p>';
         if ($priceText !== '') {
             $cards .= '<div class="fw-bold text-dark mb-2">' . e($priceText)
@@ -721,7 +721,7 @@ function printing_cards(array $items, int $depth, int $limit = 0): string
     return $cards;
 }
 
-function book_cards(array $items, int $depth): string
+function book_cards(array $items, int $depth, int $level = 2): string
 {
     $palette = ['primary', 'green', 'sky', 'pink', 'orange'];
     $statuses = [
@@ -749,7 +749,7 @@ function book_cards(array $items, int $depth): string
             . '<svg class="i" aria-hidden="true"><use href="#i-package"/></svg>'
             . '<span>' . e(mb_substr($name, 0, 28)) . '</span></a>'
             . '<div class="book-body"><span class="book-status ' . $statusClass . '">' . $statusText . '</span>'
-            . '<h3 class="book-title"><a class="text-reset" href="' . e($href) . '">' . e($name) . '</a></h3>'
+            . '<h' . $level . ' class="book-title"><a class="text-reset" href="' . e($href) . '">' . e($name) . '</a></h' . $level . '>'
             . '<p class="book-author">' . e($material . ($size !== '' ? ', ' . $size : '')) . '</p>'
             . ($price > 0 ? '<p class="book-price">' . number_format($price, 0, '', ' ') . ' ₽</p>' : '')
             . '<p class="book-text clamp-2">' . e($item['preview_text'] ?? '') . '</p>'
@@ -759,7 +759,7 @@ function book_cards(array $items, int $depth): string
     return $cards;
 }
 
-function collection_cards(array $items, int $depth): string
+function collection_cards(array $items, int $depth, int $level = 2): string
 {
     $colors = ['primary' => 'blue', 'green' => 'green', 'sky' => 'sky', 'pink' => 'violet', 'orange' => 'orange'];
     $cards = '';
@@ -773,7 +773,7 @@ function collection_cards(array $items, int $depth): string
         $cards .= '<div class="col-md-6 col-lg-4"><div class="collection-card collection-card--' . $class . ' h-100">'
             . '<span class="icon-tile icon-tile--' . $class . '">'
             . '<svg class="i" aria-hidden="true"><use href="#i-' . e($props['ICON'] ?? 'book') . '"/></svg></span>'
-            . '<h3>' . e($item['name']) . '</h3>'
+            . '<h' . $level . '>' . e($item['name']) . '</h' . $level . '>'
             . ($count > 0 ? '<div class="collection-count">Предметов: ' . $count . '</div>' : '')
             . '<p class="collection-text">' . e($item['preview_text'] ?? '') . '</p>'
             . '<a class="collection-more" href="' . e($href) . '">Узнать больше'
@@ -1254,7 +1254,7 @@ HTML
         <div class="row g-4">
 
 HTML
-        . printing_cards($printing['items'] ?? [], 1, 8)
+        . printing_cards($printing['items'] ?? [], 1, 8, 3)
         . <<<'HTML'
 
         </div>

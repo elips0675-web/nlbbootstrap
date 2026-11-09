@@ -83,7 +83,7 @@ Bootstrap остаётся базой, но несколько компонен�
 | `.navbar` | свои паддинги, прозрачный фон | `styles.css:413` |
 | `.nav-link` | свои паддинги, hover-фон | `styles.css:468` |
 | `.carousel-indicators` | круглые точки, зелёный активный | `styles.css:664` |
-| `.breadcrumb` | **не используется** — своя разметка `.breadcrumb-navigation` | `styles.css:2400` |
+| `.breadcrumb` | **не используется** — своя разметка `.breadcrumb-navigation` | `styles.css:2420` |
 
 Важно: `.breadcrumb` Bootstrap не применяется, потому что компонент
 `bitrix:breadcrumb` выводит свой `<ol class="breadcrumb-navigation">`.
@@ -123,9 +123,9 @@ Bootstrap 5 сам инициализирует всё по `data-bs-*`. Сво�
 | Плагин | Инициализация | Наш код |
 |---|---|---|
 | Carousel | `data-bs-ride="carousel"` на `.carousel` | не нужен |
-| Collapse (navbar) | `data-bs-toggle="collapse" data-bs-target="#nlbNav"` | закрытие после клика (`script.js:1256`) |
-| Modal | `data-bs-toggle="modal" data-bs-target="#searchModal"` | автофокус (`script.js:1269`), Ctrl+K (`script.js:1485`) |
-| Validation | класс `needs-validation` | `form.noValidate = true` и обработчик submit (`script.js:1374`) |
+| Collapse (navbar) | `data-bs-toggle="collapse" data-bs-target="#nlbNav"` | закрытие после клика (`script.js:1267`) |
+| Modal | `data-bs-toggle="modal" data-bs-target="#searchModal"` | автофокус (`script.js:1282`), Ctrl+K (`script.js:1496`) |
+| Validation | класс `needs-validation` | `form.noValidate = true` и обработчик submit (`script.js:1385`) |
 
 Программный вызов — только через `getOrCreateInstance`, не `new bootstrap.Modal(...)`:
 
@@ -174,7 +174,7 @@ bootstrap.Collapse.getOrCreateInstance(document.getElementById('nlbNav')).hide()
 `bitrix:iblock.element.add.form → bootstrap`.
 
 - в разметке **нет** `novalidate`: без JavaScript пустое `required`-поле
-  отбивает сам браузер. `script.js:1374` выставляет `form.noValidate = true`
+  отбивает сам браузер. `script.js:1385` выставляет `form.noValidate = true`
   только когда скрипт загружен, и дальше проверку ведёт Bootstrap
   (`.was-validated` + `invalid-feedback`);
 - `invalid-feedback` должен идти **после** поля;
@@ -193,7 +193,7 @@ bootstrap.Collapse.getOrCreateInstance(document.getElementById('nlbNav')).hide()
   (подписи слайдов);
 - `:focus-visible` задан глобально (`styles.css:84`), не убирайте его;
 - `prefers-reduced-motion` отключает reveal и плавный скролл
-  (`styles.css:2485`).
+  (`styles.css:2508`).
 
 ## 10. Обновление Bootstrap
 

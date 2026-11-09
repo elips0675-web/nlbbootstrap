@@ -19,7 +19,7 @@ Lovable-проекта `../src/` (React 18 + Tailwind 3 + shadcn/ui) на сер
 | Язык шаблона | PHP | 8.0+ |
 | CSS-фреймворк | Bootstrap | 5.3.3, `assets/css/bootstrap.min.css` |
 | JS-фреймворк | Bootstrap bundle (Popper внутри) | 5.3.3, `assets/js/bootstrap.bundle.min.js` |
-| Свой CSS | CSS3 + custom properties | `styles.css`, 3 785 строк |
+| Свой CSS | CSS3 + custom properties | `styles.css`, 3 816 строк |
 | Свой JS | ES5-совместимый vanilla, IIFE | `script.js`, 10 модулей + `pwa.js`, `consent.js` |
 | Шрифт | системный стек (`Manrope` — если установлен) | `styles.css:55`, внешних запросов нет |
 | Иконки | inline SVG `<symbol>` | спрайт в `header.php`, копия в `preview/index.html` |
@@ -115,7 +115,7 @@ Lovable-проекта `../src/` (React 18 + Tailwind 3 + shadcn/ui) на сер
 | 8 | Подвал | `#contacts` | `.site-footer` | статика + настройки |
 
 Внутренние страницы: `page-head` + хлебные крошки + `.bitrix-content`
-(стили для контента визуального редактора, `styles.css:2435`).
+(стили для контента визуального редактора, `styles.css:2455`).
 
 ## 7. Точки интеграции с Битриксом
 

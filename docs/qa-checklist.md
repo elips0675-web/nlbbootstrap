@@ -185,7 +185,13 @@
 - [ ] модалки: `aria-labelledby`, `aria-hidden`, фокус-трап Bootstrap;
 - [ ] `Tab` проходит по всем интерактивным элементам, фокус виден;
 - [ ] изображения имеют `alt` (декоративные — пустой);
-- [ ] заголовки идут по порядку (h1 → h2 → h3);
+- [ ] заголовки идут по порядку (h1 → h2 → h3), карточки листингов — h2;
+- [ ] скрытые анимацией блоки не используют `opacity: 0` — контент виден без JS;
+- [ ] контраст текста ≥ 4.5:1 (`.collection-text`, подсказка подписки в подвале);
+- [ ] иконочные ссылки: видимый текст входит в доступное имя (`VK` → `ВКонтакте VK`);
+- [ ] `.fab-menu` — ориентир `navigation`, а не `div` с `aria-label`;
+- [ ] область нажатия индикаторов карусели ≥ 24×24 (Lighthouse `target-size`);
+- [ ] ссылки в тексте подчёркнуты, а не только цветом;
 - [ ] при `prefers-reduced-motion` нет анимаций.
 
 ### A9. Печать
@@ -278,6 +284,25 @@ node tools/check-docs.mjs
 - [ ] `node tools/check-template.mjs` (§11.3) — форма без `novalidate`,
       `required` в разметке, `form.noValidate` в скрипте и серверная проверка
       в `nlb_forms.php`.
+
+### A16. CSP и Trusted Types (статическое превью)
+
+- [ ] `curl -I https://<домен>/` отдаёт `Content-Security-Policy` из
+      `vercel.json` с `script-src 'self'`, двумя `sha256-…`,
+      `require-trusted-types-for 'script'` и `trusted-types 'none'`;
+- [ ] в `script-src` нет `'unsafe-inline'` и `'unsafe-eval'`;
+- [ ] хэши совпадают с inline-скриптами после `php tools/build-preview-pages.php`
+      (расхождение роняет `node tools/check-template.mjs`, §13);
+- [ ] DevTools → Console: на 110 страницах нет CSP-нарушений и ошибок;
+- [ ] в консоли `document.createElement('div').innerHTML = '<b>x</b>'` бросает
+      `TypeError` — Trusted Types реально включены;
+- [ ] `trustedTypes.createPolicy('x', { createHTML: (s) => s })` бросает
+      `TypeError` — политику нельзя создать в обход;
+- [ ] фильтр листингов и форма брони работают (inline-скрипты не заблокированы);
+- [ ] чат: очистка журнала и «печатающий» пузырь не падают (в `script.js`
+      нет `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`);
+- [ ] `style-src` с `'unsafe-inline'` — известное ограничение: в разметке
+      остаются атрибуты `style=`, это не XSS-вектор.
 
 ---
 

@@ -88,6 +88,31 @@ connect-src 'self'; manifest-src 'self'; worker-src 'self'
 (инициализация компонентов, счётчики форм). Админка (`/bitrix/`,
 `ADMIN_SECTION`) из-под CSP выведена — иначе панель ломается.
 
+#### Статическое превью на Vercel
+
+`vercel.json` отдаёт для собранного `preview/` более строгую политику.
+Инлайн-скриптов там ровно два (фильтр листингов и форма брони), поэтому
+`script-src` собран из `'self'` и двух `sha256-…` без `'unsafe-inline'`:
+
+```
+script-src 'self' 'sha256-…' 'sha256-…'; require-trusted-types-for 'script';
+trusted-types 'none'
+```
+
+`require-trusted-types-for 'script'` запрещает присваивать строку в
+`innerHTML`, `outerHTML`, `insertAdjacentHTML` и `document.write`, а
+`trusted-types 'none'` не даёт создать политику в обход — браузер бросает
+`TypeError`. Поэтому `script.js` собирает SVG иконок, «печатающий» пузырь и
+очистку журнала чата через DOM API (`createElementNS`, `createElement`,
+`appendChild`, `replaceChildren`), а не через HTML-строки.
+
+Хэши считаются по сырым байтам inline-скриптов после
+`php tools/build-preview-pages.php`; расхождение роняет
+`node tools/check-template.mjs` (там же проверяются `require-trusted-types-for`
+и отсутствие `'unsafe-inline'`/`'unsafe-eval'` в `script-src`).
+`style-src` пока с `'unsafe-inline'` — в разметке остаются атрибуты `style=`;
+это не XSS-вектор, но и не «строгий» CSP.
+
 Отключить CSP, если подключается внешняя аналитика:
 
 ```php
@@ -205,7 +230,7 @@ e-mail и `sameAs` правятся в двух местах — `footer.php` и
 | Мера | Где | Эффект |
 |---|---|---|
 | Bootstrap локально, без CDN | `assets/` | нет лишнего DNS/TLS |
-| Нет jQuery, нет сборки | `script.js` | 72,3 КБ своего JS |
+| Нет jQuery, нет сборки | `script.js` | 72,8 КБ своего JS |
 | Картинки пережаты и обрезаны под пропорции вывода | `assets/images/` | 20 файлов, 2002 КБ (базовые 17: 3722 → 1813 КБ, −51 %) |
 | WebP/AVIF и ширины 480/960/1280 рядом с JPG | `assets/images/` | 162 файла: JPG 3885 КБ, WebP 2331 КБ, AVIF 2033 КБ |
 | `<picture>` + `srcset`/`sizes` | `nlb_picture()`, `nlb_media.php` | браузер берёт AVIF/WebP и ширину под слот |
@@ -281,13 +306,13 @@ JPG 3885 КБ, WebP 2331 КБ, AVIF 2033 КБ. На странице остаё�
 
 ### 2.5 CSS/JS
 
-- `styles.css` 78,8 КБ (было 36 КБ: добавлены секции 16–17 — внутренние
+- `styles.css` 79,3 КБ (было 36 КБ: добавлены секции 16–17 — внутренние
   страницы и баннеры) — минификация на продакшене даст ~15 %, не критично;
   порог роста — 90 КБ в `docs/AGENTS-frontend.md`, превышение ловит
   `node tools/check-doc-numbers.mjs`;
 - `bootstrap.min.css` 227 КБ — приемлемо; кастомная сборка только с нужными
   компонентами уменьшит файл в 2–3 раза, но потребует Sass;
-- `script.js` 72,3 КБ, `pwa.js` и `consent.js` по ~3 КБ — грузятся в конце тела.
+- `script.js` 72,8 КБ, `pwa.js` и `consent.js` по ~3 КБ — грузятся в конце тела.
 
 ### 2.6 Метрики
 

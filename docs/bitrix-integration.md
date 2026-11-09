@@ -131,7 +131,7 @@ $APPLICATION->IncludeComponent('bitrix:news.detail', 'article', [
 ```
 
 В шаблоне `article` детальный текст оборачивается в `.bitrix-content` — тогда
-работают стили абзацев, списков, цитат и картинок (`styles.css:2435`).
+работают стили абзацев, списков, цитат и картинок (`styles.css:2455`).
 
 ---
 
@@ -375,7 +375,7 @@ $APPLICATION->IncludeComponent('bitrix:iblock.element.add.form', 'bootstrap', [
 
 **Формы без JavaScript.** В разметке нет `novalidate`, у обязательных полей
 стоит `required`, поэтому браузер с выключенным JS сам не даёт отправить
-пустую заявку. `script.js:1374` выставляет `form.noValidate = true` только
+пустую заявку. `script.js:1385` выставляет `form.noValidate = true` только
 при загруженном скрипте — дальше проверку показывает Bootstrap
 (`.was-validated`). Второй рубеж — сервер: `nlb_forms_before_add()` сверяет
 обязательные поля из конфига (`nlb_forms_required_labels()`,

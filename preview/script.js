@@ -403,7 +403,13 @@
                 button.className = 'nlb-chat__rate-btn';
                 button.setAttribute('aria-label', item.label);
                 button.setAttribute('aria-pressed', 'false');
-                button.innerHTML = '<svg class="i" aria-hidden="true"><use href="' + item.icon + '"/></svg>';
+                const icon = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                icon.setAttribute('class', 'i');
+                icon.setAttribute('aria-hidden', 'true');
+                const use = doc.createElementNS('http://www.w3.org/2000/svg', 'use');
+                use.setAttribute('href', item.icon);
+                icon.appendChild(use);
+                button.appendChild(icon);
                 button.addEventListener('click', function () {
                     if (wrap.classList.contains('is-rated')) return;
                     wrap.classList.add('is-rated');
@@ -523,7 +529,12 @@
             const stick = chatNearBottom();
             const row = doc.createElement('div');
             row.className = 'nlb-chat__msg nlb-chat__msg--bot nlb-chat__typing';
-            row.innerHTML = '<div class="nlb-chat__bubble"><span></span><span></span><span></span></div>';
+            const bubble = doc.createElement('div');
+            bubble.className = 'nlb-chat__bubble';
+            for (let i = 0; i < 3; i += 1) {
+                bubble.appendChild(doc.createElement('span'));
+            }
+            row.appendChild(bubble);
             chatLog.appendChild(row);
             chatTyping = row;
             scrollChat({ stick: stick });
@@ -953,7 +964,7 @@
             hideChatTyping();
             hideChatError();
             clearChatChips();
-            chatLog.innerHTML = '';
+            chatLog.replaceChildren();
             chatLog.scrollTop = 0;
             chatInput.value = '';
             chatInput.placeholder = 'Напишите сообщение…';
