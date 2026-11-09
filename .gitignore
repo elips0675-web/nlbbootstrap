@@ -36,5 +36,8 @@ npm-debug.log*
 # Vercel build output (tools/vercel-build.mjs)
 public/
 
+# Исходник для tools/purge-css.mjs: в превью копируется, но не публикуется
+preview/assets/css/bootstrap.source.min.css
+
 # Черновик установки владельца: канон — docs/installation.md
 Установка.txt

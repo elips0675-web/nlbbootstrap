@@ -166,7 +166,9 @@ if (!function_exists('nlb_picture')) {
      *   loading  — lazy (по умолчанию) или eager;
      *   decoding — async (по умолчанию);
      *   priority — true для LCP-картинки: loading=eager + fetchpriority=high.
-     *   fetchpriority — 'high' | 'low' для явной подсказки браузеру.
+     *   fetchpriority — 'high' | 'low' для явной подсказки браузеру;
+     *                   у ленивых картинок low по умолчанию, чтобы они
+     *                   не отбирали полосу у LCP-изображения.
      */
     function nlb_picture(string $src, string $alt = '', array $options = []): string
     {
@@ -185,6 +187,8 @@ if (!function_exists('nlb_picture')) {
 
         if ($priority) {
             $loading = 'eager';
+        } elseif ($loading !== 'eager' && $fetchPriority === '') {
+            $fetchPriority = 'low';
         }
 
         $attrs = '';
