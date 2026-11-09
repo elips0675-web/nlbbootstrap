@@ -483,10 +483,36 @@ function rebase(string $html, int $depth): string
     }
     $prefix = base($depth);
 
-    return (string)preg_replace_callback(
+    $html = (string)preg_replace_callback(
         '~\b(href|src|action)="(?!https?:|mailto:|tel:|#|/|\.\./|data:)([^"]*)"~',
         static function (array $m) use ($prefix): string {
             return $m[1] . '="' . $prefix . $m[2] . '"';
+        },
+        $html
+    );
+
+    return (string)preg_replace_callback(
+        '~\b(imagesrcset|srcset)="([^"]*)"~',
+        static function (array $m) use ($prefix): string {
+            $candidates = array_map(
+                static function (string $candidate) use ($prefix): string {
+                    $candidate = trim($candidate);
+                    if ($candidate === '') {
+                        return '';
+                    }
+                    $space = strpos($candidate, ' ');
+                    $url = $space === false ? $candidate : substr($candidate, 0, $space);
+                    $rest = $space === false ? '' : substr($candidate, $space);
+                    if (preg_match('~^(https?:|mailto:|/|\.\./|data:)~', $url)) {
+                        return $candidate;
+                    }
+
+                    return $prefix . $url . $rest;
+                },
+                explode(',', $m[2])
+            );
+
+            return $m[1] . '="' . implode(', ', $candidates) . '"';
         },
         $html
     );
@@ -504,6 +530,10 @@ function layout(string $previewDir, string $title, string $description, string $
 
     $head = rebase(substr($home, 0, $mainPos), $depth);
     $tail = rebase(substr($home, $footerPos), $depth);
+
+    if (!str_contains($content, 'hero-1-960') && !str_contains($tail, 'hero-1-960')) {
+        $head = (string)preg_replace('~\s*<link rel="preload" as="image"[^>]*>~', '', $head);
+    }
 
     $head = (string)preg_replace('~<title>.*?</title>~s', '<title>' . e($title) . '</title>', $head, 1);
     $head = (string)preg_replace(
@@ -1710,6 +1740,9 @@ function build_personal(string $previewDir): string
     <meta name="robots" content="noindex, follow">
     <meta http-equiv="refresh" content="0; url=../auth/">
     <title>Личный кабинет — Библиотека 2026</title>
+    <link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml">
+    <link rel="icon" href="../assets/icons/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" sizes="180x180">
     <link rel="canonical" href="../auth/">
 </head>
 <body>

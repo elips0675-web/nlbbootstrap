@@ -1583,6 +1583,60 @@ if (fs.existsSync(path.join(root, bsPurged)) && fs.existsSync(path.join(root, bs
 }
 
 /* ------------------------------------------------------------------ */
+/* 17. Иконки и относительные пути в превью                           */
+/* ------------------------------------------------------------------ */
+
+const previewPages = [];
+(function walkPreview(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            if (entry.name !== 'assets') walkPreview(full);
+            continue;
+        }
+        if (entry.name.endsWith('.html')) previewPages.push(full);
+    }
+})(path.join(root, 'preview'));
+
+if (previewPages.length === 0) {
+    fail('preview: не найдено ни одной HTML-страницы');
+} else {
+    const withoutIcon = [];
+    const unrebased = [];
+    for (const file of previewPages) {
+        const html = fs.readFileSync(file, 'utf8');
+        const rel = path.relative(root, file).split(path.sep).join('/');
+        if (!/<link rel="icon"/.test(html)) withoutIcon.push(rel);
+        if (path.dirname(file) !== path.join(root, 'preview')) {
+            const flatRef = /\b(?:href|src)="assets\//.test(html);
+            let setRef = false;
+            for (const match of html.matchAll(/\b(?:srcset|imagesrcset)="([^"]*)"/g)) {
+                for (const candidate of match[1].split(',')) {
+                    if (candidate.trim().split(/\s+/)[0].startsWith('assets/')) setRef = true;
+                }
+            }
+            if (flatRef || setRef) unrebased.push(rel);
+        }
+    }
+    if (withoutIcon.length) {
+        fail(`preview: нет <link rel="icon"> на ${withoutIcon.length} страницах (${withoutIcon.slice(0, 3).join(', ')}) — браузер запросит /favicon.ico и получит 404`);
+    }
+    if (unrebased.length) {
+        fail(`preview: относительный assets/ на вложенной странице (${unrebased.slice(0, 3).join(', ')}) — ссылка уйдёт в /<раздел>/assets/ и даст 404`);
+    }
+    if (!withoutIcon.length && !unrebased.length) {
+        ok(`preview: ${previewPages.length} страниц с иконкой, вложенные пути с ../`);
+    }
+}
+
+for (const icon of ['icon.svg', 'favicon-32.png', 'apple-touch-icon.png']) {
+    const rel = `preview/assets/icons/${icon}`;
+    if (!fs.existsSync(path.join(root, rel))) {
+        fail(`нет ${rel} — <link rel="icon"> на превью уйдёт в 404`);
+    }
+}
+
+/* ------------------------------------------------------------------ */
 /* Итог                                                               */
 /* ------------------------------------------------------------------ */
 
