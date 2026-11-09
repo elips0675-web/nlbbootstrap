@@ -707,7 +707,12 @@ Stage 75 урезал `bootstrap.min.css` (227,3 → 59,9 КБ), и мобиль
 3. слайдам 2–3 hero поставить `loading="lazy"` вместо `eager` (67 КБ уходят
    из критического окна);
 4. картинкам ниже первого экрана — `fetchpriority="low"` вдобавок к
-   `loading="lazy"`.
+   `loading="lazy"`;
+5. `bootstrap.min.css` подключён без `?v=`, а `/assets/` кешируется на сутки
+   (`vercel.json`, `preview-server.mjs`) — после замены файла браузер до
+   истечения срока отдаёт старый Bootstrap, и замер врёт. Проставить
+   `?v=<hash>` в генераторе превью и в `header.php`, как уже сделано для
+   `styles.css` и `script.js` в `preview/index.html:10-11`.
 
 Приёмка: мобильный Performance ≥ 90 на `python -m http.server` (без gzip),
 LCP ≤ 3,0 с, ни одна картинка ниже первого экрана не стартует раньше FCP,
