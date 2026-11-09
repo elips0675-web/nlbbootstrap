@@ -325,6 +325,30 @@ php -S 127.0.0.1:8791 -t preview
 все ссылки и не регистрируется service worker. Страницы пересобираются
 командой `php tools/build-preview-pages.php`.
 
+### Замер Lighthouse
+
+Мобильный Lighthouse 13.6 на главной локального предпросмотра
+(`node tools/preview-server.mjs` — gzip/brotli и заголовки кеша как на проде),
+09.11.2026:
+
+![Lighthouse: Performance 100, Accessibility 100, Best Practices 100, SEO 100](docs/images/lighthouse-100.jpg)
+
+| Категория | Оценка |
+|---|---|
+| Performance | 100 |
+| Accessibility | 100 |
+| Best Practices | 100 |
+| SEO | 100 |
+
+Метрики главной в этом прогоне: FCP 1,1 с, LCP 1,7 с, TBT 10 мс, CLS 0,
+Speed Index 1,1 с.
+
+Условия важнее цифры: 100 получается на сервере со сжатием и заголовками
+кеша. На `php -S` и `python -m http.server` те же файлы едут без gzip, и
+Performance падает до 85–88 (LCP 3,6–3,8 с) — ограничение сервера, а не
+разметки. TBT в части прогонов поднимается до 120 мс (первый макет длинной
+главной), поэтому оценка ходит между 99 и 100.
+
 ### Демо дизайна на Vercel
 
 Vercel не исполняет PHP. Если отдать ему репозиторий как есть, по адресу

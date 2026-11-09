@@ -16,7 +16,7 @@
 - `bootstrap.min.css` версионируется `?v=<hash>` в превью — пункт 5 бэклога P2-11 (раньше `/assets/` сутки отдавал старый файл);
 - `demo/index.php` (живой Битрикс) получает те же подсказки: `fetchpriority="low"` у hero-2/3 через новую опцию `nlb_picture()`; гейт `check-template.mjs` признаёт `-768` вариантом ширины, иначе `preview/index.html` расходился с `demo/index.php` по набору картинок.
 
-**Проверено**: три прогона Lighthouse 13.6 на `tools/preview-server.mjs` (gzip, как на проде) — **100, 99, 100**: FCP 1,1–1,2 с, LCP 1,7–1,8 с (было 2,6), TBT 0–120 мс, CLS 0, SI 1,1 с, Accessibility/Best Practices/SEO 100. На `python -m http.server` без gzip (худший случай) — 85–88, LCP 3,6–3,8 с: без сжатия проигрывает не разметка, а доставка. `node tools/check-template.mjs` — 0 ошибок.
+**Проверено**: три прогона Lighthouse 13.6 на `tools/preview-server.mjs` (gzip, как на проде) — **100, 99, 100**: FCP 1,1–1,2 с, LCP 1,7–1,8 с (было 2,6), TBT 0–120 мс, CLS 0, SI 1,1 с, Accessibility/Best Practices/SEO 100. На `python -m http.server` без gzip (худший случай) — 85–88, LCP 3,6–3,8 с: без сжатия проигрывает не разметка, а доставка. `node tools/check-template.mjs` — 0 ошибок. Снимок отчёта (100/100/100/100) лёг в `docs/images/lighthouse-100.jpg` и в раздел README «Замер Lighthouse» с условиями замера.
 
 **Отклонено по замерам, а не по вкусу**: `content-visibility: auto` на секциях ниже первого экрана дала LCP 1,9 с, но уронила Accessibility до 97 (контент вне экрана выпадает из дерева доступности); отложенная загрузка `bootstrap.bundle.min.js` и `script.js` после `load` сделала LCP хуже — 2,3–2,6 с при TBT 0 (первый макет сдвигался позже); снятие `carousel-fade` не изменило ничего (2,0 с до и после).
 
