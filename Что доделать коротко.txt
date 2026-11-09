@@ -66,6 +66,15 @@ Stage 62 (08.11.2026): P1-29 и P0-3 закрыты — `SECTION_PAGE_URL` ве�
 список с `?section=`, корень «Главная» объявлен `.section.php`, крошки есть
 на 15 страницах; на стенде цепочка «Главная → Афиша → Литература → событие».
 
+Stage 74 (09.11.2026): локальное превью раздавалось без сжатия и заголовков
+кеша — `запуск-превью.bat` брал Python, и браузер показывал сборку до Stage 71
+(отсюда Accessibility 96 и Performance 63 при 100 в CLI на тех же файлах).
+Теперь по умолчанию `tools/preview-server.mjs`: gzip/brotli, `Cache-Control`
+как в `vercel.json`, `ETag`/304, 301 на слэш, `404.html`; PHP и Python остались
+запасными. Мобильный Lighthouse на нём — Performance 94, desktop 100,
+Accessibility 100; гейт §15 `check-template.mjs`. Открыто: иконки нет,
+`/favicon.ico` 404 (P2-10), mobile 100 упирается в TBT.
+
 Stage 73 (09.11.2026): прод `https://nlbbootstrap-b5y9.vercel.app/` отдавал
 снимок старше Stage 71–72 (CSS 77 509 Б, индикатор 10×10, три `h4`, нет CSP и
 `preload`, Lighthouse 88/96) — панель пересобирает развёрнутый коммит, а не

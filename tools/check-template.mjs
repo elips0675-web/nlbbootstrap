@@ -1490,6 +1490,52 @@ if (workflow) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 15. Локальный сервер превью = прод (gzip, кеш, ETag)               */
+/* ------------------------------------------------------------------ */
+
+const previewServer = read('tools/preview-server.mjs');
+if (previewServer) {
+    const checks15 = [
+        ['no-cache для HTML', /\bno-cache, must-revalidate\b/],
+        ['immutable для styles.css/script.js', /max-age=31536000, immutable/],
+        ['gzip', /gzipSync/],
+        ['brotli', /brotliCompressSync/],
+        ['учёт Accept-Encoding', /accept-encoding/],
+        ['ETag и 304', /if-none-match/],
+        ['301 на слэш в конце каталога', /301/],
+    ];
+    for (const [label, re] of checks15) {
+        if (!re.test(previewServer)) {
+            fail(`tools/preview-server.mjs: нет «${label}» — локальные замеры снова разойдутся с продом`);
+        }
+    }
+    if (/from '(?!node:)/.test(previewServer)) {
+        fail('tools/preview-server.mjs: внешний импорт — сервер должен работать без npm install');
+    }
+}
+
+const previewBat = read('запуск-превью.bat');
+if (previewBat) {
+    if (!/node --version >nul 2>&1\r?\nif not errorlevel 1 set "SERVER=node"/.test(previewBat)) {
+        fail('запуск-превью.bat: Node не выбран сервером первым — останется PHP/Python без gzip и кеша');
+    }
+    if (!/:runnode\r?\n/.test(previewBat) || !previewBat.includes('preview-server.mjs')) {
+        fail('запуск-превью.bat: нет запуска :runnode с tools/preview-server.mjs');
+    }
+    if (!previewBat.includes('%~dp0')) {
+        fail('запуск-превью.bat: нет %~dp0 — батник перестанет работать из другой папки');
+    }
+    if (/[A-Za-z]:\\/.test(previewBat)) {
+        fail('запуск-превью.bat: абсолютный путь — запуск сломается на другой машине');
+    }
+    ok('запуск-превью.bat: Node первым, :runnode, относительные пути');
+}
+
+if (previewServer) {
+    ok('preview-server.mjs: gzip/brotli, no-cache HTML, immutable CSS/JS, ETag и 304');
+}
+
+/* ------------------------------------------------------------------ */
 /* Итог                                                               */
 /* ------------------------------------------------------------------ */
 

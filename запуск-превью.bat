@@ -4,6 +4,7 @@ title NLB Bootstrap - превью сайта
 
 rem Локальный показ дизайна без Битрикса: раздаёт папку preview/ на 127.0.0.1:8791.
 rem Пути только относительные (%~dp0) - батник работает из любой папки.
+rem Сервер: node tools\preview-server.mjs (gzip, Cache-Control, ETag), если Node нет - PHP или Python.
 rem Файл сохранён в кодировке CP866: правьте его только в редакторе с этой кодировкой,
 rem иначе русский текст в консоли превратится в мусор.
 
@@ -14,8 +15,13 @@ set "URL=http://127.0.0.1:%PORT%/"
 
 if not exist "%ROOT%\preview\index.html" goto :nopreview
 
-php -v >nul 2>&1
-if not errorlevel 1 set "SERVER=php"
+node --version >nul 2>&1
+if not errorlevel 1 set "SERVER=node"
+
+if not defined SERVER (
+    php -v >nul 2>&1
+    if not errorlevel 1 set "SERVER=php"
+)
 
 if not defined SERVER (
     python --version >nul 2>&1
@@ -42,9 +48,19 @@ echo.
 
 if defined BUSY goto :busy
 
+if "%SERVER%"=="node" goto :runnode
 if "%SERVER%"=="php" goto :runphp
 if "%SERVER%"=="python" goto :runpython
 goto :runpy
+
+:runnode
+echo   Запуск: node tools\preview-server.mjs --port %PORT%
+echo   gzip/brotli, Cache-Control и ETag - как на проде Vercel.
+echo   Остановить: Ctrl+C в этом окне.
+echo.
+start "" powershell -NoProfile -WindowStyle Hidden -Command "Start-Sleep -Seconds 2; Start-Process '%URL%'"
+node "%ROOT%\tools\preview-server.mjs" --port %PORT% --root "%ROOT%\preview"
+goto :end
 
 :runphp
 echo   Запуск: php -S 127.0.0.1:%PORT% -t preview
@@ -89,8 +105,8 @@ exit /b 1
 
 :noserver
 echo.
-echo   [ОШИБКА] Не найден ни PHP, ни Python.
-echo   Поставьте PHP 8+ (php.net/downloads) или Python 3 (python.org/downloads)
+echo   [ОШИБКА] Не найден ни Node, ни PHP, ни Python.
+echo   Поставьте Node 18+ (nodejs.org), PHP 8+ (php.net/downloads) или Python 3 (python.org/downloads)
 echo   и добавьте его в PATH. Без сервера страницы превью не откроются:
 echo   по file:// ломаются ссылки на /news/, /books/ и остальные разделы.
 echo.

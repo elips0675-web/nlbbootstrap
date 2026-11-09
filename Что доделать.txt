@@ -665,6 +665,22 @@ Manrope: WOFF2 в `assets/fonts/`, `@font-face` с `font-display: swap`, фай�
 Приёмка: ссылка есть в шапке и подвале, ведёт на реальный каталог,
 открывается в новой вкладке, повторный `php db/run.php` её не удаляет.
 
+### P2-10. Иконки сайта нет: `/favicon.ico` отдаёт 404
+
+В `preview/` нет ни `favicon.ico`, ни `<link rel="icon">`, поэтому браузер сам
+просит `/favicon.ico` и получает 404. Lighthouse 13.6 считает это ошибкой
+консоли (`errors-in-console`) и снижает Best Practices до 96 — замерено на
+локальном сервере превью (`tools/preview-server.mjs`). На проде то же:
+`GET /favicon.ico` → 404 `NOT_FOUND`. Ссылку надо добавить в `<head>` шаблона
+(`local/templates/nlb_bootstrap/header.php:21`) и в генератор превью
+(`tools/build-preview-pages.php:1708`), а саму картинку положить в
+`preview/assets/images/`, иначе Vercel её не получит (в деплой едет только
+`preview/`).
+
+Приёмка: `<link rel="icon" href="assets/images/favicon.svg">` на всех
+страницах превью, `/favicon.ico` либо 200, либо не запрашивается вовсе,
+`errors-in-console` в Lighthouse пуст, Best Practices — 100.
+
 ---
 
 ## Закрытые пункты

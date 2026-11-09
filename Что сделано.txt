@@ -3,6 +3,21 @@
 Журнал этапов шаблона `nlb_bootstrap`. Сверху — свежее. Формат записи: этап,
 дата, что сделано, чем проверено, что не проверено.
 
+(Stage 74 — 09.11.2026) — **Локальное превью раздавалось без сжатия и без заголовков кеша: браузер показывал старую сборку, Lighthouse считал 63–96. Сервер превью теперь ведёт себя как прод.**
+
+Повод: пользователь дважды прислал Accessibility 96 с `http://127.0.0.1:8791/` и Performance 63, тогда как Lighthouse CLI на тех же файлах `preview/` давал 100. Сервер в ответе — `SimpleHTTP/0.6 Python/3.14.6`: `запуск-превью.bat` выбирал Python, а `http.server` не отправляет ни `Content-Encoding`, ни `Cache-Control`, ни `ETag`. Браузер держит HTML и CSS по эвристическому кешу, поэтому панель Lighthouse проверяла снимок до Stage 71, а отсутствие сжатия раздувало FCP и LCP.
+
+Сделано:
+
+- `tools/preview-server.mjs` — сервер превью без зависимостей: gzip/brotli для текста (только если клиент прислал `Accept-Encoding`), `Cache-Control` по правилам `vercel.json` (HTML `no-cache, must-revalidate`, `styles.css` и `script.js` `public, max-age=31536000, immutable`, `/assets/` сутки), `ETag` и `304` на `If-None-Match`, `301` на слэш в конце каталога (`/news` → `/news/`, иначе относительные ссылки внутри страницы ломаются), `404.html` для отсутствующих путей, `HEAD` и `405`, защита от выхода за корень через `..`;
+- `запуск-превью.bat` (CP866, LF) — Node выбирается первым, добавлен блок `:runnode`; PHP и Python остались запасными; относительные пути `%~dp0` не тронуты. Файл правился побайтово через CP866-таблицу, sha256 `76be78492d8d59b68a1301fb91a37db2aa6992f4bc0ddfe45f17d3d61a4f87e6` → `1faacf7d39cd66147cd6cca83deff63d383b393edd7b4d47543350f2c34b6254`, `запуск-превью.bat check` печатает `SERVER=node`;
+- `tools/check-template.mjs` §15 — 10 проверок: `no-cache` для HTML, `immutable` для CSS/JS, gzip, brotli, `Accept-Encoding`, `ETag`/`304`, `301`, отсутствие внешних импортов, Node первым в батнике, `:runnode`, `%~dp0`, отсутствие абсолютных путей;
+- `README.md` — почему сервер по умолчанию Node и как запустить вручную; `Что доделать.txt` — P2-10 (у сайта нет иконки: `/favicon.ico` 404, из-за этого `errors-in-console` и Best Practices 96).
+
+**Проверено**: заголовки на `127.0.0.1:8792` — `/` 200 gzip `no-cache` с ETag, `/styles.css` 200 gzip `immutable`, `/news` 301 → `/news/`, `/nope/` 404 с `404.html`, `If-None-Match` → 304, `HEAD` без тела; Lighthouse 13.6 на этом сервере: mobile Performance 94 (FCP 1,4 с, LCP 2,8 с, TBT 130 мс, CLS 0), desktop Performance 100 (FCP 0,3 с, LCP 0,7 с), Accessibility 100, SEO 100; Best Practices 96 — единственная находка `errors-in-console` = 404 `/favicon.ico` (P2-10). Гейты 10/10 exit 0, 7 обратных подстановок §15 красные, файлы восстановлены побайтово.
+
+**Не проверено**: замер на порту 8791 после перезапуска батника — его занимал старый Python-сервер, поэтому проверял на 8792; mobile Performance 100 не обещается (TBT 130 мс даёт Bootstrap и `script.js` на 4× замедлении CPU); иконки нет ни в превью, ни на проде — это P2-10.
+
 (Stage 73 — 09.11.2026) — **Прод на Vercel не обновлялся: панель пересобирает развёрнутый коммит, а не `main`; добавлен автодеплой из GitHub Actions с проверкой результата.**
 
 Повод: пользователь показал отчёт `https://nlbbootstrap-b5y9.vercel.app/` — Performance 88, Accessibility 96. Проверка ответа прода: `/styles.css` 77 509 байт с индикатором 10×10, ссылка на него `?v=0ce1dcfb`, в HTML три `<h4>`, `.fab-menu` без `role`, нет `<link rel="preload">`, нет ни `Content-Security-Policy`, ни месячного кеша из `vercel.json` (`Cache-Control: public, max-age=0, must-revalidate`). Это ровно набор дефектов, закрытых в Stage 71–72, то есть развёрнут снимок старше них.
