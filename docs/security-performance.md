@@ -322,8 +322,19 @@ JPG 3885 КБ, WebP 2331 КБ, AVIF 2033 КБ. На странице остаё�
 - LCP < 2.5 c, CLS < 0.1, INP < 200 ms;
 - TTFB < 300 ms после прогрева кеша.
 
+Замер статического превью 09.11.2026 (Lighthouse, мобильный профиль):
+локальный сервер без сжатия даёт Performance 72–73, потому что
+`bootstrap.min.css` (227 КБ) и `styles.css` (79 КБ) едут несжатыми. Тот же
+`preview/` через сервер с gzip и `Cache-Control` — **95–96** (FCP 1,1 с,
+LCP 2,7 с, TBT 0–10 мс, CLS 0). Vercel сжимает статику brotli автоматически,
+а `vercel.json` кеширует `/assets/` на сутки, `styles.css` и `script.js` — на
+год (их имена версионируются `?v=<sha256>`). Для LCP в `preview/index.html`
+добавлен `<link rel="preload">` первой картинки hero, а слайды 2–3 грузятся
+без `fetchpriority="high"`, чтобы не отбирать полосу у LCP.
+
 Главные оставшиеся риски: отсутствие кеша Битрикса на старте (TTFB), 227 КБ
-Bootstrap без кастомной сборки, нет `Cache-Control` для `assets/` на сервере.
+Bootstrap без кастомной сборки, нет `Cache-Control` для `assets/` на
+боевом сервере (в `.htaccess`/nginx).
 
 ## 3. Бэкапы и обновления
 

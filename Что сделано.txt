@@ -3,6 +3,21 @@
 Журнал этапов шаблона `nlb_bootstrap`. Сверху — свежее. Формат записи: этап,
 дата, что сделано, чем проверено, что не проверено.
 
+(Stage 72 — 09.11.2026) — **Локальные 73 по Performance — это отсутствие сжатия на тестовом сервере, а не дефект шаблона; для LCP добавлен preload.**
+
+Повод: пользователь показал отчёт `http://127.0.0.1:8791//` — Performance 73, Accessibility 97, Best Practices 96. Доступность закрыта в Stage 71. По производительности: Lighthouse открывал превью через локальный `server.cjs`, который отдавал `bootstrap.min.css` (227 КБ) и `styles.css` (79 КБ) без gzip и без `Cache-Control`, поэтому FCP был 3,3 с, а LCP 5,9 с.
+
+Сделано:
+
+- `preview/index.html` — `<link rel="preload" as="image" type="image/avif" imagesrcset="…" imagesizes="100vw" fetchpriority="high">` для первой картинки hero: браузер находит LCP-ресурс до разбора `<picture>`; у слайдов 2–3 убран `fetchpriority="high"`, чтобы они не отбирали полосу у LCP (грузятся по-прежнему с `loading="eager"`);
+- `demo/index.php` — те же слайды hero-2 и hero-3 переведены с `'priority' => true` на `'loading' => 'eager'`, чтобы живой Битрикс вёл себя как превью;
+- `vercel.json` — `Cache-Control: public, max-age=31536000, immutable` для `/styles.css` и `/script.js` (имена версионируются `?v=<sha256>`, поэтому старая версия не залипнет); `/assets/` остаётся на сутки;
+- `docs/security-performance.md` §2.6 — замер и объяснение: локальный сервер без сжатия 72–73, тот же `preview/` с gzip и кешем 95–96.
+
+**Проверено**: тот же `preview/` через локальный сервер с gzip и `Cache-Control` (production-профиль) — Lighthouse Performance 95–96 на мобильном профиле (FCP 1,1–1,3 с, LCP 2,7 с, TBT 0–130 мс, CLS 0); без сжатия — 72–73, то есть разница только в транспорте. Lighthouse Accessibility на этом же сервере — 100. Все 10 гейтов exit 0, в том числе `check-template.mjs` (CSP и хэши после правки `preview/index.html` не изменились) и `db/tests/run.php` (69).
+
+**Не проверено**: замер на самом Vercel после деплоя (локально сжатие эмулируется gzip, на Vercel — brotli); влияние preload на LCP при медленном мобильном соединении в реальных условиях; TBT зависит от прогона (0–130 мс) — Bootstrap 80 КБ и `script.js` 74 КБ остаются на главном потоке.
+
 (Stage 71 — 09.11.2026) — **Доступность доведена до 100 на всех проверенных страницах, а превью на Vercel получило CSP с Trusted Types.**
 
 Повод: axe-core по 110 страницам превью не находил нарушений, но Lighthouse на главной давал Accessibility 97, а Best Practices 96. Единственный недобранный аудит — `target-size`: индикаторы карусели были 10×10 px, а безопасная область нажатия — 16 px вместо 24 px. Параллельно требовалось, чтобы CSP реально защищала от XSS: в `vercel.json` политики не было вообще, `script.js` собирал разметку через `innerHTML`, а значит `require-trusted-types-for 'script'` сломал бы чат.
