@@ -372,8 +372,11 @@ Vercel не исполняет PHP. Если отдать ему репозит�
 корень продолжает отдавать `index.php` файлом. Признак: адрес
 `https://<проект>-git-main-<team>.vercel.app/` отвечает `302` на
 `vercel.com/sso-api`. Лечится в панели: **Settings → Git → Production Branch**
-= `main` → Save, затем **Deployments → ⋯ → Promote to Production**. Подробности
-и числа — `Что доделать.txt`, пункт P1-14.
+= `main` → Save, затем **Deployments → ⋯ → Promote to Production**.
+
+Проверено 10.11.2026: `main` — production-ветка, push обновляет прод через
+Git-интеграцию (`elips0675-web-nlbbootstrap.vercel.app`, HTML 190 412 знаков,
+Lighthouse 100/100/100/100). История вопроса — `Что сделано.txt`, Stage 81.
 
 Проверить сборку локально:
 
