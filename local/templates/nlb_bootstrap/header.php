@@ -67,7 +67,7 @@ $nlbAuthorized = $USER->IsAuthorized();
             continue;
         }
         ?>
-    <style data-nlb-css="<?= $nlbKey ?>"><?= (string)file_get_contents($nlbSheet) ?></style>
+    <style data-nlb-css="<?= $nlbKey ?>"><?= nlb_minify_css((string)file_get_contents($nlbSheet)) ?></style>
         <?php
     }
     ?>

@@ -467,7 +467,7 @@ function inline_styles(string $html, string $tplDir): string
         }
 
         $block = '<style data-nlb-css="' . $key . '">'
-            . (string)file_get_contents($path)
+            . nlb_minify_css((string)file_get_contents($path))
             . '</style>';
 
         $written = 0;

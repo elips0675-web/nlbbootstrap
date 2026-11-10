@@ -23,6 +23,83 @@ if (!function_exists('nlb_media_escape')) {
     }
 }
 
+if (!function_exists('nlb_minify_css')) {
+    /**
+     * Сжимает CSS: убирает комментарии, отступы и пробелы вокруг { } ; ,
+     * не трогая строки, url() и calc() (пробелы вокруг + и - значимы).
+     *
+     * styles.css читается человеком, а в страницу уходит сжатая версия:
+     * 78,6 → ~55 КБ до gzip. Повторный прогон даёт тот же результат, поэтому
+     * сборка превью остаётся побайтово стабильной.
+     */
+    function nlb_minify_css(string $css): string
+    {
+        $out = '';
+        $length = strlen($css);
+        $quote = '';
+        $paren = 0;
+        $space = false;
+
+        for ($i = 0; $i < $length; $i++) {
+            $char = $css[$i];
+
+            if ($quote !== '') {
+                $out .= $char;
+                if ($char === '\\' && $i + 1 < $length) {
+                    $out .= $css[++$i];
+                    continue;
+                }
+                if ($char === $quote) {
+                    $quote = '';
+                }
+                continue;
+            }
+
+            if ($char === '/' && $i + 1 < $length && $css[$i + 1] === '*') {
+                $end = strpos($css, '*/', $i + 2);
+                $i = $end === false ? $length : $end + 1;
+                $space = true;
+                continue;
+            }
+
+            if ($char === '"' || $char === "'") {
+                if ($space && $out !== '' && !in_array(substr($out, -1), ['{', '}', ';', ','], true)) {
+                    $out .= ' ';
+                }
+                $out .= $char;
+                $quote = $char;
+                $space = false;
+                continue;
+            }
+
+            if ($char === '(') {
+                $paren++;
+            } elseif ($char === ')') {
+                $paren = max(0, $paren - 1);
+            }
+
+            if (ctype_space($char)) {
+                $space = true;
+                continue;
+            }
+
+            if ($space && $out !== '') {
+                $previous = substr($out, -1);
+                $drop = in_array($previous, ['{', '}', ';', ','], true)
+                    || ($paren === 0 && in_array($char, ['{', '}', ';', ','], true));
+                if (!$drop) {
+                    $out .= ' ';
+                }
+            }
+
+            $out .= $char;
+            $space = false;
+        }
+
+        return $out;
+    }
+}
+
 if (!function_exists('nlb_media_root')) {
     function nlb_media_root(): string
     {
