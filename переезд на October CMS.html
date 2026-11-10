@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Переезд на October CMS (Laravel + Tailor): что закрывает, а что нет</title>
+<meta name="description" content="Разбор по пунктам: какие задачи из «Важного открытого» решает переезд на October CMS, какие остаются кодом, а какие к CMS не относятся вовсе.">
+<style>
+    :root {
+        --bg: #f7f8fa;
+        --card: #ffffff;
+        --text: #1f2328;
+        --muted: #5b6470;
+        --line: #dfe3e8;
+        --accent: #0d6efd;
+        --accent-soft: #e7f0ff;
+        --green: #198754;
+        --green-soft: #e8f5ee;
+        --orange: #b35c00;
+        --orange-soft: #fff3e0;
+        --purple: #6f42c1;
+        --purple-soft: #f1ecfb;
+        --red: #b02a37;
+        --red-soft: #fbe9eb;
+        --code-bg: #f3f5f8;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.65;
+        overflow-wrap: break-word;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px 64px; }
+
+    header.hero {
+        background: linear-gradient(135deg, #101828 0%, #1d3557 50%, #4f46e5 100%);
+        color: #fff;
+        padding: 48px 0 40px;
+        margin-bottom: 28px;
+    }
+    header.hero .wrap { padding-bottom: 0; }
+    header.hero h1 { margin: 0 0 10px; font-size: 34px; line-height: 1.2; letter-spacing: -0.5px; }
+    header.hero p { margin: 0; max-width: 900px; color: #dbe6f6; font-size: 17px; }
+
+    .hero-meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        font-size: 13px;
+        color: #fff;
+    }
+
+    nav.toc {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin: 0 0 28px;
+    }
+    nav.toc h2 { margin: 0 0 10px; font-size: 16px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+    nav.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+    nav.toc li { margin: 4px 0; break-inside: avoid; }
+    @media (max-width: 720px) { nav.toc ol { columns: 1; } }
+
+    section {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 26px 28px;
+        margin-bottom: 22px;
+    }
+    section > h2 {
+        margin: 0 0 14px;
+        font-size: 24px;
+        line-height: 1.3;
+        scroll-margin-top: 16px;
+    }
+    section > h2 .num { display: inline-block; min-width: 30px; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+    h3 { margin: 26px 0 10px; font-size: 19px; }
+    h4 { margin: 20px 0 8px; font-size: 16px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0; padding-left: 24px; }
+    li { margin: 5px 0; }
+
+    code {
+        background: var(--code-bg);
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        padding: 1px 5px;
+        font-family: "Cascadia Code", Consolas, "Courier New", monospace;
+        font-size: 0.9em;
+        overflow-wrap: anywhere;
+    }
+
+    .table-scroll { overflow-x: auto; margin: 16px 0; }
+    table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 680px; }
+    caption { caption-side: top; text-align: left; color: var(--muted); font-size: 14px; padding-bottom: 8px; }
+    th, td { border: 1px solid var(--line); padding: 9px 11px; text-align: left; vertical-align: top; }
+    thead th { background: #eef1f5; font-size: 14px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--muted); }
+    tbody tr:nth-child(even) td { background: #fbfcfd; }
+    td.num, th.num { text-align: center; white-space: nowrap; }
+
+    tr.ok td { background: var(--green-soft); }
+    tr.alt td { background: var(--accent-soft); }
+    tr.no td { background: var(--red-soft); }
+    tr.wait td { background: var(--orange-soft); }
+
+    .callout {
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--accent);
+        background: #f8fbff;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin: 16px 0;
+    }
+    .callout.warn { border-left-color: var(--orange); background: var(--orange-soft); }
+    .callout.good { border-left-color: var(--green); background: var(--green-soft); }
+    .callout p:first-child { margin-top: 0; }
+    .callout p:last-child { margin-bottom: 0; }
+
+    .badge {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+    }
+    .badge.p0 { background: var(--red-soft); color: var(--red); }
+    .badge.p1 { background: var(--orange-soft); color: var(--orange); }
+    .badge.p2 { background: var(--accent-soft); color: #1d4ed8; }
+    .badge.yes { background: var(--green-soft); color: var(--green); }
+    .badge.part { background: var(--purple-soft); color: var(--purple); }
+    .badge.no { background: var(--red-soft); color: var(--red); }
+
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin: 16px 0; }
+
+    .card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 18px 20px;
+        background: #fcfdfe;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 19px; }
+    .card .tier { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .card ul { margin: 8px 0 0; padding-left: 20px; font-size: 15px; }
+    .card.lead { border-color: #9ec5fe; background: #f5f9ff; }
+    .card.good { border-color: #a3cfbb; background: var(--green-soft); }
+    .card.no { border-color: #f1aeb5; background: var(--red-soft); }
+
+    dl.facts { margin: 14px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; font-size: 15px; }
+    dl.facts dt { color: var(--muted); }
+    dl.facts dd { margin: 0; }
+    @media (max-width: 620px) {
+        dl.facts { grid-template-columns: 1fr; }
+        dl.facts dt { margin-top: 8px; }
+    }
+
+    ol.steps { counter-reset: step; list-style: none; padding-left: 0; margin: 16px 0; }
+    ol.steps > li {
+        counter-increment: step;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px 16px 14px 52px;
+        margin: 10px 0;
+        position: relative;
+        background: #fcfdfe;
+    }
+    ol.steps > li::before {
+        content: counter(step);
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    ol.steps > li strong { display: block; margin-bottom: 4px; }
+    ol.steps .when { color: var(--muted); font-size: 14px; }
+
+    footer.site-footer { color: var(--muted); font-size: 14px; text-align: center; padding: 8px 0 0; }
+
+    @media print {
+        body { background: #fff; }
+        section { border-color: #ccc; break-inside: avoid; }
+        header.hero { background: #101828; }
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <h1>Переезд на October CMS (Laravel + Tailor)</h1>
+        <p>
+            Что из списка «Важное открытое (функционал, не косметика)» переезд реально
+            закрывает, что остаётся работой, а что к CMS не относится вовсе.
+            Разбор по 14 пунктам бэклога <code>nlb_bootstrap</code>.
+        </p>
+        <div class="hero-meta">
+            <span class="chip">10.11.2026</span>
+            <span class="chip">14 пунктов</span>
+            <span class="chip">7 делает переезд</span>
+            <span class="chip">6 не про CMS</span>
+            <span class="chip">1 заменяется аналогом</span>
+            <span class="chip">4–6 недель до паритета</span>
+        </div>
+    </div>
+</header>
+
+<div class="wrap">
+
+    <nav class="toc" aria-label="Содержание">
+        <h2>Содержание</h2>
+        <ol>
+            <li><a href="#why">Что даёт Laravel, чего нет в Битриксе</a></li>
+            <li><a href="#items">По пунктам: что делается, а что нет</a></li>
+            <li><a href="#hard">Что будет сложнее, чем сейчас</a></li>
+            <li><a href="#keep">Что переезжает без потерь</a></li>
+            <li><a href="#order">Порядок работ</a></li>
+            <li><a href="#verdict">Вывод: два сценария</a></li>
+        </ol>
+    </nav>
+
+    <section id="why">
+        <h2><span class="num">1.</span> Что даёт Laravel, чего нет в Битриксе</h2>
+
+        <p>
+            Переезд сам по себе не закрывает ни один пункт — он даёт фундамент, на котором
+            четыре функциональных пункта делаются нормально, а не костылём поверх инфоблоков.
+        </p>
+
+        <div class="table-scroll">
+            <table>
+                <caption>Сопоставление возможностей платформы и конкретных пунктов бэклога.</caption>
+                <thead>
+                    <tr>
+                        <th>Что даёт October / Laravel</th>
+                        <th>Какой пункт это разблокирует</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="ok">
+                        <td>Транзакции и уникальные индексы: <code>DB::transaction</code>,
+                        <code>lockForUpdate</code>, <code>UNIQUE(service_code, date, time)</code></td>
+                        <td><strong>P1-20</strong> — гонка слота закрывается архитектурно,
+                        а не проверкой «прочитал-записал»</td>
+                    </tr>
+                    <tr class="ok">
+                        <td><code>routes/api.php</code>, <code>auth:sanctum</code>, FormRequest-валидация</td>
+                        <td><strong>P1-16</strong> — REST для Telegram-бота пишется заново нормально,
+                        вместо мёртвого черновика</td>
+                    </tr>
+                    <tr class="ok">
+                        <td>Очереди и <code>Mail::queue</code> (<code>ShouldQueue</code>)</td>
+                        <td><strong>P0-4</strong>, <strong>P0-5</strong>, подтверждения записи
+                        и напоминания клиенту</td>
+                    </tr>
+                    <tr class="ok">
+                        <td>Планировщик <code>Schedule::call</code></td>
+                        <td>напоминания о брони, истечение слотов, повторная отправка писем</td>
+                    </tr>
+                    <tr>
+                        <td>Миграции, фабрики, PHPUnit</td>
+                        <td>исчезает <code>db/tests/stub/bitrix.php</code> (934 строки самодельной
+                        заглушки ядра) — тесты становятся обычными</td>
+                    </tr>
+                    <tr>
+                        <td>YAML <code>fields.yaml</code> / <code>columns.yaml</code> и Tailor-blueprints</td>
+                        <td>74 поля и админские списки заявок со статусами и фильтрами — конфиг, а не код</td>
+                    </tr>
+                    <tr class="alt">
+                        <td>Старт приложения ~30–100 мс вместо 1,2–1,6 с ядра Bitrix</td>
+                        <td>TTFB перестаёт быть проблемой по построению, а не за счёт HTML-кеша</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="callout">
+            <p>Важно: TTFB 1,9 с на стенде — это про <strong>стенд</strong> (bind-mount на Windows),
+            а не про шаблон. На проде и на 8791 те же файлы дают 100. Но в October старт
+            дешевле на порядок, поэтому запас по TTFB там больше.</p>
+        </div>
+    </section>
+
+    <section id="items">
+        <h2><span class="num">2.</span> По пунктам: что делается, а что нет</h2>
+
+        <div class="table-scroll">
+            <table>
+                <caption>14 пунктов из блока «Важное открытое». Объёмы — с учётом того, что разметка и статика уже есть.</caption>
+                <thead>
+                    <tr>
+                        <th>Пункт</th>
+                        <th>Что даёт October</th>
+                        <th class="num">Объём</th>
+                        <th class="num">Переезд помогает</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="ok">
+                        <td><strong>P1-20</strong><br>гонка слота</td>
+                        <td>Своя таблица слотов + <code>UNIQUE</code> + транзакция. Плюс тест, который
+                        ловит гонку: два параллельных запроса → один <code>409</code></td>
+                        <td class="num">3–5 дней</td>
+                        <td class="num"><span class="badge yes">да</span></td>
+                    </tr>
+                    <tr class="ok">
+                        <td><strong>P1-16</strong><br>REST для Telegram</td>
+                        <td>Плагин с <code>routes.php</code>, токен в <code>.env</code>, FormRequest,
+                        идемпотентность по <code>external_id</code>, свои коды ответов</td>
+                        <td class="num">5–7 дней</td>
+                        <td class="num"><span class="badge yes">да</span></td>
+                    </tr>
+                    <tr class="ok">
+                        <td><strong>P1-9</strong><br>бронь услуг и слоты</td>
+                        <td>Модель услуги (длительность, вместимость, буфер), генерация слотов на
+                        сервере, админ-календарь в списке October</td>
+                        <td class="num">1–2 недели</td>
+                        <td class="num"><span class="badge yes">да</span></td>
+                    </tr>
+                    <tr class="ok">
+                        <td><strong>P1-12</strong><br>заказ сувенира</td>
+                        <td>Blueprint <code>orders</code> + форма-компонент + письмо в очереди;
+                        логика та же, что в <code>nlb_forms.php</code></td>
+                        <td class="num">3–5 дней</td>
+                        <td class="num"><span class="badge yes">да</span></td>
+                    </tr>
+                    <tr class="ok">
+                        <td><strong>P0-4</strong><br>письмо обратной связи</td>
+                        <td><code>Mail</code> + очередь; блокер только SMTP — данные владельца</td>
+                        <td class="num">1 день + SMTP</td>
+                        <td class="num"><span class="badge yes">да</span></td>
+                    </tr>
+                    <tr class="ok">
+                        <td><strong>P0-5</strong><br>подписка</td>
+                        <td>Подписчик + double opt-in + отписка + очередь</td>
+                        <td class="num">2–3 дня</td>
+                        <td class="num"><span class="badge yes">да</span></td>
+                    </tr>
+                    <tr class="ok">
+                        <td><strong>P1-11</strong><br>фото сувениров и услуг</td>
+                        <td><code>mediafinder</code> + массовый импорт из <code>db/config/data/*.php</code></td>
+                        <td class="num">1–2 дня</td>
+                        <td class="num"><span class="badge yes">да</span></td>
+                    </tr>
+                    <tr class="wait">
+                        <td><strong>P1-15</strong>, <strong>P1-17</strong><br>ИИ-помощник и чат</td>
+                        <td>Только код: плагин + внешний LLM по ключу, история в своей таблице.
+                        CMS тут не помогает</td>
+                        <td class="num">1–2 недели</td>
+                        <td class="num"><span class="badge part">нет</span></td>
+                    </tr>
+                    <tr class="no">
+                        <td><strong>P0-6</strong><br>контакты и реквизиты</td>
+                        <td>Данные владельца: в любой CMS это правка полей, а не разработка</td>
+                        <td class="num">—</td>
+                        <td class="num"><span class="badge no">нет</span></td>
+                    </tr>
+                    <tr class="no">
+                        <td><strong>P0-7</strong><br>права на фото</td>
+                        <td>Юридический вопрос, кода не требует</td>
+                        <td class="num">—</td>
+                        <td class="num"><span class="badge no">нет</span></td>
+                    </tr>
+                    <tr class="no">
+                        <td><strong>P1-4</strong><br>CSP и заголовки</td>
+                        <td>Это nginx, <code>.htaccess</code> и <code>vercel.json</code>; CMS не участвует</td>
+                        <td class="num">1 день</td>
+                        <td class="num"><span class="badge no">нет</span></td>
+                    </tr>
+                    <tr class="no">
+                        <td><strong>P1-5</strong><br>аудит доступности</td>
+                        <td>Работа с разметкой и живым сайтом, платформа не помогает</td>
+                        <td class="num">2–3 дня</td>
+                        <td class="num"><span class="badge no">нет</span></td>
+                    </tr>
+                    <tr class="wait">
+                        <td><strong>P2-12</strong><br>проверка purge-CSS на живом ядре</td>
+                        <td>Заменится своим аналогом: сверка урезанного Bootstrap уже на
+                        Tailor-страницах, а не на Bitrix-компонентах</td>
+                        <td class="num">1 день</td>
+                        <td class="num"><span class="badge part">замена</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="callout good">
+            <p><strong>Итог:</strong> переезд «делает» 7 пунктов из 14 (P1-20, P1-16, P1-9, P1-12,
+            P0-4, P0-5, P1-11) — но каждый остаётся работой, просто без борьбы с чужой
+            архитектурой. Шесть к CMS не относятся вовсе: данные владельца, инфраструктура,
+            аудит, ИИ; один (P2-12) заменяется своим аналогом.</p>
+        </div>
+    </section>
+
+    <section id="hard">
+        <h2><span class="num">3.</span> Что будет сложнее, чем сейчас</h2>
+
+        <h3>Поиск</h3>
+        <p>
+            Сейчас свой Okapi BM25 на 1 273 строках (<code>nlb_search.php</code>) с индексом
+            и хуками пересборки. В October аналога «из коробки» нет: либо портировать этот класс
+            как есть (он CMS-независимый, живёт на чистом PHP), либо ставить
+            Meilisearch/TNTSearch — но у них другая морфология для русского. Это отдельное
+            решение на 3–5 дней, а не «галочка в настройках».
+        </p>
+
+        <h3>Формы</h3>
+        <p>
+            В Битриксе они уже написаны (<code>nlb_forms.php</code>, 1 346 строк): валидация,
+            письма, статусы, антиспам. В October формы — это компонент плагина, то есть перенос
+            вручную, а не включение готового модуля.
+        </p>
+
+        <h3>Обработка заявок в админке</h3>
+        <p>
+            Список со статусами и фильтрами — YAML (<code>columns.yaml</code>, filter-конфиг),
+            но сам жизненный цикл <code>new → confirmed → cancelled</code>, права и уведомления —
+            код в плагине. Готового воркфлоу заявок в Tailor нет.
+        </p>
+
+        <h3>74 поля</h3>
+        <p>
+            Tailor-blueprint на каждую сущность — работа механическая, но её надо сверить
+            с текущим <code>db/config/iblocks.php</code> один-в-один, иначе потеряются
+            списки (<code>L</code>-свойства) и файлы (<code>F</code>). Это 9 инфоблоков,
+            74 свойства, 39 из них — каталог, 35 — заявки, брони и заказы.
+        </p>
+    </section>
+
+    <section id="keep">
+        <h2><span class="num">4.</span> Что переезжает без потерь</h2>
+
+        <p>
+            Эти части CMS-независимы и остаются как есть — независимо от того, Битрикс это
+            или October. Именно поэтому «Performance 100» переезжает вместе с репозиторием,
+            а не собирается заново.
+        </p>
+
+        <dl class="facts">
+            <dt>Картинки</dt>
+            <dd><code>tools/build-image-variants.php</code> — WebP/AVIF, <code>srcset</code>, 480/960/1280</dd>
+            <dt>Bootstrap</dt>
+            <dd><code>tools/purge-css.mjs</code> — урезанный <code>bootstrap.min.css</code> 59,9 КБ</dd>
+            <dt>Статика</dt>
+            <dd><code>tools/build-preview-pages.php</code> — генератор 110 страниц</dd>
+            <dt>CSS</dt>
+            <dd><code>nlb_minify_css()</code> — сжатие встроенного CSS: 79,3 → 56,4 КБ, документ 190 412 знаков</dd>
+            <dt>Гейты</dt>
+            <dd>весь набор проверок документации и вёрстки остаётся без изменений</dd>
+        </dl>
+
+        <div class="callout warn">
+            <p>Это же главный риск WordPress-варианта: там обвязку «ноль CSS-запросов + урезанный
+            Bootstrap» пришлось бы выбрасывать, потому что разметку задаёт тема и плагины.
+            В October шаблоны свои, поэтому обвязка сохраняется.</p>
+        </div>
+    </section>
+
+    <section id="order">
+        <h2><span class="num">5.</span> Порядок работ, если October берём</h2>
+
+        <ol class="steps">
+            <li>
+                <strong>Каркас контента</strong>
+                Плагин <code>nlb/content</code>, blueprints на 6 контентных сущностей, импорт
+                из <code>db/config/data/*.php</code>, шаблоны страниц на Bootstrap 5.
+                <span class="when">3–5 дней</span>
+            </li>
+            <li>
+                <strong>Бронь как подсистема</strong>
+                Таблица слотов + <code>UNIQUE</code> + транзакция + тест на гонку (P1-20).
+                Первый пункт, который стоит закрывать: он единственный реально ломает
+                пользователя.
+                <span class="when">3–5 дней</span>
+            </li>
+            <li>
+                <strong>Заявки и заказы</strong>
+                Три формы, письма в очереди, статусы в админке (P0-4, P1-12).
+                <span class="when">1 неделя</span>
+            </li>
+            <li>
+                <strong>API для записи</strong>
+                <code>P1-16</code> + модель услуги (P1-9): слоты, длительность, вместимость,
+                напоминания по расписанию.
+                <span class="when">2 недели</span>
+            </li>
+            <li>
+                <strong>Подписка и фото</strong>
+                Double opt-in (P0-5) и медиа-поля с импортом снимков (P1-11).
+                <span class="when">3–5 дней</span>
+            </li>
+        </ol>
+
+        <div class="callout">
+            <p><strong>Итого до паритета с текущим сайтом</strong> — 4–6 недель, из них
+            1–2 недели — то, чего в Битриксе сейчас нет вообще: слоты, атомарность, API
+            для записи.</p>
+        </div>
+    </section>
+
+    <section id="verdict">
+        <h2><span class="num">6.</span> Вывод: два сценария</h2>
+
+        <div class="grid">
+            <div class="card lead">
+                <div class="tier">Сценарий «переезжаем»</div>
+                <h3>October CMS (Laravel + Tailor)</h3>
+                <p><strong>P1-20, P1-16, P1-9, P1-12</strong> перестанут быть костылями поверх
+                инфоблоков и станут обычной разработкой; <strong>P0-4 и P0-5</strong> закроются
+                почти бесплатно, как только появится SMTP; <strong>P1-11</strong> — один вечер
+                на медиа-поля.</p>
+                <ul>
+                    <li>+ транзакции, очереди, планировщик, тесты, дешёвый TTFB;</li>
+                    <li>+ урезанный Bootstrap и генератор статики переезжают как есть;</li>
+                    <li>− 4–6 недель до паритета, поиск и формы — вручную;</li>
+                    <li>− лицензию и цену self-host проверить у вендора до старта.</li>
+                </ul>
+            </div>
+
+            <div class="card good">
+                <div class="tier">Сценарий «сначала закрыть дефект»</div>
+                <h3>P1-20 в Битриксе, 1–2 дня</h3>
+                <p>Гонка слота закрывается и без переезда: уникальный индекс на
+                <code>service_code + date + time</code> и запись в транзакции вместо проверки
+                перед вставкой. Это дешевле 4–6 недель миграции и снимает единственный дефект,
+                который реально портит пользователю жизнь.</p>
+                <ul>
+                    <li>+ 1–2 дня, без риска для 100/100/100/100;</li>
+                    <li>+ тот же патч потом переносится в October почти без изменений;</li>
+                    <li>− остальные пункты остаются на инфоблоках.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="callout good">
+            <p><strong>Порядок, который я считаю правильным:</strong> сначала закрыть P1-20
+            на текущем стеке (1–2 дня), затем решать судьбу платформы. Переезд ради PageSpeed
+            не нужен — 100 уже есть; переезд имеет смысл ради записи, брони и админской
+            обработки заявок, и тогда October — первый кандидат.</p>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <p>Библиотека 2026 · разбор переезда шаблона <code>nlb_bootstrap</code> на October CMS · 10.11.2026</p>
+        <p>Основано на коде репозитория: <code>db/config/iblocks.php</code> (9 инфоблоков, 74 свойства),
+        <code>nlb_forms.php</code> (1 346 строк), <code>nlb_search.php</code> (1 273),
+        <code>nlb_push.php</code> (770), <code>Что доделать.txt</code>.</p>
+    </footer>
+
+</div>
+
+</body>
+</html>
