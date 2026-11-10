@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Выбор CMS для nlb_bootstrap: разбор и рекомендация</title>
+<meta name="description" content="Что осталось важного по шаблону nlb_bootstrap и какая CMS подходит ему по факту: сравнение Битрикса, October CMS, Statamic, WordPress, Grav и Astro.">
+<style>
+    :root {
+        --bg: #f7f8fa;
+        --card: #ffffff;
+        --text: #1f2328;
+        --muted: #5b6470;
+        --line: #dfe3e8;
+        --accent: #0d6efd;
+        --accent-soft: #e7f0ff;
+        --green: #198754;
+        --green-soft: #e8f5ee;
+        --orange: #b35c00;
+        --orange-soft: #fff3e0;
+        --purple: #6f42c1;
+        --purple-soft: #f1ecfb;
+        --red: #b02a37;
+        --red-soft: #fbe9eb;
+        --code-bg: #f3f5f8;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.65;
+        overflow-wrap: break-word;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px 64px; }
+
+    header.hero {
+        background: linear-gradient(135deg, #101828 0%, #1d3557 50%, #4f46e5 100%);
+        color: #fff;
+        padding: 48px 0 40px;
+        margin-bottom: 28px;
+    }
+    header.hero .wrap { padding-bottom: 0; }
+    header.hero h1 { margin: 0 0 10px; font-size: 34px; line-height: 1.2; letter-spacing: -0.5px; }
+    header.hero p { margin: 0; max-width: 900px; color: #dbe6f6; font-size: 17px; }
+
+    .hero-meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        font-size: 13px;
+        color: #fff;
+    }
+
+    nav.toc {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin: 0 0 28px;
+    }
+    nav.toc h2 { margin: 0 0 10px; font-size: 16px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+    nav.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+    nav.toc li { margin: 4px 0; break-inside: avoid; }
+    @media (max-width: 720px) { nav.toc ol { columns: 1; } }
+
+    section {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 26px 28px;
+        margin-bottom: 22px;
+    }
+    section > h2 {
+        margin: 0 0 14px;
+        font-size: 24px;
+        line-height: 1.3;
+        scroll-margin-top: 16px;
+    }
+    section > h2 .num { display: inline-block; min-width: 30px; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+    h3 { margin: 26px 0 10px; font-size: 19px; }
+    h4 { margin: 20px 0 8px; font-size: 16px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0; padding-left: 24px; }
+    li { margin: 5px 0; }
+
+    code {
+        background: var(--code-bg);
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        padding: 1px 5px;
+        font-family: "Cascadia Code", Consolas, "Courier New", monospace;
+        font-size: 0.9em;
+        overflow-wrap: anywhere;
+    }
+
+    .table-scroll { overflow-x: auto; margin: 16px 0; }
+    table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 640px; }
+    caption { caption-side: top; text-align: left; color: var(--muted); font-size: 14px; padding-bottom: 8px; }
+    th, td { border: 1px solid var(--line); padding: 9px 11px; text-align: left; vertical-align: top; }
+    thead th { background: #eef1f5; font-size: 14px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--muted); }
+    tbody tr:nth-child(even) td { background: #fbfcfd; }
+    td.num, th.num { text-align: center; white-space: nowrap; }
+
+    tr.ok td { background: var(--green-soft); }
+    tr.alt td { background: var(--accent-soft); }
+    tr.fast td { background: var(--purple-soft); }
+    tr.max td { background: var(--orange-soft); }
+    tr.no td { background: var(--red-soft); }
+
+    .callout {
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--accent);
+        background: #f8fbff;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin: 16px 0;
+    }
+    .callout.warn { border-left-color: var(--orange); background: var(--orange-soft); }
+    .callout.good { border-left-color: var(--green); background: var(--green-soft); }
+    .callout p:first-child { margin-top: 0; }
+    .callout p:last-child { margin-bottom: 0; }
+
+    .badge {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+    }
+    .badge.p0 { background: var(--red-soft); color: var(--red); }
+    .badge.p1 { background: var(--orange-soft); color: var(--orange); }
+    .badge.p2 { background: var(--accent-soft); color: #1d4ed8; }
+    .badge.done { background: var(--green-soft); color: var(--green); }
+
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin: 16px 0; }
+
+    .card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 18px 20px;
+        background: #fcfdfe;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 19px; }
+    .card .tier { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .card ul { margin: 8px 0 0; padding-left: 20px; font-size: 15px; }
+    .card.lead { border-color: #9ec5fe; background: #f5f9ff; }
+    .card.good { border-color: #a3cfbb; background: var(--green-soft); }
+    .card.no { border-color: #f1aeb5; background: var(--red-soft); }
+
+    dl.facts { margin: 14px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; font-size: 15px; }
+    dl.facts dt { color: var(--muted); }
+    dl.facts dd { margin: 0; }
+
+    footer.site-footer { color: var(--muted); font-size: 14px; text-align: center; padding: 8px 0 0; }
+
+    @media print {
+        body { background: #fff; }
+        section { border-color: #ccc; break-inside: avoid; }
+        header.hero { background: #101828; }
+    }
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="wrap">
+        <h1>Выбор CMS для шаблона nlb_bootstrap</h1>
+        <p>
+            Разбор по факту репозитория, а не по общим критериям: что осталось важного
+            в шаблоне и какая CMS реально выдержит его функционал — заявки, бронь со слотами,
+            поиск, Web Push и админскую обработку — не потеряв Performance 100.
+        </p>
+        <div class="hero-meta">
+            <span class="chip">10.11.2026</span>
+            <span class="chip">9 инфоблоков · 74 поля</span>
+            <span class="chip">23 144 строки PHP</span>
+            <span class="chip">110 статических страниц</span>
+            <span class="chip">Performance 100 на 8791 и на проде</span>
+        </div>
+    </div>
+</header>
+
+<div class="wrap">
+
+    <nav class="toc" aria-label="Содержание">
+        <h2>Содержание</h2>
+        <ol>
+            <li><a href="#left">Что осталось по шаблону</a></li>
+            <li><a href="#stale">Что в бэклоге устарело</a></li>
+            <li><a href="#corners">Чего не учёл исходный черновик</a></li>
+            <li><a href="#rating">Рейтинг CMS под этот шаблон</a></li>
+            <li><a href="#table">Сводная таблица</a></li>
+            <li><a href="#cost">Что переносится разметкой, а что кодом</a></li>
+            <li><a href="#verdict">Итог и три сценария</a></li>
+        </ol>
+    </nav>
+
+    <section id="left">
+        <h2><span class="num">1.</span> Что осталось важного по шаблону и функционалу</h2>
+
+        <p>
+            Это не сайт-визитка: в репозитории 106 PHP-файлов (без <code>preview/</code> и
+            <code>public/</code>) и 23 144 строки PHP — цифра из <code>test/01-ПРОДУКТ.txt:101</code>,
+            её сверяет <code>tools/check-doc-numbers.mjs</code>. Из них рабочая серверная логика,
+            а не разметка.
+        </p>
+
+        <dl class="facts">
+            <dt>Данные</dt>
+            <dd>9 инфоблоков, 74 свойства — <code>db/config/iblocks.php:20</code>; 13 миграций в <code>db/migrations/</code></dd>
+            <dt>Формы</dt>
+            <dd>заявка, бронь, заказ → три инфоблока, серверная валидация и письма — <code>nlb_forms.php:5-16</code> (1 346 строк)</dd>
+            <dt>Поиск</dt>
+            <dd>свой BM25, индекс и пересборка хуком — <code>nlb_search.php:3-28</code> (1 273 строки)</dd>
+            <dt>Push</dt>
+            <dd>Web Push VAPID, RFC 8291 — <code>nlb_push.php:3-16</code> (770 строк)</dd>
+            <dt>SEO</dt>
+            <dd>canonical, Open Graph, JSON-LD — <code>nlb_seo.php:3-13</code></dd>
+            <dt>Статика</dt>
+            <dd>110 страниц <code>preview/</code>, деплой Vercel через <code>tools/vercel-build.mjs</code></dd>
+        </dl>
+
+        <h3>Открытые пункты, которые важны для функционала</h3>
+
+        <div class="table-scroll">
+            <table>
+                <caption>Номера пунктов — по <code>Что доделать.txt</code>, строка указана.</caption>
+                <thead>
+                    <tr>
+                        <th>Приоритет</th>
+                        <th>Пункт</th>
+                        <th>Почему важно</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge p1">P1-20</span></td>
+                        <td>Бронь слота: проверка и запись не атомарны<br><code>Что доделать.txt:492</code></td>
+                        <td>Два человека могут занять одно время. Единственный дефект, который я бы закрывал до публикации</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge p1">P1-16</span></td>
+                        <td>REST-черновик <code>api/telegram_booking.php</code> непригоден<br><code>:330</code></td>
+                        <td>Онлайн-запись фактически не готова</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge p1">P1-9</span></td>
+                        <td>Бронирование услуг: запись и слоты не проверены<br><code>:210</code></td>
+                        <td>Проверено только на демо, не на живом ядре</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge p1">P1-12</span></td>
+                        <td>Заказ сувенира не проверен<br><code>:286</code></td>
+                        <td>Тот же путь «форма → заявка → письмо», но для товаров</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge p0">P0-4</span></td>
+                        <td>Обратная связь: запись в БД проверена, письмо нет<br><code>:128</code></td>
+                        <td>Без письма заявка есть, а уведомления нет</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge p0">P0-5</span></td>
+                        <td>Подписка: рассылка не настроена<br><code>:143</code></td>
+                        <td>Двойное подтверждение и отправка не пройдены</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge p0">P0-6</span></td>
+                        <td>Демо-контакты, соцсети, реквизиты<br><code>:152</code></td>
+                        <td>Данные владельца, кодом не закрывается</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge p0">P0-7</span></td>
+                        <td>Права на демо-изображения<br><code>:169</code></td>
+                        <td>Юридический риск, не технический</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge p1">P1-11</span></td>
+                        <td>Нет фото сувениров, услуг и новых печатных услуг<br><code>:269</code></td>
+                        <td>Каталог выглядит пустым там, где нет снимков</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge p1">P1-4</span></td>
+                        <td>CSP и заголовки на боевом сервере<br><code>:182</code></td>
+                        <td>На Vercel дублировано в <code>vercel.json</code>, на своём nginx — нет</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge p1">P1-5</span></td>
+                        <td>Доступность: аудит на живом сайте<br><code>:198</code></td>
+                        <td>Превью даёт 100, живой Битрикс проверен частично</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge p2">P2-12</span></td>
+                        <td>Урезанный Bootstrap и сжатый CSS не проверены на всех страницах Битрикса<br><code>:670</code></td>
+                        <td>Главная прошла, списки/детальные/формы — нет; сжатие Stage 80 (612 правил в превью) на живом ядре ещё не смотрели</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="callout good">
+            <p><strong>Что уже закрыто и переделывать не нужно:</strong> Performance 100 на
+            <code>http://127.0.0.1:8791/</code> и на проде, CSS встроен и сжат
+            (<code>nlb_minify_css()</code>: 79,3 → 56,4 КБ, главная 190 412 знаков вместо
+            211 410), Accessibility / Best Practices / SEO — 100, 110 страниц превью
+            собираются из одного источника, деплой идёт Git-интеграцией Vercel.</p>
+        </div>
+    </section>
+
+    <section id="stale">
+        <h2><span class="num">2.</span> Бэклог приведён к факту (Stage 81, 10.11.2026)</h2>
+
+        <p>
+            Раньше здесь было «что устарело и читается как не сделано». Сейчас это исправлено
+            в самом бэклоге, а не только описано: закрытый пункт живёт одной записью в
+            <code>Что сделано.txt</code>, открытый — описывает только то, что действительно
+            осталось.
+        </p>
+
+        <ul>
+            <li><strong>P1-14 удалён.</strong> Он утверждал, что корень Vercel отдаёт
+            <code>index.php</code>, а <code>main</code> не назначен production-веткой. Прод
+            <code>elips0675-web-nlbbootstrap.vercel.app</code> обновляется Git-интеграцией,
+            HTML 190 412 знаков, Lighthouse 100/100/100/100. Из «Плана закрытия» убраны оба
+            упоминания, в <code>README.md</code> остался только диагностический признак
+            (302 на <code>-git-main-</code>) и строка «проверено 10.11.2026».</li>
+            <li><strong>P2-11 переписан.</strong> Заголовок «Performance без сжатия упирается
+            в 80» больше не соответствует факту: Stages 77–80 закрыли и доставку CSS, и размер
+            (79,3 → 56,4 КБ). Теперь пункт называется «Остаток Performance: честные
+            <code>sizes</code> у карточек и ленивые слайды 2–3 hero» и содержит ровно два
+            пункта. Отсутствие gzip у <code>python -m http.server</code> и TBT на реальном
+            троттлинге перенесены в «ограничения, которые разметкой не лечатся», а не в задачи.</li>
+            <li><strong>P2-12 расширен.</strong> Живой прогон нужен не только для урезанного
+            Bootstrap, но и для сжатого CSS Stage 80: в превью сверены 612 правил,
+            <code>content: "/"</code>, <code>url()</code> и <code>calc()</code> целы, но
+            серверные компоненты рендерятся только в Битриксе.</li>
+            <li><strong>Следы сохранены.</strong> В <code>test/04-СОСТОЯНИЕ-И-РИСКИ.txt</code>
+            и <code>test/Для анализа.txt</code> P1-14 помечен как исправленный 10.11.2026 со
+            ссылкой на журнал: внешнему аудиту нужен след, а не пустое место.</li>
+        </ul>
+
+        <div class="callout good">
+            <p>Проверено: из <code>Что доделать.txt</code> удалён ровно блок P1-14 (границы —
+            заголовки <code>### P1-14</code> → <code>### P1-15</code>, в вырезанном куске есть
+            финальный абзац «Пока production не переключён»), упоминаний P1-14 в бэклоге не
+            осталось; 10 гейтов из 10 — <code>EXIT 0</code>.</p>
+        </div>
+    </section>
+
+    <section id="corners">
+        <h2><span class="num">3.</span> Чего не учёл исходный черновик</h2>
+
+        <p>
+            Черновик «Выбор CMS: Bootstrap 5, PageSpeed 100, удобные поля» отвечает на вопрос
+            «какая CMS даёт три свойства» — и отвечает добросовестно. Но критерии он применяет
+            к маркетинговому сайту, а здесь шаблон с заявками, бронью с слотами, поиском, push
+            и админской обработкой заявок.
+        </p>
+
+        <h3>Поправка 1. «Перенос — 1–2 дня на CSS» верно не для всего</h3>
+        <p>
+            Оценка справедлива для шести контентных инфоблоков и 39 полей каталога
+            (<code>news</code> 4, <code>events</code> 8, <code>collections</code> 3,
+            <code>books</code> 9, <code>services</code> 11, <code>printing</code> 4).
+            Остальные 35 полей — это <code>requests</code> (9), <code>bookings</code> (14),
+            <code>orders</code> (12): они живут не полями, а валидацией, письмами, транзакциями
+            и статусами. Плюс 2 300+ строк <code>nlb_forms.php</code>,
+            <code>nlb_search.php</code>, <code>nlb_push.php</code> — это код, а не разметка.
+        </p>
+
+        <h3>Поправка 2. «Битрикс: Bootstrap 5 — 4/5, PageSpeed — 3/5» — это про дефолтный Битрикс</h3>
+        <p>
+            В этом шаблоне Bootstrap 5.3, урезанный <code>bootstrap.min.css</code> 59,9 КБ
+            (<code>tools/purge-css.mjs</code>), CSS встроен в документ и сжат, CSS-запросов ноль.
+            Performance 100 достигнут и на статике, и на проде. Оценка 3/5 к этому шаблону
+            не относится — она про установку «из коробки».
+        </p>
+
+        <div class="callout">
+            <p><strong>Главный критерий, которого нет в черновике:</strong> не «какая CMS легче»,
+            а «какая CMS выдержит 74 поля и три серверных сценария, не заставив переписать
+            формы, брони и поиск». Лёгкость ядра здесь вторична: TTFB решается кешем HTML,
+            а потеря функционала — только кодом.</p>
+        </div>
+    </section>
+
+    <section id="rating">
+        <h2><span class="num">4.</span> Рейтинг CMS именно под nlb_bootstrap</h2>
+
+        <div class="grid">
+            <div class="card good">
+                <div class="tier">Место 1 · если цель — сохранить функционал</div>
+                <h3>1С-Битрикс (остаётся)</h3>
+                <p>Единственная незакрытая цифра — TTFB 1,9 с на стенде, и это кеш HTML,
+                а не CMS. Смена CMS здесь = переписать 2 300+ строк логики.</p>
+                <ul>
+                    <li>0 дней на перенос, 74 поля и формы уже есть;</li>
+                    <li>100/100/100/100 уже на статике и на проде;</li>
+                    <li>минус: TTFB и «UI 2000-х» в админке — лечится кешем, не переездом.</li>
+                </ul>
+            </div>
+
+            <div class="card lead">
+                <div class="tier">Место 2 · если переезд обязателен</div>
+                <h3>October CMS + Tailor</h3>
+                <p>Лучший вариант под этот случай: Tailor-поля ложатся на 74 свойства,
+                а Laravel даёт настоящие транзакции — P1-20 (гонка слота) закрывается
+                архитектурно, а не костылём.</p>
+                <ul>
+                    <li>PHP + MySQL совпадают с текущим хостингом;</li>
+                    <li>есть стартеры на Bootstrap 5;</li>
+                    <li>self-host без подписки (лицензию и цену проверить у вендора);</li>
+                    <li>минус: 2–4 недели на формы, брони, поиск, push, админку.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="tier">Место 3 · если заявки уезжают в отдельный сервис</div>
+                <h3>Statamic</h3>
+                <p>Blueprints — действительно самые удобные поля из списка, TTFB 20–50 мс.
+                Но Statamic даёт контент, а не приложение: бронь, поиск и push придётся
+                писать на Laravel отдельно.</p>
+                <ul>
+                    <li>+ поля и кеш из коробки, чистый PHP-стек;</li>
+                    <li>− платная лицензия для продакшена, меньше специалистов;</li>
+                    <li>− без отдельного кода нет ни заявок, ни слотов.</li>
+                </ul>
+            </div>
+
+            <div class="card no">
+                <div class="tier">Не рекомендуется под этот шаблон</div>
+                <h3>WordPress + ACF</h3>
+                <p>Привычно и дёшево по фрилансерам, но худший вариант именно здесь:
+                100 держится на дисциплине плагинов, запись через Amelia/Bookly приносит
+                чужую разметку и JS — это и рушит 100.</p>
+                <ul>
+                    <li>подход «CSS внутри <code>&lt;style&gt;</code> без запросов» живёт только в полностью своей теме;</li>
+                    <li>серверную валидацию, поиск и push всё равно писать самому;</li>
+                    <li>итог: шаблон переписывается целиком, но с плагинной зависимостью.</li>
+                </ul>
+            </div>
+
+            <div class="card no">
+                <div class="tier">Не для этой задачи</div>
+                <h3>Grav CMS</h3>
+                <p>«100 почти автоматически» — правда, но flat-file без транзакций:
+                бронь слота на файлах это ручные блокировки, а каталог книг на тысячах
+                записей начинает отставать от БД.</p>
+                <ul>
+                    <li>+ быстрый старт, понятная файловая структура;</li>
+                    <li>− Flex Objects слабее iBlock-свойств;</li>
+                    <li>− P1-20 в Grav не решается штатно.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="tier">Не замена CMS, а статический слой</div>
+                <h3>Astro + Decap</h3>
+                <p>Хорошая новость: этот слой у вас уже есть — <code>preview/</code> это 110
+                готовых страниц, Vercel их деплоит, 100/100/100/100. Но формы, брони, поиск
+                и push останутся без бэкенда.</p>
+                <ul>
+                    <li>+ абсолютная скорость и уже работающий деплой;</li>
+                    <li>− контент правится через Git, нужен разработчик для CI/CD;</li>
+                    <li>− как «CMS для шаблона» не годится.</li>
+                </ul>
+            </div>
+        </div>
+
+        <p>
+            <strong>Contao, Vvveb, MODX</strong> под эту задачу не рассматриваю: либо нет
+            экосистемы в RU/BY, либо молодой проект для продакшена, либо вся гибкость уходит
+            в настройку без выигрыша по трём критериям.
+        </p>
+    </section>
+
+    <section id="table">
+        <h2><span class="num">5.</span> Сводная таблица: оценки под этот шаблон</h2>
+
+        <div class="table-scroll">
+            <table>
+                <caption>Оценки не «вообще», а применительно к 74 полям, трём формам, брони со слотами, поиску и push этого репозитория.</caption>
+                <thead>
+                    <tr>
+                        <th>CMS</th>
+                        <th class="num">Поля</th>
+                        <th class="num">Функционал<br>(формы, брони, поиск, push)</th>
+                        <th class="num">Стоимость переноса</th>
+                        <th>Вердикт для nlb_bootstrap</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="ok">
+                        <td><strong>1С-Битрикс (текущая)</strong></td>
+                        <td class="num">4/5</td>
+                        <td class="num">5/5 — уже есть</td>
+                        <td class="num">0</td>
+                        <td>Остаётся: добить TTFB кешем HTML, закрыть P1-20 и P0-4/P0-5</td>
+                    </tr>
+                    <tr class="alt">
+                        <td><strong>October CMS + Tailor</strong></td>
+                        <td class="num">5/5</td>
+                        <td class="num">5/5 — Laravel, транзакции</td>
+                        <td class="num">2–4 недели</td>
+                        <td>№1 при переезде: единственный вариант, где P1-20 решается по-настоящему</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Statamic</strong></td>
+                        <td class="num">5/5</td>
+                        <td class="num">2/5 — нужен свой Laravel-код</td>
+                        <td class="num">2–3 недели</td>
+                        <td>№2, если сайт живёт как каталог, а заявки — отдельный сервис</td>
+                    </tr>
+                    <tr class="no">
+                        <td><strong>WordPress + ACF</strong></td>
+                        <td class="num">4/5</td>
+                        <td class="num">2/5 — плагины, чужая разметка</td>
+                        <td class="num">2–3 недели</td>
+                        <td>Только если приоритет — дешёвый фрилансер и готовность к плагинам</td>
+                    </tr>
+                    <tr class="no">
+                        <td><strong>Grav CMS</strong></td>
+                        <td class="num">4/5</td>
+                        <td class="num">1/5 — нет транзакций</td>
+                        <td class="num">3–4 недели</td>
+                        <td>Нет: для библиотеки с заявками flat-file упирается в бронь и объём</td>
+                    </tr>
+                    <tr class="fast">
+                        <td><strong>Astro + Decap</strong></td>
+                        <td class="num">3/5</td>
+                        <td class="num">1/5 — нет бэкенда</td>
+                        <td class="num">слой уже есть</td>
+                        <td>Не CMS, а статика: <code>preview/</code> + Vercel уже работают</td>
+                    </tr>
+                    <tr class="no">
+                        <td><strong>Contao · Vvveb · MODX</strong></td>
+                        <td class="num">3–5/5</td>
+                        <td class="num">2/5</td>
+                        <td class="num">3+ недели</td>
+                        <td>Не под эту задачу: нет выигрыша по трём критериям</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="cost">
+        <h2><span class="num">6.</span> Что переносится разметкой, а что кодом</h2>
+
+        <div class="table-scroll">
+            <table>
+                <caption>Оценка по фактическим файлам репозитория, а не «на глаз».</caption>
+                <thead>
+                    <tr>
+                        <th>Слой</th>
+                        <th>Объём</th>
+                        <th>Как переносится</th>
+                        <th class="num">Срок</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Вёрстка и CSS</td>
+                        <td><code>styles.css</code> 81 179 Б, <code>bootstrap.min.css</code> 59,9 КБ, 110 страниц превью</td>
+                        <td>Шаблонизатор CMS (Antlers/Twig/Tailor) + те же классы Bootstrap 5</td>
+                        <td class="num">3–5 дней</td>
+                    </tr>
+                    <tr>
+                        <td>Контент</td>
+                        <td>6 инфоблоков, 39 полей, разделы и меню</td>
+                        <td>Blueprints / Tailor / ACF-группы + импорт из <code>db/config/data/*.php</code></td>
+                        <td class="num">3–5 дней</td>
+                    </tr>
+                    <tr>
+                        <td>Заявки и заказы</td>
+                        <td><code>nlb_forms.php</code> 1 346 строк, <code>requests</code> 9 полей, <code>orders</code> 12</td>
+                        <td>Только код: валидация, письма, статусы, админский список</td>
+                        <td class="num">1–2 недели</td>
+                    </tr>
+                    <tr>
+                        <td>Бронь со слотами</td>
+                        <td><code>bookings</code> 14 полей + P1-20</td>
+                        <td>Только код, с транзакцией — иначе гонка остаётся</td>
+                        <td class="num">1–2 недели</td>
+                    </tr>
+                    <tr>
+                        <td>Поиск</td>
+                        <td><code>nlb_search.php</code> 1 273 строки, индекс, хуки</td>
+                        <td>Только код или замена на поиск CMS (потеря BM25-качества)</td>
+                        <td class="num">3–5 дней</td>
+                    </tr>
+                    <tr>
+                        <td>Web Push</td>
+                        <td><code>nlb_push.php</code> 770 строк, VAPID, RFC 8291</td>
+                        <td>Только код, HTTPS обязателен</td>
+                        <td class="num">2–3 дня</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="callout warn">
+            <p><strong>Итого по-честному:</strong> контентная часть — 3–5 дней на October
+            или Statamic. Функциональная — ещё 2–4 недели. Поэтому «перенос в другое окно ради
+            универсальной CMS» оправдан, если Битрикс уходит по лицензии, подписке или
+            требованию заказчика, а не ради PageSpeed: скорость уже 100.</p>
+        </div>
+    </section>
+
+    <section id="verdict">
+        <h2><span class="num">7.</span> Итог и три сценария</h2>
+
+        <div class="grid">
+            <div class="card good">
+                <h3>Сценарий A. «Нужен функционал и минимум риска»</h3>
+                <p><strong>Битрикс остаётся.</strong> Добиваем TTFB кешем готового HTML на стенде,
+                закрываем P1-20 (атомарная бронь) и P0-4/P0-5 (письма и рассылка).
+                Ни одна строка логики не переписывается.</p>
+            </div>
+            <div class="card lead">
+                <h3>Сценарий B. «Нужна универсальная CMS вместо Битрикса»</h3>
+                <p><strong>October CMS + Tailor.</strong> Переносится разметка и 74 поля,
+                формы, брони с транзакциями, поиск и push пишутся на Laravel. Второй номер —
+                Statamic, если сайт живёт как каталог, а заявки уезжают в отдельный сервис.</p>
+            </div>
+            <div class="card">
+                <h3>Сценарий C. «Нужна максимальная скорость и не жалко CI/CD»</h3>
+                <p><strong>Статика уже есть:</strong> <code>preview/</code> на Vercel, 100/100/100/100.
+                Дальше это не «CMS для шаблона», а разделение: статический фронт + API для
+                заявок и брони (Node/Laravel/serverless). Дороже по разработке, дешевле
+                по эксплуатации.</p>
+            </div>
+        </div>
+
+        <div class="callout good">
+            <p><strong>Короткая рекомендация.</strong> Под три исходных критерия
+            (Bootstrap 5, PageSpeed 100, удобные поля) черновик верно называет WordPress + ACF.
+            Под этот шаблон — нет: у вас не сайт, а приложение с заявками, бронью и поиском.
+            Поэтому: остаёмся на Битриксе, если нужен функционал; October CMS (Tailor), если
+            переезд обязателен; WordPress + ACF — только когда приоритет «дёшево найти
+            фрилансера» и функционал всё равно выносится из CMS.</p>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <p>Библиотека 2026 · разбор шаблона <code>nlb_bootstrap</code> · 10.11.2026</p>
+        <p>Основано на коде репозитория: <code>db/config/iblocks.php</code>,
+        <code>local/php_interface/include/*</code>, <code>Что доделать.txt</code>,
+        <code>test/01-ПРОДУКТ.txt</code>, замеры Lighthouse 13.6 на 8791 и на проде.</p>
+    </footer>
+
+</div>
+
+</body>
+</html>
