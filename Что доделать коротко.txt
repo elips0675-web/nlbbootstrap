@@ -66,6 +66,16 @@ Stage 62 (08.11.2026): P1-29 и P0-3 закрыты — `SECTION_PAGE_URL` ве�
 список с `?section=`, корень «Главная» объявлен `.section.php`, крошки есть
 на 15 страницах; на стенде цепочка «Главная → Афиша → Литература → событие».
 
+Stage 79 (10.11.2026): стенд `localhost:8080` после Stage 78 остался без CSS —
+`SITE_TEMPLATE_PATH` это адресный путь, и `is_file()` по нему всегда false.
+Файлы теперь ищутся от `DOCUMENT_ROOT`; `ShowHead()` заменён на явные
+`ShowMeta`/`ShowLink`/`ShowHeadStrings`/`ShowHeadScripts`, чтобы Bitrix не
+добавлял второй экземпляр `styles.css` через `/bitrix/cache/css/`.
+Проверено: 8791 — 100 и 99, прод — 100 × 3, стенд — 87–93 (mobile) / 94
+(desktop), доступность 96 вместо 84. Ограничение стенда: PHP отдаёт документ
+за 1,9 с (bind-mount на Windows), поэтому LCP 2,9 с; 100 там возможны только
+после кеша готового HTML или переноса `www` на volume.
+
 Stage 78 (09.11.2026): Performance по PSI-mobile — CSS встроен в страницу.
 Два блокирующих `<link rel="stylesheet">` (Bootstrap + `styles.css`) стоили на
 мобильном троттлинге 1,3 с до первой отрисовки. `inline_styles()` в

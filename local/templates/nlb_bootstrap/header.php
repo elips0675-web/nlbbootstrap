@@ -22,7 +22,19 @@ $nlbAuthorized = $USER->IsAuthorized();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0b1220">
 
-    <?php $APPLICATION->ShowHead(); ?>
+    <?php
+    // Вместо ShowHead(): он выводит <link> на styles.css, который уже встроен
+    // ниже. На стенде Bitrix собирает его в /bitrix/cache/css — это второй
+    // экземпляр тех же 79 КБ, то есть лишний блокирующий запрос. Компонентов,
+    // которые регистрируют свой CSS (SetAdditionalCSS), в шаблоне нет.
+    echo '<meta http-equiv="Content-Type" content="text/html; charset=' . LANG_CHARSET . '" />' . "\n";
+    $APPLICATION->ShowMeta('robots');
+    $APPLICATION->ShowMeta('keywords');
+    $APPLICATION->ShowMeta('description');
+    $APPLICATION->ShowLink('canonical');
+    $APPLICATION->ShowHeadStrings();
+    $APPLICATION->ShowHeadScripts();
+    ?>
     <title><?php $APPLICATION->ShowTitle(); ?></title>
 
     <?php /* canonical, robots, Open Graph, Twitter Card, schema.org */ ?>
@@ -43,9 +55,12 @@ $nlbAuthorized = $USER->IsAuthorized();
     // CSS встроен, а не подключён ссылками: два <link> — это два блокирующих
     // запроса до первой отрисовки. На мобильном троттлинге (4x CPU, 1,6 Мбит/с)
     // встроенный CSS дал FCP 2,2 → 0,9 с и LCP 4,2 → 0,9 с.
+    // SITE_TEMPLATE_PATH — адресный путь (/local/templates/…), is_file по нему
+    // всегда false, поэтому файлы ищутся от DOCUMENT_ROOT.
+    $nlbTplFs = rtrim((string)($_SERVER['DOCUMENT_ROOT'] ?? ''), '/\\') . $nlbTpl;
     $nlbSheets = [
-        'bootstrap' => $nlbTpl . '/assets/css/bootstrap.min.css',
-        'styles'    => $nlbTpl . '/styles.css',
+        'bootstrap' => $nlbTplFs . '/assets/css/bootstrap.min.css',
+        'styles'    => $nlbTplFs . '/styles.css',
     ];
     foreach ($nlbSheets as $nlbKey => $nlbSheet) {
         if (!is_file($nlbSheet)) {
